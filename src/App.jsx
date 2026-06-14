@@ -135,7 +135,11 @@ export default function App() {
   const [gospelData, setGospelData] = useState(null);
 
   useEffect(() => {
-    axios.get(`/api/gospel?lang=${lang}`)
+    const today = new Date();
+    const day = today.getDate();
+    const month = today.getMonth() + 1;
+    const year = today.getFullYear();
+    axios.get(`/api/gospel?lang=${lang}&day=${day}&month=${month}&year=${year}`)
       .then(res => { if (res.data.success) setGospelData(res.data); })
       .catch(() => {});
   }, [lang]);
