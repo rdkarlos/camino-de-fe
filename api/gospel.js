@@ -44,3 +44,4 @@ export default async function handler(req, res) {
 
       // Extraer evangelio
       const gospelStart = rawText.indexOf('Evangelio del día');
+      }
