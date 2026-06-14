@@ -25,12 +25,20 @@ export default async function handler(req, res) {
       .replace(/\s+/g, ' ')
       .trim();
 
-    // El evangelio viene después de "Suscribirme"
     const suscribirmeIdx = rawText.indexOf('Suscribirme');
     const textAfter = suscribirmeIdx > -1 ? rawText.substring(suscribirmeIdx) : rawText;
     
     const gospelStart = textAfter.indexOf('Evangelio del día');
-    const gospelEnd = textAfter.indexOf('Reciba el Evangelio');
+    
+    // Cortar en el primer marcador de fin
+    const endMarkers = ['Descargar en PDF', 'Podcast', 'Las lecturas siguen', 'Reciba el Evangelio'];
+    let gospelEnd = -1;
+    for (const marker of endMarkers) {
+      const idx = textAfter.indexOf(marker, gospelStart);
+      if (idx > -1 && (gospelEnd === -1 || idx < gospelEnd)) {
+        gospelEnd = idx;
+      }
+    }
     
     const text = gospelStart > -1
       ? textAfter.substring(gospelStart, gospelEnd > -1 ? gospelEnd : gospelStart + 3000).trim()
