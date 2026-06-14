@@ -1,7 +1,8 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const dates = [new Date(), new Date()];
+  const dates = [new Date(), new Date(), new Date()];
   dates[1].setDate(dates[0].getDate() - 1);
+  dates[2].setDate(dates[0].getDate() + 1);
   const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   for (const date of dates) {
     try {
