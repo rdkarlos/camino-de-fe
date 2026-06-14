@@ -1,5 +1,20 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
+  authDomain: "camino-de-fe-4d9c2.firebaseapp.com",
+  projectId: "camino-de-fe-4d9c2",
+  storageBucket: "camino-de-fe-4d9c2.firebasestorage.app",
+  messagingSenderId: "1067905510058",
+  appId: "1:1067905510058:web:e68d01c447a0e84c48fed3",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -22,10 +37,7 @@ const translations = {
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
-    gospel: {
-      reading: "Evangelio del día",
-      text: "Cargando el Evangelio de hoy...",
-    },
+    gospel: { reading: "Evangelio del día", text: "Cargando el Evangelio de hoy..." },
     rosary: {
       mysteries: ["Misterios Gozosos", "Misterios Luminosos", "Misterios Dolorosos", "Misterios Gloriosos"],
       today: "Misterios Gloriosos",
@@ -76,10 +88,7 @@ const translations = {
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
-    gospel: {
-      reading: "Gospel of the day",
-      text: "Loading today's Gospel...",
-    },
+    gospel: { reading: "Gospel of the day", text: "Loading today's Gospel..." },
     rosary: {
       mysteries: ["Joyful Mysteries", "Luminous Mysteries", "Sorrowful Mysteries", "Glorious Mysteries"],
       today: "Glorious Mysteries",
@@ -141,6 +150,13 @@ export default function App() {
   const [openPrayer, setOpenPrayer] = useState(null);
   const [cart, setCart] = useState([]);
   const [gospelData, setGospelData] = useState(null);
+  const [user, setUser] = useState(null);
+  const [authMode, setAuthMode] = useState(null); // null | 'login' | 'register'
+  const [authName, setAuthName] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -151,6 +167,52 @@ export default function App() {
       .then(res => { if (res.data.success) setGospelData(res.data); })
       .catch(() => {});
   }, [lang]);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsub();
+  }, []);
+
+  const handleGoogle = async () => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      await signInWithPopup(auth, googleProvider);
+      setAuthMode(null);
+    } catch (e) {
+      setAuthError(e.message);
+    }
+    setAuthLoading(false);
+  };
+
+  const handleRegister = async () => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+      await updateProfile(cred.user, { displayName: authName });
+      setAuthMode(null);
+    } catch (e) {
+      setAuthError(e.message);
+    }
+    setAuthLoading(false);
+  };
+
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      await signInWithEmailAndPassword(auth, authEmail, authPassword);
+      setAuthMode(null);
+    } catch (e) {
+      setAuthError(e.message);
+    }
+    setAuthLoading(false);
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   const t = translations[lang];
 
@@ -163,7 +225,7 @@ export default function App() {
     langBtn: (active) => ({ padding: "4px 10px", borderRadius: 20, border: `1px solid ${active ? GOLD : "rgba(255,255,255,0.3)"}`, background: active ? GOLD : "transparent", color: active ? DEEP : "white", fontSize: 12, cursor: "pointer", fontWeight: active ? "bold" : "normal" }),
     tagline: { fontSize: 12, color: "rgba(255,255,255,0.65)", fontStyle: "italic", marginBottom: 16 },
     nav: { display: "flex", overflowX: "auto", gap: 0, borderTop: "1px solid rgba(255,255,255,0.1)" },
-    navBtn: (active) => ({ padding: "10px 14px", fontSize: 11, color: active ? GOLD : "rgba(255,255,255,0.6)", borderBottom: active ? `2px solid ${GOLD}` : "2px solid transparent", background: "none", border: "none", borderBottom: active ? `2px solid ${GOLD}` : "2px solid transparent", cursor: "pointer", whiteSpace: "nowrap", fontFamily: "Georgia, serif" }),
+    navBtn: (active) => ({ padding: "10px 14px", fontSize: 11, color: active ? GOLD : "rgba(255,255,255,0.6)", borderBottom: active ? `2px solid ${GOLD}` : "2px solid transparent", background: "none", border: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: "Georgia, serif" }),
     body: { padding: 20, paddingBottom: 30 },
     sectionTitle: { fontSize: 20, fontWeight: "bold", color: DEEP, marginBottom: 16, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12 },
     card: { background: "white", borderRadius: 14, padding: 18, marginBottom: 14, boxShadow: "0 2px 12px rgba(27,42,74,0.08)", borderLeft: `3px solid ${GOLD}` },
@@ -177,7 +239,6 @@ export default function App() {
     gospelText: { background: "white", borderRadius: 12, padding: 18, fontSize: 14, lineHeight: 1.8, color: "#333", whiteSpace: "pre-wrap", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" },
     gospelReading: { fontSize: 15, color: GOLD, fontWeight: "bold", marginBottom: 4 },
     gospelSubtitle: { fontSize: 13, color: MUTED, fontStyle: "italic", marginBottom: 12 },
-    reflection: { background: LIGHT_GOLD, borderRadius: 10, padding: 14, fontSize: 13, color: DEEP, lineHeight: 1.6 },
     mysteryBtn: (active) => ({ padding: "8px 14px", borderRadius: 20, border: `1px solid ${active ? GOLD : "#ddd"}`, background: active ? GOLD : "white", color: active ? DEEP : "#555", fontSize: 11, cursor: "pointer", margin: "0 4px 8px 0", fontFamily: "Georgia, serif" }),
     rosaryToday: { fontSize: 13, color: MUTED, marginBottom: 14, fontStyle: "italic" },
     stepList: { listStyle: "none", padding: 0, margin: 0 },
@@ -198,14 +259,65 @@ export default function App() {
     shopTag: { position: "absolute", top: 8, right: 8, background: GOLD, color: DEEP, fontSize: 9, fontWeight: "bold", padding: "2px 7px", borderRadius: 10 },
     shopBtn: { background: DEEP, color: "white", border: "none", padding: "6px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%" },
     cartBadge: { background: "red", color: "white", fontSize: 10, borderRadius: "50%", width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", marginLeft: 4 },
+    authOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
+    authBox: { background: "white", borderRadius: 20, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" },
+    authTitle: { fontSize: 22, fontWeight: "bold", color: DEEP, marginBottom: 6, textAlign: "center" },
+    authSubtitle: { fontSize: 13, color: MUTED, marginBottom: 24, textAlign: "center" },
+    authInput: { width: "100%", padding: "12px 14px", border: `1px solid #ddd`, borderRadius: 10, fontSize: 14, marginBottom: 12, fontFamily: "Georgia, serif", boxSizing: "border-box" },
+    authBtn: { width: "100%", padding: "12px", background: `linear-gradient(135deg, ${GOLD}, #E8C76A)`, color: DEEP, border: "none", borderRadius: 10, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 10 },
+    googleBtn: { width: "100%", padding: "12px", background: "white", color: "#333", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 },
+    authError: { background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#cc0000", marginBottom: 12 },
+    authSwitch: { textAlign: "center", fontSize: 13, color: MUTED, marginTop: 8 },
+    authSwitchLink: { color: GOLD, cursor: "pointer", fontWeight: "bold", textDecoration: "underline" },
+    userBar: { background: LIGHT_GOLD, border: `1px solid ${GOLD}`, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: DEEP, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" },
   };
+
+  const renderAuthModal = () => (
+    <div style={styles.authOverlay} onClick={() => setAuthMode(null)}>
+      <div style={styles.authBox} onClick={e => e.stopPropagation()}>
+        <div style={styles.authTitle}>✝ {authMode === 'register' ? (lang === 'es' ? 'Crear cuenta' : 'Create account') : (lang === 'es' ? 'Iniciar sesión' : 'Sign in')}</div>
+        <div style={styles.authSubtitle}>{lang === 'es' ? 'Únete a nuestra comunidad de fe' : 'Join our faith community'}</div>
+        <button style={styles.googleBtn} onClick={handleGoogle}>
+          <span style={{ fontSize: 18 }}>G</span>
+          {lang === 'es' ? 'Continuar con Google' : 'Continue with Google'}
+        </button>
+        <div style={{ textAlign: "center", color: MUTED, fontSize: 12, marginBottom: 16 }}>— {lang === 'es' ? 'o con email' : 'or with email'} —</div>
+        {authMode === 'register' && (
+          <input style={styles.authInput} placeholder={lang === 'es' ? 'Tu nombre' : 'Your name'} value={authName} onChange={e => setAuthName(e.target.value)} />
+        )}
+        <input style={styles.authInput} placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
+        <input style={styles.authInput} placeholder={lang === 'es' ? 'Contraseña' : 'Password'} type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} />
+        {authError && <div style={styles.authError}>{authError}</div>}
+        <button style={styles.authBtn} onClick={authMode === 'register' ? handleRegister : handleLogin} disabled={authLoading}>
+          {authLoading ? '...' : authMode === 'register' ? (lang === 'es' ? 'Registrarme' : 'Register') : (lang === 'es' ? 'Entrar' : 'Sign in')}
+        </button>
+        <div style={styles.authSwitch}>
+          {authMode === 'register'
+            ? <>{lang === 'es' ? '¿Ya tienes cuenta? ' : 'Already have an account? '}<span style={styles.authSwitchLink} onClick={() => setAuthMode('login')}>{lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span></>
+            : <>{lang === 'es' ? '¿No tienes cuenta? ' : "Don't have an account? "}<span style={styles.authSwitchLink} onClick={() => setAuthMode('register')}>{lang === 'es' ? 'Regístrate' : 'Register'}</span></>
+          }
+        </div>
+      </div>
+    </div>
+  );
 
   const renderHome = () => {
     const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
     return (
       <div>
-        <p style={styles.greeting}>{t.home.greeting}</p>
+        <p style={styles.greeting}>{t.home.greeting}{user ? `, ${user.displayName || user.email}` : ''}!</p>
         <p style={styles.dateText}>{t.home.date}</p>
+        {user ? (
+          <div style={styles.userBar}>
+            <span>👤 {user.displayName || user.email}</span>
+            <span style={{ cursor: "pointer", color: GOLD }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
+          </div>
+        ) : (
+          <div style={{ ...styles.userBar, cursor: "pointer" }} onClick={() => setAuthMode('login')}>
+            <span>👤 {lang === 'es' ? 'Inicia sesión o regístrate' : 'Sign in or register'}</span>
+            <span style={{ color: GOLD }}>→</span>
+          </div>
+        )}
         <div style={styles.reminder}>{t.home.reminder}</div>
         {t.home.cards.map((c, i) => (
           <div key={i} style={styles.card}>
@@ -214,9 +326,7 @@ export default function App() {
             <div style={styles.cardDesc}>
               {i === 0 && gospelData ? (
                 <>
-                  <span style={{ fontWeight: "bold", color: GOLD, display: "block", marginBottom: 6 }}>
-                    {reference}
-                  </span>
+                  <span style={{ fontWeight: "bold", color: GOLD, display: "block", marginBottom: 6 }}>{reference}</span>
                   {body.substring(0, 80) + "..."}
                 </>
               ) : c.desc}
@@ -323,15 +433,17 @@ export default function App() {
 
   return (
     <div style={styles.app}>
+      {authMode && renderAuthModal()}
       <div style={styles.header}>
         <div style={styles.topBar}>
           <div>
             <div style={styles.appName}>✝ {t.appName}</div>
             <div style={styles.tagline}>{t.tagline}</div>
           </div>
-          <div style={styles.langToggle}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button style={styles.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
             <button style={styles.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+            {!user && <button style={{ ...styles.langBtn(false), fontSize: 10 }} onClick={() => setAuthMode('login')}>👤</button>}
           </div>
         </div>
         <div style={styles.nav}>
