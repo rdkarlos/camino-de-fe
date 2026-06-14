@@ -1,5 +1,9 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const day = parseInt(req.query.day) || new Date().getDate();
+  const month = parseInt(req.query.month) || new Date().getMonth() + 1;
+  const year = parseInt(req.query.year) || new Date().getFullYear();
   const SCRAPER_KEY = 'b4dea50274bd1073b1e0b224ebb8a218';
   const targetUrl = `https://www.dominicos.org/predicacion/evangelio-del-dia/hoy/lecturas/`;
   const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(targetUrl)}&render=false`;
@@ -11,6 +15,7 @@ export default async function handler(req, res) {
       .replace(/<style[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, ' ')
+      .replace(/&quot;/g, '"')
       .replace(/&aacute;/g, 'á')
       .replace(/&eacute;/g, 'é')
       .replace(/&iacute;/g, 'í')
@@ -19,8 +24,24 @@ export default async function handler(req, res) {
       .replace(/&ntilde;/g, 'ñ')
       .replace(/\s+/g, ' ')
       .trim();
-    const idx = rawText.indexOf('Evangelio de hoy y lecturas');
-    return res.status(200).json({ success: true, idx, sample: rawText.substring(idx, idx + 3000) });
+
+    // El evangelio viene después de "Suscribirme"
+    const suscribirmeIdx = rawText.indexOf('Suscribirme');
+    const textAfter = suscribirmeIdx > -1 ? rawText.substring(suscribirmeIdx) : rawText;
+    
+    const gospelStart = textAfter.indexOf('Evangelio del día');
+    const gospelEnd = textAfter.indexOf('Reciba el Evangelio');
+    
+    const text = gospelStart > -1
+      ? textAfter.substring(gospelStart, gospelEnd > -1 ? gospelEnd : gospelStart + 3000).trim()
+      : null;
+
+    if (!text || text.length < 100) {
+      return res.status(404).json({ success: false, error: 'No se encontró el evangelio' });
+    }
+
+    const title = `Evangelio del ${day} de ${months[month-1].charAt(0).toUpperCase() + months[month-1].slice(1)} del ${year}`;
+    return res.status(200).json({ success: true, reading: title, reference: title, text: text, reflection: '', url: targetUrl });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
