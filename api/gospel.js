@@ -36,9 +36,9 @@ export default async function handler(req, res) {
       const gospelStart = rawText.indexOf('Evangelio del día');
       const gospelEnd = rawText.indexOf('Reciba el Evangelio');
       const text = gospelStart > -1 ? rawText.substring(gospelStart, gospelEnd > -1 ? gospelEnd : undefined).trim() : rawText;
-      const reflectionStart = rawText.indexOf('Reflexión del Evangelio de hoy');
-      const reflectionEnd = rawText.indexOf('Evangelio de hoy en vídeo');
-      const reflection = reflectionStart > -1 ? rawText.substring(reflectionStart + 30, reflectionEnd > -1 ? reflectionEnd : undefined).trim() : '';
+      const reflectionStart = rawText.indexOf('Evangelio de hoy en vídeo');
+const reflectionEnd = rawText.indexOf('Suscribirme');
+const reflection = reflectionStart > -1 ? rawText.substring(reflectionStart + 25, reflectionEnd > -1 ? reflectionEnd : undefined).trim() : '';
       const title = `Evangelio del ${day} de ${months[date.getMonth()].charAt(0).toUpperCase() + months[date.getMonth()].slice(1)} del ${year}`;
       return res.status(200).json({ success: true, reading: title, reference: title, text: text, reflection: reflection, url: url });
     } catch (error) {
