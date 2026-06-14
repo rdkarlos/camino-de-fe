@@ -49,26 +49,18 @@ const text = gospelStart > -1
   ? rawText.substring(gospelStart, gospelEnd > -1 ? gospelEnd : undefined).trim()
   : rawText;
 
-// Extraer reflexión
-const reflectionStart = rawText.indexOf('Reflexión del Evangelio de hoy');
-const reflectionEnd = rawText.indexOf('Evangelio de hoy en vídeo');
-const reflection = reflectionStart > -1
-  ? rawText.substring(reflectionStart + 'Reflexión del Evangelio de hoy'.length, reflectionEnd > -1 ? reflectionEnd : undefined).trim()
-  : '';
-
       if (text.length < 100) continue;
 
       const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
       const title = `Evangelio del ${day} de ${months[date.getMonth()].charAt(0).toUpperCase() + months[date.getMonth()].slice(1)} del ${year}`;
 
-   return res.status(200).json({ 
-  success: true, 
-  reading: title, 
-  reference: title, 
-  text: gospelText,
-  reflection,
-  url
-});
+      return res.status(200).json({
+        success: true,
+        reading: title,
+        reference: title,
+        text,
+        url
+      });
 
     } catch (error) {
       continue;
