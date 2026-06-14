@@ -1,6 +1,7 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/((?!assets|icons|manifest|sw|favicon).*)", "destination": "/index.html" }
+    { "source": "/((?!assets|api).*)", "destination": "/index.html" }
   ]
 }
