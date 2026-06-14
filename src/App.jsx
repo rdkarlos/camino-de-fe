@@ -1,5 +1,25 @@
 import { useState } from "react";
 
+import axios from "axios";
+import { useEffect } from "react";
+
+const fetchGospel = async (lang) => {
+  try {
+    const response = await axios.get(`/api/gospel?lang=${lang}`);
+    const data = response.data;
+    if (data.success) {
+      return {
+        reading: data.reading,
+        text: data.text,
+        reflection: '',
+      };
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
 const translations = {
   es: {
     appName: "Camino de Fe",
@@ -152,6 +172,14 @@ export default function App() {
   const [openPrayer, setOpenPrayer] = useState(null);
   const [cart, setCart] = useState([]);
 
+  const [gospelData, setGospelData] = useState(null);
+
+useEffect(() => {
+  fetchGospel(lang).then((data) => {
+    if (data) setGospelData(data);
+  });
+}, [lang]);
+
   const t = translations[lang];
 
   const styles = {
@@ -208,20 +236,38 @@ export default function App() {
         <div key={i} style={styles.card}>
           <div style={styles.cardIcon}>{c.icon}</div>
           <div style={styles.cardTitle}>{c.title}</div>
-          <div style={styles.cardDesc}>{c.desc}</div>
+          <div style={styles.cardDesc}>
+  {i === 0 && gospelData 
+  ? <>
+      {'Lectura del santo Evangelio...'}
+      <br/><br/>
+      {gospelData.text.replace('Lectura del santo Evangelio según san Lucas.', '').replace('Lectura del santo Evangelio según san Mateo.', '').replace('Lectura del santo Evangelio según san Marcos.', '').replace('Lectura del santo Evangelio según san Juan.', '').trim().substring(0, 80) + '...'}
+    </>
+  : c.desc}
+</div>
           <button style={styles.btn} onClick={() => setTab(i + 1)}>{c.btn}</button>
         </div>
       ))}
     </div>
   );
 
-  const renderGospel = () => (
-    <div>
-      <p style={styles.gospelReading}>{t.gospel.reading}</p>
-      <div style={styles.gospelText}>{t.gospel.text}</div>
-      <div style={styles.reflection}>{t.gospel.reflection}</div>
+const renderGospel = () => (
+  <div>
+    <p style={styles.gospelReading}>
+      {gospelData ? gospelData.reference : t.gospel.reading}
+    </p>
+    {gospelData?.summary && (
+      <div style={{...styles.reflection, marginBottom: 14, fontStyle: 'italic', fontSize: 15}}>
+        {gospelData.summary}
+      </div>
+    )}
+    <div style={{...styles.gospelText, whiteSpace: 'pre-wrap'}}>
+      {gospelData 
+        ? gospelData.text.replace(/\. /g, '.\n\n').trim()
+        : t.gospel.text}
     </div>
-  );
+  </div>
+);
 
   const [selectedMystery, setSelectedMystery] = useState(0);
   const renderRosary = () => (
