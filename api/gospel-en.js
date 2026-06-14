@@ -8,13 +8,28 @@ export default async function handler(req, res) {
     const response = await fetch(scraperUrl);
     const html = await response.text();
 
-    // Extraer el texto del content-body
-    const bodyMatch = html.match(/<div[^>]*class="content-body"[^>]*>([\s\S]*?)<\/div>/i);
-    if (!bodyMatch) {
-      return res.status(404).json({ success: false, error: 'Content not found' });
+    // Encontrar la sección del Evangelio
+    const gospelIdx = html.indexOf('<h3 class="name">Gospel</h3>');
+    if (gospelIdx === -1) {
+      return res.status(404).json({ success: false, error: 'Gospel section not found' });
     }
 
-    const rawText = bodyMatch[1]
+    const htmlAfterGospel = html.substring(gospelIdx);
+
+    // Extraer referencia
+    const refMatch = htmlAfterGospel.match(/<h3[^>]*class="[^"]*citation[^"]*"[^>]*>([\s\S]*?)<\/h3>/i) ||
+                     htmlAfterGospel.match(/<div[^>]*class="content-header"[^>]*>([\s\S]*?)<\/div>/i);
+    const reference = refMatch
+      ? refMatch[1].replace(/<[^>]*>/g, '').trim()
+      : 'Gospel of the Day';
+
+    // Extraer texto
+    const bodyMatch = htmlAfterGospel.match(/<div[^>]*class="content-body"[^>]*>([\s\S]*?)<\/div>/i);
+    if (!bodyMatch) {
+      return res.status(404).json({ success: false, error: 'Gospel text not found' });
+    }
+
+    const text = bodyMatch[1]
       .replace(/<br\s*\/?>/gi, '\n')
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, ' ')
@@ -24,18 +39,11 @@ export default async function handler(req, res) {
       .replace(/\n{3,}/g, '\n\n')
       .trim();
 
-    if (rawText.length < 50) {
+    if (text.length < 50) {
       return res.status(404).json({ success: false, error: 'Text too short' });
     }
 
-    // Extraer referencia del título
-    const titleMatch = html.match(/<h3[^>]*class="[^"]*content-header[^"]*"[^>]*>([\s\S]*?)<\/h3>/i) ||
-                       html.match(/<div[^>]*class="content-header"[^>]*>([\s\S]*?)<\/div>/i);
-    const reference = titleMatch 
-      ? titleMatch[1].replace(/<[^>]*>/g, '').trim() 
-      : 'Gospel of the Day';
-
-    return res.status(200).json({ success: true, reference, text: rawText, reflection: '' });
+    return res.status(200).json({ success: true, reference, text, reflection: '' });
 
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
