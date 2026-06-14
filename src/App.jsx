@@ -227,6 +227,7 @@ export default function App() {
             Lectura del santo Evangelio
           </p>
           {formatted}
+{"\n\n— Palabra del Señor."}
         </div>
       </div>
     );
