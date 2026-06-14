@@ -6,6 +6,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
   });
 }
+
 const translations = {
   es: {
     appName: "Camino de Fe",
@@ -24,7 +25,6 @@ const translations = {
     gospel: {
       reading: "Evangelio del día",
       text: "Cargando el Evangelio de hoy...",
-      reflection: "",
     },
     rosary: {
       mysteries: ["Misterios Gozosos", "Misterios Luminosos", "Misterios Dolorosos", "Misterios Gloriosos"],
@@ -79,7 +79,6 @@ const translations = {
     gospel: {
       reading: "Gospel of the day",
       text: "Loading today's Gospel...",
-      reflection: "",
     },
     rosary: {
       mysteries: ["Joyful Mysteries", "Luminous Mysteries", "Sorrowful Mysteries", "Glorious Mysteries"],
@@ -125,6 +124,15 @@ const CREAM = "#FAF7F2";
 const LIGHT_GOLD = "#F5EDD6";
 const MUTED = "#6B7A99";
 
+const cleanGospelText = (text) => {
+  if (!text) return { reference: '', body: '' };
+  let clean = text.replace('Evangelio del día', '').trim();
+  const refMatch = clean.match(/Lectura del santo evangelio según san (\w+)\s*([\d,\s\-–—]+)/i);
+  const reference = refMatch ? `${refMatch[1]} ${refMatch[2].trim()}` : '';
+  const body = clean.replace(/Lectura del santo evangelio según san \w+\s*[\d,\s\-–—]+/i, '').trim();
+  return { reference, body };
+};
+
 export default function App() {
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
@@ -143,15 +151,6 @@ export default function App() {
       .then(res => { if (res.data.success) setGospelData(res.data); })
       .catch(() => {});
   }, [lang]);
-
-  const cleanGospelText = (text) => {
-    if (!text) return "";
-    return text
-      .replace("Evangelio del día", "")
-      .replace(/Lectura del santo evangelio según san \w+\s*[\d,.\-]+/gi, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
 
   const t = translations[lang];
 
@@ -176,7 +175,8 @@ export default function App() {
     greeting: { fontSize: 14, color: MUTED, fontStyle: "italic", marginBottom: 6 },
     dateText: { fontSize: 12, color: MUTED, marginBottom: 16, textTransform: "capitalize" },
     gospelText: { background: "white", borderRadius: 12, padding: 18, fontSize: 14, lineHeight: 1.8, color: "#333", whiteSpace: "pre-wrap", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" },
-    gospelReading: { fontSize: 13, color: GOLD, fontWeight: "bold", marginBottom: 10 },
+    gospelReading: { fontSize: 15, color: GOLD, fontWeight: "bold", marginBottom: 4 },
+    gospelSubtitle: { fontSize: 13, color: MUTED, fontStyle: "italic", marginBottom: 12 },
     reflection: { background: LIGHT_GOLD, borderRadius: 10, padding: 14, fontSize: 13, color: DEEP, lineHeight: 1.6 },
     mysteryBtn: (active) => ({ padding: "8px 14px", borderRadius: 20, border: `1px solid ${active ? GOLD : "#ddd"}`, background: active ? GOLD : "white", color: active ? DEEP : "#555", fontSize: 11, cursor: "pointer", margin: "0 4px 8px 0", fontFamily: "Georgia, serif" }),
     rosaryToday: { fontSize: 13, color: MUTED, marginBottom: 14, fontStyle: "italic" },
@@ -200,43 +200,44 @@ export default function App() {
     cartBadge: { background: "red", color: "white", fontSize: 10, borderRadius: "50%", width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", marginLeft: 4 },
   };
 
-  const renderHome = () => (
-    <div>
-      <p style={styles.greeting}>{t.home.greeting}</p>
-      <p style={styles.dateText}>{t.home.date}</p>
-      <div style={styles.reminder}>{t.home.reminder}</div>
-      {t.home.cards.map((c, i) => (
-        <div key={i} style={styles.card}>
-          <div style={styles.cardIcon}>{c.icon}</div>
-          <div style={styles.cardTitle}>{c.title}</div>
-          <div style={styles.cardDesc}>
-            {i === 0 && gospelData ? (
-              <>
-                <span style={{ fontStyle: "italic", color: GOLD, display: "block", marginBottom: 6 }}>
-                  {gospelData.reading}
-                </span>
-                {cleanGospelText(gospelData.text).substring(0, 80) + "..."}
-              </>
-            ) : c.desc}
-          </div>
-          <button style={styles.btn} onClick={() => setTab(i + 1)}>{c.btn}</button>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderGospel = () => {
-    const cleaned = gospelData ? cleanGospelText(gospelData.text) : t.gospel.text;
-    const formatted = cleaned.replace(/\. ([A-ZÁÉÍÓÚ«])/g, ".\n\n$1").trim();
+  const renderHome = () => {
+    const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
     return (
       <div>
-        <p style={styles.gospelReading}>{gospelData ? gospelData.reading : t.gospel.reading}</p>
-        <div style={{ ...styles.gospelText }}>
-          <p style={{ fontStyle: "italic", color: GOLD, marginBottom: 12, fontSize: 13 }}>
-            Lectura del santo Evangelio
-          </p>
+        <p style={styles.greeting}>{t.home.greeting}</p>
+        <p style={styles.dateText}>{t.home.date}</p>
+        <div style={styles.reminder}>{t.home.reminder}</div>
+        {t.home.cards.map((c, i) => (
+          <div key={i} style={styles.card}>
+            <div style={styles.cardIcon}>{c.icon}</div>
+            <div style={styles.cardTitle}>{c.title}</div>
+            <div style={styles.cardDesc}>
+              {i === 0 && gospelData ? (
+                <>
+                  <span style={{ fontWeight: "bold", color: GOLD, display: "block", marginBottom: 6 }}>
+                    {reference}
+                  </span>
+                  {body.substring(0, 80) + "..."}
+                </>
+              ) : c.desc}
+            </div>
+            <button style={styles.btn} onClick={() => setTab(i + 1)}>{c.btn}</button>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderGospel = () => {
+    const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: t.gospel.text };
+    const formatted = body.replace(/\. ([A-ZÁÉÍÓÚ«])/g, ".\n\n$1").trim();
+    return (
+      <div>
+        <p style={styles.gospelReading}>{reference || t.gospel.reading}</p>
+        <p style={styles.gospelSubtitle}>Lectura del santo Evangelio</p>
+        <div style={styles.gospelText}>
           {formatted}
-{"\n\n— Palabra del Señor."}
+          {"\n\n— Palabra del Señor."}
         </div>
       </div>
     );
