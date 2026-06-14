@@ -1,24 +1,5 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { useEffect } from "react";
-
-const fetchGospel = async (lang) => {
-  try {
-    const response = await axios.get(`/api/gospel?lang=${lang}`);
-    const data = response.data;
-    if (data.success) {
-      return {
-        reading: data.reading,
-        text: data.text,
-        reflection: '',
-      };
-    }
-    return null;
-  } catch (error) {
-    return null;
-  }
-};
 
 const translations = {
   es: {
@@ -29,38 +10,27 @@ const translations = {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Evangelio del Día", desc: "Juan 15:12 — «Ámense los unos a los otros como yo los he amado.»", btn: "Leer más" },
+        { icon: "📖", title: "Evangelio del Día", desc: "Cargando el Evangelio de hoy...", btn: "Leer más" },
         { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar" },
         { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar" },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
     gospel: {
-      title: "Evangelio del Día",
-      reading: "Evangelio según San Juan 15, 9-17",
-      text: "En aquel tiempo, Jesús dijo a sus discípulos: «Como el Padre me ha amado, así también yo los he amado a ustedes. Permanezcan en mi amor. Si guardan mis mandamientos, permanecerán en mi amor, igual que yo he guardado los mandamientos de mi Padre y permanezco en su amor.\n\nLes digo estas cosas para que mi alegría esté en ustedes y su alegría sea plena. Este es mi mandamiento: que se amen los unos a los otros como yo los he amado.»",
-      reflection: "💭 Reflexión: Hoy el Señor nos invita a permanecer en su amor no solo con palabras, sino con obras concretas hacia quienes nos rodean.",
+      reading: "Evangelio del día",
+      text: "Cargando el Evangelio de hoy...",
+      reflection: "",
     },
     rosary: {
-      title: "Santo Rosario",
       mysteries: ["Misterios Gozosos", "Misterios Luminosos", "Misterios Dolorosos", "Misterios Gloriosos"],
       today: "Misterios Gloriosos",
       steps: [
-        "✝️ Señal de la Cruz",
-        "📿 Credo Apostólico",
-        "🙏 Padre Nuestro",
-        "💛 3 Ave Marías",
-        "⭐ Gloria",
-        "🌟 1er Misterio: La Resurrección",
-        "🌟 2do Misterio: La Ascensión",
-        "🌟 3er Misterio: Pentecostés",
-        "🌟 4to Misterio: La Asunción",
-        "🌟 5to Misterio: La Coronación",
-        "✝️ Salve Regina",
+        "✝️ Señal de la Cruz","📿 Credo Apostólico","🙏 Padre Nuestro","💛 3 Ave Marías","⭐ Gloria",
+        "🌟 1er Misterio: La Resurrección","🌟 2do Misterio: La Ascensión","🌟 3er Misterio: Pentecostés",
+        "🌟 4to Misterio: La Asunción","🌟 5to Misterio: La Coronación","✝️ Salve Regina",
       ],
     },
     prayers: {
-      title: "Oraciones",
       list: [
         { name: "Padre Nuestro", text: "Padre nuestro, que estás en el cielo, santificado sea tu Nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo..." },
         { name: "Ave María", text: "Dios te salve, María, llena eres de gracia; el Señor es contigo. Bendita tú eres entre todas las mujeres, y bendito es el fruto de tu vientre, Jesús..." },
@@ -69,7 +39,6 @@ const translations = {
       ],
     },
     reflections: {
-      title: "Reflexiones",
       daily: [
         { quote: "«La oración es el oxígeno del alma.»", author: "San Pío de Pietrelcina" },
         { quote: "«No tengas miedo de amar a Dios. Él siempre te amó primero.»", author: "San Juan Pablo II" },
@@ -77,7 +46,6 @@ const translations = {
       ],
     },
     shop: {
-      title: "Tienda",
       subtitle: "Artículos para acompañar tu fe",
       items: [
         { name: "Rosario de madera", price: "$12.99", icon: "📿", tag: "Más vendido" },
@@ -97,38 +65,27 @@ const translations = {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Gospel of the Day", desc: "John 15:12 — «Love one another as I have loved you.»", btn: "Read more" },
+        { icon: "📖", title: "Gospel of the Day", desc: "Loading today's Gospel...", btn: "Read more" },
         { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin" },
         { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray" },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
     gospel: {
-      title: "Gospel of the Day",
-      reading: "Gospel of John 15, 9-17",
-      text: "At that time, Jesus said to his disciples: «As the Father has loved me, so I have loved you. Remain in my love. If you keep my commandments, you will remain in my love, just as I have kept my Father's commandments and remain in his love.\n\nI have told you these things so that my joy may be in you and your joy may be complete. This is my commandment: love one another as I have loved you.»",
-      reflection: "💭 Reflection: Today the Lord invites us to remain in his love not only with words, but with concrete actions toward those around us.",
+      reading: "Gospel of the day",
+      text: "Loading today's Gospel...",
+      reflection: "",
     },
     rosary: {
-      title: "Holy Rosary",
       mysteries: ["Joyful Mysteries", "Luminous Mysteries", "Sorrowful Mysteries", "Glorious Mysteries"],
       today: "Glorious Mysteries",
       steps: [
-        "✝️ Sign of the Cross",
-        "📿 Apostles' Creed",
-        "🙏 Our Father",
-        "💛 3 Hail Marys",
-        "⭐ Glory Be",
-        "🌟 1st Mystery: The Resurrection",
-        "🌟 2nd Mystery: The Ascension",
-        "🌟 3rd Mystery: Pentecost",
-        "🌟 4th Mystery: The Assumption",
-        "🌟 5th Mystery: The Coronation",
-        "✝️ Hail Holy Queen",
+        "✝️ Sign of the Cross","📿 Apostles' Creed","🙏 Our Father","💛 3 Hail Marys","⭐ Glory Be",
+        "🌟 1st Mystery: The Resurrection","🌟 2nd Mystery: The Ascension","🌟 3rd Mystery: Pentecost",
+        "🌟 4th Mystery: The Assumption","🌟 5th Mystery: The Coronation","✝️ Hail Holy Queen",
       ],
     },
     prayers: {
-      title: "Prayers",
       list: [
         { name: "Our Father", text: "Our Father, who art in heaven, hallowed be thy name; thy kingdom come; thy will be done on earth as it is in heaven..." },
         { name: "Hail Mary", text: "Hail Mary, full of grace, the Lord is with thee. Blessed art thou among women, and blessed is the fruit of thy womb, Jesus..." },
@@ -137,7 +94,6 @@ const translations = {
       ],
     },
     reflections: {
-      title: "Reflections",
       daily: [
         { quote: "«Prayer is the oxygen of the soul.»", author: "St. Pio of Pietrelcina" },
         { quote: "«Do not be afraid to love God. He always loved you first.»", author: "St. John Paul II" },
@@ -145,7 +101,6 @@ const translations = {
       ],
     },
     shop: {
-      title: "Shop",
       subtitle: "Items to accompany your faith",
       items: [
         { name: "Wooden Rosary", price: "$12.99", icon: "📿", tag: "Best Seller" },
@@ -169,16 +124,25 @@ export default function App() {
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
   const [rosaryStep, setRosaryStep] = useState(0);
+  const [selectedMystery, setSelectedMystery] = useState(0);
   const [openPrayer, setOpenPrayer] = useState(null);
   const [cart, setCart] = useState([]);
-
   const [gospelData, setGospelData] = useState(null);
 
-useEffect(() => {
-  fetchGospel(lang).then((data) => {
-    if (data) setGospelData(data);
-  });
-}, [lang]);
+  useEffect(() => {
+    axios.get(`/api/gospel?lang=${lang}`)
+      .then(res => { if (res.data.success) setGospelData(res.data); })
+      .catch(() => {});
+  }, [lang]);
+
+  const cleanGospelText = (text) => {
+    if (!text) return "";
+    return text
+      .replace("Evangelio del día", "")
+      .replace(/Lectura del santo evangelio según san \w+\s*[\d,.\-]+/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
 
   const t = translations[lang];
 
@@ -197,12 +161,12 @@ useEffect(() => {
     card: { background: "white", borderRadius: 14, padding: 18, marginBottom: 14, boxShadow: "0 2px 12px rgba(27,42,74,0.08)", borderLeft: `3px solid ${GOLD}` },
     cardIcon: { fontSize: 28, marginBottom: 8 },
     cardTitle: { fontWeight: "bold", color: DEEP, fontSize: 15, marginBottom: 6 },
-    cardDesc: { color: "#555", fontSize: 13, lineHeight: 1.5, marginBottom: 12 },
+    cardDesc: { color: "#555", fontSize: 13, lineHeight: 1.6, marginBottom: 12 },
     btn: { background: `linear-gradient(135deg, ${GOLD}, #E8C76A)`, color: DEEP, border: "none", padding: "8px 18px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" },
     reminder: { background: LIGHT_GOLD, border: `1px solid ${GOLD}`, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: DEEP, marginBottom: 16 },
     greeting: { fontSize: 14, color: MUTED, fontStyle: "italic", marginBottom: 6 },
     dateText: { fontSize: 12, color: MUTED, marginBottom: 16, textTransform: "capitalize" },
-    gospelText: { background: "white", borderRadius: 12, padding: 18, fontSize: 14, lineHeight: 1.8, color: "#333", whiteSpace: "pre-line", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" },
+    gospelText: { background: "white", borderRadius: 12, padding: 18, fontSize: 14, lineHeight: 1.8, color: "#333", whiteSpace: "pre-wrap", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" },
     gospelReading: { fontSize: 13, color: GOLD, fontWeight: "bold", marginBottom: 10 },
     reflection: { background: LIGHT_GOLD, borderRadius: 10, padding: 14, fontSize: 13, color: DEEP, lineHeight: 1.6 },
     mysteryBtn: (active) => ({ padding: "8px 14px", borderRadius: 20, border: `1px solid ${active ? GOLD : "#ddd"}`, background: active ? GOLD : "white", color: active ? DEEP : "#555", fontSize: 11, cursor: "pointer", margin: "0 4px 8px 0", fontFamily: "Georgia, serif" }),
@@ -237,39 +201,37 @@ useEffect(() => {
           <div style={styles.cardIcon}>{c.icon}</div>
           <div style={styles.cardTitle}>{c.title}</div>
           <div style={styles.cardDesc}>
-  {i === 0 && gospelData 
-  ? <>
-      {'Lectura del santo Evangelio...'}
-      <br/><br/>
-      {gospelData.text.replace('Lectura del santo Evangelio según san Lucas.', '').replace('Lectura del santo Evangelio según san Mateo.', '').replace('Lectura del santo Evangelio según san Marcos.', '').replace('Lectura del santo Evangelio según san Juan.', '').trim().substring(0, 80) + '...'}
-    </>
-  : c.desc}
-</div>
+            {i === 0 && gospelData ? (
+              <>
+                <span style={{ fontStyle: "italic", color: GOLD, display: "block", marginBottom: 6 }}>
+                  {gospelData.reading}
+                </span>
+                {cleanGospelText(gospelData.text).substring(0, 80) + "..."}
+              </>
+            ) : c.desc}
+          </div>
           <button style={styles.btn} onClick={() => setTab(i + 1)}>{c.btn}</button>
         </div>
       ))}
     </div>
   );
 
-const renderGospel = () => (
-  <div>
-    <p style={styles.gospelReading}>
-      {gospelData ? gospelData.reference : t.gospel.reading}
-    </p>
-    {gospelData?.summary && (
-      <div style={{...styles.reflection, marginBottom: 14, fontStyle: 'italic', fontSize: 15}}>
-        {gospelData.summary}
+  const renderGospel = () => {
+    const cleaned = gospelData ? cleanGospelText(gospelData.text) : t.gospel.text;
+    const formatted = cleaned.replace(/\. ([A-ZÁÉÍÓÚ«])/g, ".\n\n$1").trim();
+    return (
+      <div>
+        <p style={styles.gospelReading}>{gospelData ? gospelData.reading : t.gospel.reading}</p>
+        <div style={{ ...styles.gospelText }}>
+          <p style={{ fontStyle: "italic", color: GOLD, marginBottom: 12, fontSize: 13 }}>
+            Lectura del santo Evangelio
+          </p>
+          {formatted}
+        </div>
       </div>
-    )}
-    <div style={{...styles.gospelText, whiteSpace: 'pre-wrap'}}>
-      {gospelData 
-        ? gospelData.text.replace(/\. /g, '.\n\n').trim()
-        : t.gospel.text}
-    </div>
-  </div>
-);
+    );
+  };
 
-  const [selectedMystery, setSelectedMystery] = useState(0);
   const renderRosary = () => (
     <div>
       <p style={styles.rosaryToday}>✨ {t.rosary.today}</p>
@@ -339,7 +301,7 @@ const renderGospel = () => (
           <span style={{ fontWeight: "bold", color: DEEP }}>🛒 {lang === "es" ? "Carrito" : "Cart"}</span>
           <span style={styles.cartBadge}>{cart.length}</span>
           <p style={{ fontSize: 12, color: MUTED, margin: "6px 0 0" }}>
-            {lang === "es" ? `Total: $${cart.reduce((a, b) => a + parseFloat(b.price.replace("$", "")), 0).toFixed(2)}` : `Total: $${cart.reduce((a, b) => a + parseFloat(b.price.replace("$", "")), 0).toFixed(2)}`}
+            Total: ${cart.reduce((a, b) => a + parseFloat(b.price.replace("$", "")), 0).toFixed(2)}
           </p>
         </div>
       )}
