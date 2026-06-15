@@ -136,9 +136,9 @@ const MUTED = "#6B7A99";
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
-  const refMatch = clean.match(/Lectura del santo evangelio según san (\w+)\s*([\d,\s\-–—]+)/i);
-  const reference = refMatch ? `${refMatch[1]} ${refMatch[2].trim()}` : '';
-  const body = clean.replace(/Lectura del santo evangelio según san \w+\s*[\d,\s\-–—]+/i, '').trim();
+  const refMatch = clean.match(/Lectura del santo Evangelio según san ([\w\s]+?)\s*([\d:,\s\-–—]+)\n/i);
+  const reference = refMatch ? `${refMatch[1].trim()} ${refMatch[2].trim()}` : '';
+  const body = clean.replace(/Lectura del santo Evangelio según san [\w\s]+?\s*[\d:,\s\-–—]+\n/i, '').trim();
   return { reference, body };
 };
 
