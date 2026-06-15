@@ -4,63 +4,100 @@ export default async function handler(req, res) {
   const day = parseInt(req.query.day) || new Date().getDate();
   const month = parseInt(req.query.month) || new Date().getMonth() + 1;
   const year = parseInt(req.query.year) || new Date().getFullYear();
+  const lang = req.query.lang || 'es';
+
   const SCRAPER_KEY = 'b4dea50274bd1073b1e0b224ebb8a218';
-  const targetUrl = `https://www.dominicos.org/predicacion/evangelio-del-dia/hoy/lecturas/`;
-  const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(targetUrl)}&render=false`;
+  const API_KEY = '8z-olVvbUPzjg2OtXjSks';
+  const BIBLE_ID = 'e3f420b9665abaeb-01'; // La Biblia de las Américas
+
   try {
-    const response = await fetch(scraperUrl);
-    const html = await response.text();
-    const rawText = html
-      .replace(/<script[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
+    // Paso 1: Obtener la referencia del evangelio de hoy desde USCCB
+    const usccbUrl = 'https://bible.usccb.org/bible/readings';
+    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(usccbUrl)}&render=false`;
+    
+    const usccbResponse = await fetch(scraperUrl);
+    const html = await usccbResponse.text();
+
+    // Encontrar sección del Evangelio
+    const gospelIdx = html.indexOf('<h3 class="name">Gospel</h3>');
+    if (gospelIdx === -1) throw new Error('Gospel section not found');
+    
+    const htmlAfter = html.substring(gospelIdx);
+
+    // Extraer referencia bíblica
+    const refMatch = htmlAfter.match(/class="citation"[^>]*>([\s\S]*?)<\//) ||
+                     htmlAfter.match(/<h3[^>]*>([\s\S]*?)<\/h3>/);
+    const rawRef = refMatch ? refMatch[1].replace(/<[^>]*>/g, '').trim() : null;
+
+    if (!rawRef) throw new Error('Reference not found');
+
+    // Extraer texto en inglés directamente
+    const bodyMatch = htmlAfter.match(/<div[^>]*class="content-body"[^>]*>([\s\S]*?)<\/div>/i);
+    const enText = bodyMatch ? bodyMatch[1]
+      .replace(/<br\s*\/?>/gi, '\n')
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, ' ')
       .replace(/&quot;/g, '"')
-      .replace(/&aacute;/g, 'á')
-      .replace(/&eacute;/g, 'é')
-      .replace(/&iacute;/g, 'í')
-      .replace(/&oacute;/g, 'ó')
-      .replace(/&uacute;/g, 'ú')
-      .replace(/&ntilde;/g, 'ñ')
-      .replace(/\s+/g, ' ')
-      .trim();
+      .replace(/\s+\n/g, '\n')
+      .trim() : null;
 
-    // Buscar directamente "Lectura del santo evangelio" que es el inicio real
-    const gospelMarkers = [
-      'Lectura del santo evangelio según san ',
-      'Lectura del santo Evangelio según san ',
-    ];
+    if (lang === 'en') {
+      return res.status(200).json({
+        success: true,
+        reading: `Gospel - ${rawRef}`,
+        reference: rawRef,
+        text: enText || 'Gospel text not available',
+        reflection: '',
+      });
+    }
+
+    // Paso 2: Para español, convertir referencia a formato API.Bible
+    // Ejemplos: "MT 9:36-10:8" → "MAT.9.36-MAT.10.8"
+    const bookMap = {
+      'MT': 'MAT', 'MK': 'MRK', 'LK': 'LUK', 'JN': 'JHN',
+      'Matthew': 'MAT', 'Mark': 'MRK', 'Luke': 'LUK', 'John': 'JHN',
+      'Mt': 'MAT', 'Mk': 'MRK', 'Lk': 'LUK', 'Jn': 'JHN',
+    };
+
+    // Parsear referencia como "Matthew 9:36—10:8" o "MT 9:36-10:8"
+    const refParsed = rawRef.match(/(\w+)\s+(\d+):(\d+)[—\-–]+(\d+)?:?(\d+)?/);
     
-    let gospelStart = -1;
-    for (const marker of gospelMarkers) {
-      const idx = rawText.lastIndexOf(marker);
-      if (idx > -1) {
-        gospelStart = idx;
-        break;
-      }
+    let passageId = null;
+    if (refParsed) {
+      const book = bookMap[refParsed[1]] || 'MAT';
+      const ch1 = refParsed[2];
+      const v1 = refParsed[3];
+      const ch2 = refParsed[4] || ch1;
+      const v2 = refParsed[5] || v1;
+      passageId = `${book}.${ch1}.${v1}-${book}.${ch2}.${v2}`;
     }
 
-    if (gospelStart === -1) {
-      return res.status(404).json({ success: false, error: 'No se encontró el evangelio' });
-    }
+    if (!passageId) throw new Error('Could not parse reference: ' + rawRef);
 
-    const endMarkers = ['Descargar en PDF', 'Podcast', 'Reciba el Evangelio', 'Los dominicos'];
-    let gospelEnd = -1;
-    for (const marker of endMarkers) {
-      const idx = rawText.indexOf(marker, gospelStart);
-      if (idx > -1 && (gospelEnd === -1 || idx < gospelEnd)) {
-        gospelEnd = idx;
-      }
-    }
+    // Paso 3: Obtener texto en español de API.Bible
+    const bibleUrl = `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/passages/${passageId}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`;
+    
+    const bibleResponse = await fetch(bibleUrl, {
+      headers: { 'api-key': API_KEY, 'Accept': 'application/json' }
+    });
 
-    const text = rawText.substring(gospelStart, gospelEnd > -1 ? gospelEnd : gospelStart + 3000).trim();
+    if (!bibleResponse.ok) throw new Error('API.Bible error: ' + bibleResponse.status);
 
-    if (!text || text.length < 100) {
-      return res.status(404).json({ success: false, error: 'Texto muy corto' });
-    }
+    const bibleData = await bibleResponse.json();
+    const esText = bibleData?.data?.content?.replace(/\s+/g, ' ').trim();
+    const esRef = bibleData?.data?.reference || rawRef;
+
+    if (!esText) throw new Error('Spanish text not found');
 
     const title = `Evangelio del ${day} de ${months[month-1].charAt(0).toUpperCase() + months[month-1].slice(1)} del ${year}`;
-    return res.status(200).json({ success: true, reading: title, reference: title, text: 'Evangelio del día' + text, reflection: '', url: targetUrl });
+    return res.status(200).json({
+      success: true,
+      reading: title,
+      reference: esRef,
+      text: `Evangelio del día\nLectura del santo Evangelio según san ${esRef}\n\n${esText}`,
+      reflection: '',
+    });
+
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
