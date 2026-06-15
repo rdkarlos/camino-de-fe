@@ -326,7 +326,9 @@ useEffect(() => {
             <div style={styles.cardDesc}>
               {i === 0 && gospelData ? (
                 <>
-                  <span style={{ fontWeight: "bold", color: GOLD, display: "block", marginBottom: 6 }}>{reference}</span>
+                  <span style={{ fontWeight: "bold", color: GOLD, display: "block", marginBottom: 6 }}>
+  {lang === 'en' ? gospelData?.reference : reference}
+</span>
                   {body.substring(0, 80) + "..."}
                 </>
               ) : c.desc}
@@ -343,7 +345,9 @@ useEffect(() => {
     const formatted = body.replace(/\. ([A-ZÁÉÍÓÚ«])/g, ".\n\n$1").trim();
     return (
       <div>
-        <p style={styles.gospelReading}>{reference || t.gospel.reading}</p>
+        <p style={styles.gospelReading}>
+  {lang === 'en' ? (gospelData?.reference || t.gospel.reading) : (reference || t.gospel.reading)}
+</p>
         <p style={styles.gospelSubtitle}>Lectura del santo Evangelio</p>
         <div style={styles.gospelText}>
           {formatted}
