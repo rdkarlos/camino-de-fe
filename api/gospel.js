@@ -25,8 +25,11 @@ export default async function handler(req, res) {
       .replace(/\s+/g, ' ')
       .trim();
 
-    const suscribirmeIdx = rawText.indexOf('Suscribirme');
-    const textAfter = suscribirmeIdx > -1 ? rawText.substring(suscribirmeIdx) : rawText;
+    // Buscar el segundo "Suscribirme" donde termina el formulario
+const firstIdx = rawText.indexOf('Suscribirme');
+const secondIdx = rawText.indexOf('Suscribirme', firstIdx + 1);
+const suscribirmeIdx = secondIdx > -1 ? secondIdx : firstIdx;
+const textAfter = suscribirmeIdx > -1 ? rawText.substring(suscribirmeIdx) : rawText;
     
     const gospelStart = textAfter.indexOf('Evangelio del día');
     
