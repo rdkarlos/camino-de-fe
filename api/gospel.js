@@ -25,34 +25,42 @@ export default async function handler(req, res) {
       .replace(/\s+/g, ' ')
       .trim();
 
-    // Buscar el segundo "Suscribirme" donde termina el formulario
-const firstIdx = rawText.indexOf('Suscribirme');
-const secondIdx = rawText.indexOf('Suscribirme', firstIdx + 1);
-const suscribirmeIdx = secondIdx > -1 ? secondIdx : firstIdx;
-const textAfter = suscribirmeIdx > -1 ? rawText.substring(suscribirmeIdx) : rawText;
+    // Buscar directamente "Lectura del santo evangelio" que es el inicio real
+    const gospelMarkers = [
+      'Lectura del santo evangelio según san ',
+      'Lectura del santo Evangelio según san ',
+    ];
     
-    const gospelStart = textAfter.indexOf('Evangelio del día');
-    
-    // Cortar en el primer marcador de fin
-    const endMarkers = ['Descargar en PDF', 'Podcast', 'Las lecturas siguen', 'Reciba el Evangelio'];
+    let gospelStart = -1;
+    for (const marker of gospelMarkers) {
+      const idx = rawText.lastIndexOf(marker);
+      if (idx > -1) {
+        gospelStart = idx;
+        break;
+      }
+    }
+
+    if (gospelStart === -1) {
+      return res.status(404).json({ success: false, error: 'No se encontró el evangelio' });
+    }
+
+    const endMarkers = ['Descargar en PDF', 'Podcast', 'Reciba el Evangelio', 'Los dominicos'];
     let gospelEnd = -1;
     for (const marker of endMarkers) {
-      const idx = textAfter.indexOf(marker, gospelStart);
+      const idx = rawText.indexOf(marker, gospelStart);
       if (idx > -1 && (gospelEnd === -1 || idx < gospelEnd)) {
         gospelEnd = idx;
       }
     }
-    
-    const text = gospelStart > -1
-      ? textAfter.substring(gospelStart, gospelEnd > -1 ? gospelEnd : gospelStart + 3000).trim()
-      : null;
+
+    const text = rawText.substring(gospelStart, gospelEnd > -1 ? gospelEnd : gospelStart + 3000).trim();
 
     if (!text || text.length < 100) {
-      return res.status(404).json({ success: false, error: 'No se encontró el evangelio' });
+      return res.status(404).json({ success: false, error: 'Texto muy corto' });
     }
 
     const title = `Evangelio del ${day} de ${months[month-1].charAt(0).toUpperCase() + months[month-1].slice(1)} del ${year}`;
-    return res.status(200).json({ success: true, reading: title, reference: title, text: text, reflection: '', url: targetUrl });
+    return res.status(200).json({ success: true, reading: title, reference: title, text: 'Evangelio del día' + text, reflection: '', url: targetUrl });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
