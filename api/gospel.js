@@ -49,15 +49,19 @@ export default async function handler(req, res) {
       'Mt': 'MAT', 'Mk': 'MRK', 'Lk': 'LUK', 'Jn': 'JHN',
     };
 
-    const refParsed = rawRef.match(/(\w+)\s+(\d+):(\d+)[—\-–]+(\d+)?:?(\d+)?/);
-    if (!refParsed) throw new Error('Could not parse: ' + rawRef);
+   const refParsed = rawRef.match(/(\w+)\s+(\d+):(\d+)[—\-–]+(\d+)?:?(\d+)?/);
+if (!refParsed) throw new Error('Could not parse: ' + rawRef);
 
-    const book = bookMap[refParsed[1]] || 'MAT';
-    const ch1 = refParsed[2];
-    const v1 = refParsed[3];
-    const ch2 = refParsed[4] || ch1;
-    const v2 = refParsed[5] || v1;
-    const passageId = `${book}.${ch1}.${v1}-${book}.${ch2}.${v2}`;
+const book = bookMap[refParsed[1]] || 'MAT';
+const ch1 = refParsed[2];
+const v1 = refParsed[3];
+
+// Si hay capítulo 2, es rango entre capítulos (ej: 9:36-10:8)
+// Si no hay capítulo 2, es rango dentro del mismo capítulo (ej: 5:38-42)
+const hasChapter2 = refParsed[4] && refParsed[5];
+const ch2 = hasChapter2 ? refParsed[4] : ch1;
+const v2 = hasChapter2 ? refParsed[5] : refParsed[4] || v1;
+const passageId = `${book}.${ch1}.${v1}-${book}.${ch2}.${v2}`;
 
     const bibleUrl = `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/passages/${passageId}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`;
     const bibleResponse = await fetch(bibleUrl, {
