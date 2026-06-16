@@ -210,20 +210,20 @@ export default function App() {
       <div style={{ background: WHITE, borderRadius: 24, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 20px 60px rgba(74,15,40,0.3)" }} onClick={e => e.stopPropagation()}>
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>✝️</div>
-          <div style={{ fontSize: 22, fontWeight: "bold", color: WINE, fontFamily: "Georgia, serif" }}>
+          <div style={{ fontSize: 22, fontWeight: "bold", color: WINE, fontFamily: "'Cinzel', serif" }}>
             {authMode === 'register' ? (lang === 'es' ? 'Crear cuenta' : 'Create account') : (lang === 'es' ? 'Iniciar sesión' : 'Sign in')}
           </div>
           <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>{lang === 'es' ? 'Únete a nuestra comunidad de fe' : 'Join our faith community'}</div>
         </div>
-        <button onClick={handleGoogle} style={{ width: "100%", padding: "12px", background: CREAM, color: WINE_DARK, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "Georgia, serif" }}>
+        <button onClick={handleGoogle} style={{ width: "100%", padding: "12px", background: CREAM, color: WINE_DARK, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Cinzel', serif" }}>
           <span style={{ fontSize: 18 }}>G</span> {lang === 'es' ? 'Continuar con Google' : 'Continue with Google'}
         </button>
         <div style={{ textAlign: "center", color: MUTED, fontSize: 12, marginBottom: 16 }}>— {lang === 'es' ? 'o con email' : 'or with email'} —</div>
-        {authMode === 'register' && <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "Georgia, serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Tu nombre' : 'Your name'} value={authName} onChange={e => setAuthName(e.target.value)} />}
-        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "Georgia, serif", boxSizing: "border-box", background: CREAM }} placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
-        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "Georgia, serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Contraseña' : 'Password'} type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} />
+        {authMode === 'register' && <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Tu nombre' : 'Your name'} value={authName} onChange={e => setAuthName(e.target.value)} />}
+        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
+        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Contraseña' : 'Password'} type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} />
         {authError && <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#cc0000", marginBottom: 12 }}>{authError}</div>}
-        <button onClick={authMode === 'register' ? handleRegister : handleLogin} disabled={authLoading} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 12, fontFamily: "Georgia, serif" }}>
+        <button onClick={authMode === 'register' ? handleRegister : handleLogin} disabled={authLoading} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
           {authLoading ? '...' : authMode === 'register' ? (lang === 'es' ? 'Registrarme' : 'Register') : (lang === 'es' ? 'Entrar' : 'Sign in')}
         </button>
         <div style={{ textAlign: "center", fontSize: 13, color: MUTED }}>
@@ -268,7 +268,7 @@ export default function App() {
           <div key={i} style={{ background: c.gradient, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(74,15,40,0.2)" }}>
             <div style={{ position: "absolute", bottom: -15, right: -10, fontSize: 70, opacity: 0.12 }}>{c.icon}</div>
             <div style={{ fontSize: 32, marginBottom: 10 }}>{c.icon}</div>
-            <div style={{ fontWeight: "bold", fontSize: 17, marginBottom: 8, fontFamily: "Georgia, serif" }}>{c.title}</div>
+            <div style={{ fontWeight: "bold", fontSize: 17, marginBottom: 8, fontFamily: "'Cinzel', serif" }}>{c.title}</div>
             <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", marginBottom: 16 }}>
               {i === 0 && gospelData ? (
                 <>
@@ -297,7 +297,7 @@ export default function App() {
           <div style={{ fontSize: 13, color: GOLD_LIGHT, fontStyle: "italic", marginBottom: 4 }}>
             {lang === 'es' ? 'Lectura del santo Evangelio' : 'Reading of the Holy Gospel'}
           </div>
-          <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "Georgia, serif" }}>
+          <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>
             {lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading)}
           </div>
         </div>
@@ -316,11 +316,11 @@ export default function App() {
     <div>
       <div style={{ background: `linear-gradient(135deg, #4A1259, #7B2D8B)`, borderRadius: 16, padding: "16px 20px", marginBottom: 16, color: WHITE }}>
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>✨ {lang === 'es' ? 'Hoy rezamos los' : "Today's mysteries"}</div>
-        <div style={{ fontSize: 17, fontWeight: "bold", fontFamily: "Georgia, serif" }}>{t.rosary.today}</div>
+        <div style={{ fontSize: 17, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{t.rosary.today}</div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {t.rosary.mysteries.map((m, i) => (
-          <button key={i} onClick={() => setSelectedMystery(i)} style={{ padding: "8px 14px", borderRadius: 20, border: `1px solid ${selectedMystery === i ? WINE : CREAM_DARK}`, background: selectedMystery === i ? WINE : WHITE, color: selectedMystery === i ? WHITE : MUTED, fontSize: 11, cursor: "pointer", fontFamily: "Georgia, serif" }}>{m}</button>
+          <button key={i} onClick={() => setSelectedMystery(i)} style={{ padding: "8px 14px", borderRadius: 20, border: `1px solid ${selectedMystery === i ? WINE : CREAM_DARK}`, background: selectedMystery === i ? WINE : WHITE, color: selectedMystery === i ? WHITE : MUTED, fontSize: 11, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{m}</button>
         ))}
       </div>
       <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -332,8 +332,8 @@ export default function App() {
         ))}
       </ul>
       <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <button onClick={() => setRosaryStep(Math.max(0, rosaryStep - 1))} style={{ flex: 1, padding: "10px", background: CREAM_DARK, color: WINE_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif" }}>← {lang === 'es' ? 'Anterior' : 'Previous'}</button>
-        <button onClick={() => setRosaryStep(Math.min(t.rosary.steps.length - 1, rosaryStep + 1))} style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif" }}>{lang === 'es' ? 'Siguiente' : 'Next'} →</button>
+        <button onClick={() => setRosaryStep(Math.max(0, rosaryStep - 1))} style={{ flex: 1, padding: "10px", background: CREAM_DARK, color: WINE_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>← {lang === 'es' ? 'Anterior' : 'Previous'}</button>
+        <button onClick={() => setRosaryStep(Math.min(t.rosary.steps.length - 1, rosaryStep + 1))} style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Siguiente' : 'Next'} →</button>
       </div>
     </div>
   );
@@ -343,7 +343,7 @@ export default function App() {
       {t.prayers.list.map((p, i) => (
         <div key={i} style={{ background: WHITE, borderRadius: 16, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 12px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
           <div onClick={() => setOpenPrayer(openPrayer === i ? null : i)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer", background: openPrayer === i ? `${WINE}08` : WHITE }}>
-            <span style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 15, fontFamily: "Georgia, serif" }}>🙏 {p.name}</span>
+            <span style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif" }}>🙏 {p.name}</span>
             <span style={{ color: WINE, fontSize: 20, fontWeight: "bold" }}>{openPrayer === i ? "−" : "+"}</span>
           </div>
           {openPrayer === i && <div style={{ padding: "0 18px 16px", fontSize: 14, color: "#3A2A1E", lineHeight: 1.8, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14 }}>{p.text}</div>}
@@ -358,7 +358,7 @@ export default function App() {
         <div key={i} style={{ background: `linear-gradient(135deg, ${WINE_DARK}, #6B1F3E, #7C4A1E)`, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08 }}>✝</div>
           <div style={{ fontSize: 13, color: GOLD, marginBottom: 4 }}>✨ {lang === 'es' ? 'Reflexión del día' : 'Daily reflection'}</div>
-          <div style={{ fontSize: 16, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14, fontFamily: "Georgia, serif" }}>{r.quote}</div>
+          <div style={{ fontSize: 16, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14, fontFamily: "'Cinzel', serif" }}>{r.quote}</div>
           <div style={{ fontSize: 12, color: GOLD_LIGHT, fontWeight: "bold" }}>— {r.author}</div>
         </div>
       ))}
@@ -373,9 +373,9 @@ export default function App() {
           <div key={i} style={{ background: WHITE, borderRadius: 16, padding: 16, boxShadow: "0 4px 16px rgba(74,15,40,0.08)", position: "relative", textAlign: "center", border: `1px solid ${CREAM_DARK}` }}>
             {item.tag && <span style={{ position: "absolute", top: 8, right: 8, background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: WINE_DARK, fontSize: 9, fontWeight: "bold", padding: "3px 8px", borderRadius: 10 }}>{item.tag}</span>}
             <div style={{ fontSize: 36, marginBottom: 8 }}>{item.icon}</div>
-            <div style={{ fontSize: 13, fontWeight: "bold", color: WINE_DARK, marginBottom: 4, fontFamily: "Georgia, serif" }}>{item.name}</div>
+            <div style={{ fontSize: 13, fontWeight: "bold", color: WINE_DARK, marginBottom: 4, fontFamily: "'Cinzel', serif" }}>{item.name}</div>
             <div style={{ fontSize: 15, color: WINE, fontWeight: "bold", marginBottom: 10 }}>{item.price}</div>
-            <button onClick={() => setCart([...cart, item])} style={{ background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", padding: "8px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%", fontFamily: "Georgia, serif" }}>
+            <button onClick={() => setCart([...cart, item])} style={{ background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", padding: "8px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%", fontFamily: "'Cinzel', serif" }}>
               {lang === "es" ? "Añadir" : "Add to cart"}
             </button>
           </div>
@@ -403,8 +403,8 @@ export default function App() {
       <div style={{ background: `linear-gradient(135deg, ${WINE_DARK} 0%, ${WINE} 100%)`, padding: "20px 20px 0", color: WHITE }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: "bold", letterSpacing: 1, color: GOLD, fontFamily: "Georgia, serif" }}>✝ {t.appName}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontStyle: "italic" }}>{t.tagline}</div>
+            <div style={{ fontSize: 22, fontWeight: "700", letterSpacing: 2, color: GOLD, fontFamily: "'Cinzel', serif" }}>✝ {t.appName}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontStyle: "italic", fontFamily: "'Crimson Text', serif", letterSpacing: 1 }}>{t.tagline}</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button onClick={() => setLang("es")} style={{ padding: "4px 10px", borderRadius: 20, border: `1px solid ${lang === 'es' ? GOLD : "rgba(255,255,255,0.3)"}`, background: lang === 'es' ? GOLD : "transparent", color: lang === 'es' ? WINE_DARK : WHITE, fontSize: 11, cursor: "pointer", fontWeight: lang === 'es' ? "bold" : "normal" }}>ES</button>
@@ -414,14 +414,14 @@ export default function App() {
         </div>
         <div style={{ display: "flex", overflowX: "auto", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
           {t.nav.map((n, i) => (
-            <button key={i} onClick={() => setTab(i)} style={{ padding: "10px 14px", fontSize: 11, color: tab === i ? GOLD : "rgba(255,255,255,0.6)", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", background: "none", border: "none", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", cursor: "pointer", whiteSpace: "nowrap", fontFamily: "Georgia, serif" }}>{n}</button>
+            <button key={i} onClick={() => setTab(i)} style={{ padding: "10px 14px", fontSize: 11, color: tab === i ? GOLD : "rgba(255,255,255,0.6)", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", background: "none", border: "none", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Cinzel', serif" }}>{n}</button>
           ))}
         </div>
       </div>
 
       {/* Body */}
       <div style={{ padding: 20, paddingBottom: 40 }}>
-        <div style={{ fontSize: 20, fontWeight: "bold", color: WINE_DARK, marginBottom: 16, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "Georgia, serif" }}>
+        <div style={{ fontSize: 20, fontWeight: "bold", color: WINE_DARK, marginBottom: 16, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Cinzel', serif" }}>
           {t.nav[tab]}
         </div>
         {sections[tab]()}
