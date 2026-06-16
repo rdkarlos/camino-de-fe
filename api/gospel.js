@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     const usccbUrl = 'https://bible.usccb.org/bible/readings';
-    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(usccbUrl)}&render=false`;
+    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(usccbUrl)}&render=false&cache_bust=${Date.now()}`;
     const usccbResponse = await fetch(scraperUrl);
     const html = await usccbResponse.text();
 
