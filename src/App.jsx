@@ -31,9 +31,9 @@ const translations = {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Evangelio del Día", desc: "Cargando el Evangelio de hoy...", btn: "Leer más" },
-        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar" },
-        { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar" },
+        { icon: "📖", title: "Evangelio del Día", desc: "Cargando el Evangelio de hoy...", btn: "Leer más", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)" },
+        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)" },
+        { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)" },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
@@ -82,9 +82,9 @@ const translations = {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Gospel of the Day", desc: "Loading today's Gospel...", btn: "Read more" },
-        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin" },
-        { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray" },
+        { icon: "📖", title: "Gospel of the Day", desc: "Loading today's Gospel...", btn: "Read more", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)" },
+        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)" },
+        { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)" },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
@@ -127,11 +127,15 @@ const translations = {
   },
 };
 
+// Color palette - warm wine, cream, gold
 const GOLD = "#C9A84C";
-const DEEP = "#1B2A4A";
-const CREAM = "#FAF7F2";
-const LIGHT_GOLD = "#F5EDD6";
-const MUTED = "#6B7A99";
+const GOLD_LIGHT = "#E8C76A";
+const WINE = "#6B1F3E";
+const WINE_DARK = "#4A0F28";
+const CREAM = "#FAF5ED";
+const CREAM_DARK = "#F0E6D3";
+const MUTED = "#8B6E5A";
+const WHITE = "#FFFFFF";
 
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
@@ -151,14 +155,14 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [gospelData, setGospelData] = useState(null);
   const [user, setUser] = useState(null);
-  const [authMode, setAuthMode] = useState(null); // null | 'login' | 'register'
+  const [authMode, setAuthMode] = useState(null);
   const [authName, setAuthName] = useState("");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
 
-useEffect(() => {
+  useEffect(() => {
     const today = new Date();
     const day = today.getDate();
     const month = today.getMonth() + 1;
@@ -174,127 +178,58 @@ useEffect(() => {
   }, []);
 
   const handleGoogle = async () => {
-    setAuthLoading(true);
-    setAuthError("");
-    try {
-      await signInWithPopup(auth, googleProvider);
-      setAuthMode(null);
-    } catch (e) {
-      setAuthError(e.message);
-    }
+    setAuthLoading(true); setAuthError("");
+    try { await signInWithPopup(auth, googleProvider); setAuthMode(null); }
+    catch (e) { setAuthError(e.message); }
     setAuthLoading(false);
   };
 
   const handleRegister = async () => {
-    setAuthLoading(true);
-    setAuthError("");
+    setAuthLoading(true); setAuthError("");
     try {
       const cred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
       await updateProfile(cred.user, { displayName: authName });
       setAuthMode(null);
-    } catch (e) {
-      setAuthError(e.message);
-    }
+    } catch (e) { setAuthError(e.message); }
     setAuthLoading(false);
   };
 
   const handleLogin = async () => {
-    setAuthLoading(true);
-    setAuthError("");
-    try {
-      await signInWithEmailAndPassword(auth, authEmail, authPassword);
-      setAuthMode(null);
-    } catch (e) {
-      setAuthError(e.message);
-    }
+    setAuthLoading(true); setAuthError("");
+    try { await signInWithEmailAndPassword(auth, authEmail, authPassword); setAuthMode(null); }
+    catch (e) { setAuthError(e.message); }
     setAuthLoading(false);
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
+  const handleLogout = async () => { await signOut(auth); };
 
   const t = translations[lang];
 
-  const styles = {
-    app: { fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", position: "relative", boxShadow: "0 0 40px rgba(0,0,0,0.15)" },
-    header: { background: `linear-gradient(135deg, ${DEEP} 0%, #2C4270 100%)`, padding: "20px 20px 0", color: "white" },
-    topBar: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-    appName: { fontSize: 22, fontWeight: "bold", letterSpacing: 1, color: GOLD },
-    langToggle: { display: "flex", gap: 6 },
-    langBtn: (active) => ({ padding: "4px 10px", borderRadius: 20, border: `1px solid ${active ? GOLD : "rgba(255,255,255,0.3)"}`, background: active ? GOLD : "transparent", color: active ? DEEP : "white", fontSize: 12, cursor: "pointer", fontWeight: active ? "bold" : "normal" }),
-    tagline: { fontSize: 12, color: "rgba(255,255,255,0.65)", fontStyle: "italic", marginBottom: 16 },
-    nav: { display: "flex", overflowX: "auto", gap: 0, borderTop: "1px solid rgba(255,255,255,0.1)" },
-    navBtn: (active) => ({ padding: "10px 14px", fontSize: 11, color: active ? GOLD : "rgba(255,255,255,0.6)", borderBottom: active ? `2px solid ${GOLD}` : "2px solid transparent", background: "none", border: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: "Georgia, serif" }),
-    body: { padding: 20, paddingBottom: 30 },
-    sectionTitle: { fontSize: 20, fontWeight: "bold", color: DEEP, marginBottom: 16, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12 },
-    card: { background: "white", borderRadius: 14, padding: 18, marginBottom: 14, boxShadow: "0 2px 12px rgba(27,42,74,0.08)", borderLeft: `3px solid ${GOLD}` },
-    cardIcon: { fontSize: 28, marginBottom: 8 },
-    cardTitle: { fontWeight: "bold", color: DEEP, fontSize: 15, marginBottom: 6 },
-    cardDesc: { color: "#555", fontSize: 13, lineHeight: 1.6, marginBottom: 12 },
-    btn: { background: `linear-gradient(135deg, ${GOLD}, #E8C76A)`, color: DEEP, border: "none", padding: "8px 18px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" },
-    reminder: { background: LIGHT_GOLD, border: `1px solid ${GOLD}`, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: DEEP, marginBottom: 16 },
-    greeting: { fontSize: 14, color: MUTED, fontStyle: "italic", marginBottom: 6 },
-    dateText: { fontSize: 12, color: MUTED, marginBottom: 16, textTransform: "capitalize" },
-    gospelText: { background: "white", borderRadius: 12, padding: 18, fontSize: 14, lineHeight: 1.8, color: "#333", whiteSpace: "pre-wrap", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" },
-    gospelReading: { fontSize: 15, color: GOLD, fontWeight: "bold", marginBottom: 4 },
-    gospelSubtitle: { fontSize: 13, color: MUTED, fontStyle: "italic", marginBottom: 12 },
-    mysteryBtn: (active) => ({ padding: "8px 14px", borderRadius: 20, border: `1px solid ${active ? GOLD : "#ddd"}`, background: active ? GOLD : "white", color: active ? DEEP : "#555", fontSize: 11, cursor: "pointer", margin: "0 4px 8px 0", fontFamily: "Georgia, serif" }),
-    rosaryToday: { fontSize: 13, color: MUTED, marginBottom: 14, fontStyle: "italic" },
-    stepList: { listStyle: "none", padding: 0, margin: 0 },
-    stepItem: (active, done) => ({ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, marginBottom: 6, background: done ? "#f0f7ee" : active ? LIGHT_GOLD : "white", border: `1px solid ${done ? "#b5d5b0" : active ? GOLD : "#eee"}`, fontSize: 13, color: done ? "#5a8f57" : DEEP, cursor: "pointer", transition: "all 0.2s" }),
-    prayerItem: { background: "white", borderRadius: 12, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" },
-    prayerHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", cursor: "pointer" },
-    prayerName: { fontWeight: "bold", color: DEEP, fontSize: 14 },
-    prayerText: { padding: "0 16px 14px", fontSize: 13, color: "#555", lineHeight: 1.7 },
-    quoteCard: { background: `linear-gradient(135deg, ${DEEP}, #2C4270)`, borderRadius: 14, padding: 20, marginBottom: 12, color: "white" },
-    quote: { fontSize: 15, fontStyle: "italic", lineHeight: 1.6, marginBottom: 10 },
-    quoteAuthor: { fontSize: 12, color: GOLD, fontWeight: "bold" },
-    shopSubtitle: { fontSize: 13, color: MUTED, marginBottom: 16, fontStyle: "italic" },
-    shopGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
-    shopCard: { background: "white", borderRadius: 12, padding: 16, boxShadow: "0 2px 10px rgba(0,0,0,0.07)", position: "relative", textAlign: "center" },
-    shopIcon: { fontSize: 32, marginBottom: 8 },
-    shopName: { fontSize: 13, fontWeight: "bold", color: DEEP, marginBottom: 4 },
-    shopPrice: { fontSize: 14, color: GOLD, fontWeight: "bold", marginBottom: 10 },
-    shopTag: { position: "absolute", top: 8, right: 8, background: GOLD, color: DEEP, fontSize: 9, fontWeight: "bold", padding: "2px 7px", borderRadius: 10 },
-    shopBtn: { background: DEEP, color: "white", border: "none", padding: "6px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%" },
-    cartBadge: { background: "red", color: "white", fontSize: 10, borderRadius: "50%", width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", marginLeft: 4 },
-    authOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
-    authBox: { background: "white", borderRadius: 20, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" },
-    authTitle: { fontSize: 22, fontWeight: "bold", color: DEEP, marginBottom: 6, textAlign: "center" },
-    authSubtitle: { fontSize: 13, color: MUTED, marginBottom: 24, textAlign: "center" },
-    authInput: { width: "100%", padding: "12px 14px", border: `1px solid #ddd`, borderRadius: 10, fontSize: 14, marginBottom: 12, fontFamily: "Georgia, serif", boxSizing: "border-box" },
-    authBtn: { width: "100%", padding: "12px", background: `linear-gradient(135deg, ${GOLD}, #E8C76A)`, color: DEEP, border: "none", borderRadius: 10, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 10 },
-    googleBtn: { width: "100%", padding: "12px", background: "white", color: "#333", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 },
-    authError: { background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#cc0000", marginBottom: 12 },
-    authSwitch: { textAlign: "center", fontSize: 13, color: MUTED, marginTop: 8 },
-    authSwitchLink: { color: GOLD, cursor: "pointer", fontWeight: "bold", textDecoration: "underline" },
-    userBar: { background: LIGHT_GOLD, border: `1px solid ${GOLD}`, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: DEEP, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" },
-  };
-
   const renderAuthModal = () => (
-    <div style={styles.authOverlay} onClick={() => setAuthMode(null)}>
-      <div style={styles.authBox} onClick={e => e.stopPropagation()}>
-        <div style={styles.authTitle}>✝ {authMode === 'register' ? (lang === 'es' ? 'Crear cuenta' : 'Create account') : (lang === 'es' ? 'Iniciar sesión' : 'Sign in')}</div>
-        <div style={styles.authSubtitle}>{lang === 'es' ? 'Únete a nuestra comunidad de fe' : 'Join our faith community'}</div>
-        <button style={styles.googleBtn} onClick={handleGoogle}>
-          <span style={{ fontSize: 18 }}>G</span>
-          {lang === 'es' ? 'Continuar con Google' : 'Continue with Google'}
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(74,15,40,0.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setAuthMode(null)}>
+      <div style={{ background: WHITE, borderRadius: 24, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 20px 60px rgba(74,15,40,0.3)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>✝️</div>
+          <div style={{ fontSize: 22, fontWeight: "bold", color: WINE, fontFamily: "Georgia, serif" }}>
+            {authMode === 'register' ? (lang === 'es' ? 'Crear cuenta' : 'Create account') : (lang === 'es' ? 'Iniciar sesión' : 'Sign in')}
+          </div>
+          <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>{lang === 'es' ? 'Únete a nuestra comunidad de fe' : 'Join our faith community'}</div>
+        </div>
+        <button onClick={handleGoogle} style={{ width: "100%", padding: "12px", background: CREAM, color: WINE_DARK, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "Georgia, serif" }}>
+          <span style={{ fontSize: 18 }}>G</span> {lang === 'es' ? 'Continuar con Google' : 'Continue with Google'}
         </button>
         <div style={{ textAlign: "center", color: MUTED, fontSize: 12, marginBottom: 16 }}>— {lang === 'es' ? 'o con email' : 'or with email'} —</div>
-        {authMode === 'register' && (
-          <input style={styles.authInput} placeholder={lang === 'es' ? 'Tu nombre' : 'Your name'} value={authName} onChange={e => setAuthName(e.target.value)} />
-        )}
-        <input style={styles.authInput} placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
-        <input style={styles.authInput} placeholder={lang === 'es' ? 'Contraseña' : 'Password'} type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} />
-        {authError && <div style={styles.authError}>{authError}</div>}
-        <button style={styles.authBtn} onClick={authMode === 'register' ? handleRegister : handleLogin} disabled={authLoading}>
+        {authMode === 'register' && <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "Georgia, serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Tu nombre' : 'Your name'} value={authName} onChange={e => setAuthName(e.target.value)} />}
+        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "Georgia, serif", boxSizing: "border-box", background: CREAM }} placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
+        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "Georgia, serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Contraseña' : 'Password'} type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} />
+        {authError && <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#cc0000", marginBottom: 12 }}>{authError}</div>}
+        <button onClick={authMode === 'register' ? handleRegister : handleLogin} disabled={authLoading} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 12, fontFamily: "Georgia, serif" }}>
           {authLoading ? '...' : authMode === 'register' ? (lang === 'es' ? 'Registrarme' : 'Register') : (lang === 'es' ? 'Entrar' : 'Sign in')}
         </button>
-        <div style={styles.authSwitch}>
+        <div style={{ textAlign: "center", fontSize: 13, color: MUTED }}>
           {authMode === 'register'
-            ? <>{lang === 'es' ? '¿Ya tienes cuenta? ' : 'Already have an account? '}<span style={styles.authSwitchLink} onClick={() => setAuthMode('login')}>{lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span></>
-            : <>{lang === 'es' ? '¿No tienes cuenta? ' : "Don't have an account? "}<span style={styles.authSwitchLink} onClick={() => setAuthMode('register')}>{lang === 'es' ? 'Regístrate' : 'Register'}</span></>
+            ? <>{lang === 'es' ? '¿Ya tienes cuenta? ' : 'Already have an account? '}<span style={{ color: WINE, cursor: "pointer", fontWeight: "bold" }} onClick={() => setAuthMode('login')}>{lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span></>
+            : <>{lang === 'es' ? '¿No tienes cuenta? ' : "Don't have an account? "}<span style={{ color: WINE, cursor: "pointer", fontWeight: "bold" }} onClick={() => setAuthMode('register')}>{lang === 'es' ? 'Regístrate' : 'Register'}</span></>
           }
         </div>
       </div>
@@ -305,35 +240,48 @@ useEffect(() => {
     const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
     return (
       <div>
-        <p style={styles.greeting}>{t.home.greeting}{user ? `, ${user.displayName || user.email}` : ''}!</p>
-        <p style={styles.dateText}>{t.home.date}</p>
-        {user ? (
-          <div style={styles.userBar}>
-            <span>👤 {user.displayName || user.email}</span>
-            <span style={{ cursor: "pointer", color: GOLD }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
-          </div>
-        ) : (
-          <div style={{ ...styles.userBar, cursor: "pointer" }} onClick={() => setAuthMode('login')}>
-            <span>👤 {lang === 'es' ? 'Inicia sesión o regístrate' : 'Sign in or register'}</span>
-            <span style={{ color: GOLD }}>→</span>
-          </div>
-        )}
-        <div style={styles.reminder}>{t.home.reminder}</div>
+        {/* Hero greeting */}
+        <div style={{ background: `linear-gradient(135deg, ${WINE_DARK}, ${WINE})`, borderRadius: 20, padding: "24px 20px", marginBottom: 16, color: WHITE, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -20, right: -20, fontSize: 80, opacity: 0.08 }}>✝</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", textTransform: "capitalize", marginBottom: 4 }}>{t.home.date}</div>
+          <div style={{ fontSize: 16, fontStyle: "italic", color: GOLD_LIGHT }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
+          {user ? (
+            <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>👤 {user.displayName || user.email}</span>
+              <span style={{ fontSize: 12, color: GOLD, cursor: "pointer" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
+            </div>
+          ) : (
+            <div onClick={() => setAuthMode('login')} style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", padding: "6px 14px", borderRadius: 20, cursor: "pointer" }}>
+              <span style={{ fontSize: 12, color: WHITE }}>👤 {lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span>
+              <span style={{ color: GOLD, fontSize: 14 }}>→</span>
+            </div>
+          )}
+        </div>
+
+        {/* Reminder */}
+        <div style={{ background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`, border: `1px solid ${GOLD}44`, borderRadius: 12, padding: "10px 14px", fontSize: 12, color: WINE_DARK, marginBottom: 16 }}>
+          {t.home.reminder}
+        </div>
+
+        {/* Cards */}
         {t.home.cards.map((c, i) => (
-          <div key={i} style={styles.card}>
-            <div style={styles.cardIcon}>{c.icon}</div>
-            <div style={styles.cardTitle}>{c.title}</div>
-            <div style={styles.cardDesc}>
+          <div key={i} style={{ background: c.gradient, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(74,15,40,0.2)" }}>
+            <div style={{ position: "absolute", bottom: -15, right: -10, fontSize: 70, opacity: 0.12 }}>{c.icon}</div>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>{c.icon}</div>
+            <div style={{ fontWeight: "bold", fontSize: 17, marginBottom: 8, fontFamily: "Georgia, serif" }}>{c.title}</div>
+            <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", marginBottom: 16 }}>
               {i === 0 && gospelData ? (
                 <>
-                  <span style={{ fontWeight: "bold", color: GOLD, display: "block", marginBottom: 6 }}>
-  {lang === 'en' ? gospelData?.reference : reference}
-</span>
+                  <span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>
+                    {lang === 'en' ? gospelData?.reference : reference}
+                  </span>
                   {body.substring(0, 80) + "..."}
                 </>
               ) : c.desc}
             </div>
-            <button style={styles.btn} onClick={() => setTab(i + 1)}>{c.btn}</button>
+            <button onClick={() => setTab(i + 1)} style={{ background: "rgba(255,255,255,0.2)", color: WHITE, border: "1px solid rgba(255,255,255,0.4)", padding: "8px 20px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer", backdropFilter: "blur(4px)" }}>
+              {c.btn} →
+            </button>
           </div>
         ))}
       </div>
@@ -342,16 +290,23 @@ useEffect(() => {
 
   const renderGospel = () => {
     const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: t.gospel.text };
-    const formatted = body.replace(/\. ([A-ZÁÉÍÓÚ«])/g, ".\n\n$1").trim();
+    const formatted = body.replace(/\. ([A-ZÁÉÍÓÚ«"A-Z])/g, ".\n\n$1").trim();
     return (
       <div>
-        <p style={styles.gospelReading}>
-  {lang === 'en' ? (gospelData?.reference || t.gospel.reading) : (reference || t.gospel.reading)}
-</p>
-        <p style={styles.gospelSubtitle}>Lectura del santo Evangelio</p>
-        <div style={styles.gospelText}>
+        <div style={{ background: `linear-gradient(135deg, ${WINE_DARK}, ${WINE})`, borderRadius: 16, padding: "18px 20px", marginBottom: 16, color: WHITE }}>
+          <div style={{ fontSize: 13, color: GOLD_LIGHT, fontStyle: "italic", marginBottom: 4 }}>
+            {lang === 'es' ? 'Lectura del santo Evangelio' : 'Reading of the Holy Gospel'}
+          </div>
+          <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "Georgia, serif" }}>
+            {lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading)}
+          </div>
+        </div>
+        <div style={{ background: WHITE, borderRadius: 16, padding: 20, fontSize: 14, lineHeight: 1.9, color: "#3A2A1E", whiteSpace: "pre-wrap", boxShadow: "0 4px 16px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
           {formatted}
-          {"\n\n— " + (lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.')}
+          {"\n\n"}
+          <span style={{ color: WINE, fontWeight: "bold", fontStyle: "italic" }}>
+            — {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}
+          </span>
         </div>
       </div>
     );
@@ -359,23 +314,26 @@ useEffect(() => {
 
   const renderRosary = () => (
     <div>
-      <p style={styles.rosaryToday}>✨ {t.rosary.today}</p>
-      <div style={{ marginBottom: 14, display: "flex", flexWrap: "wrap" }}>
+      <div style={{ background: `linear-gradient(135deg, #4A1259, #7B2D8B)`, borderRadius: 16, padding: "16px 20px", marginBottom: 16, color: WHITE }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>✨ {lang === 'es' ? 'Hoy rezamos los' : "Today's mysteries"}</div>
+        <div style={{ fontSize: 17, fontWeight: "bold", fontFamily: "Georgia, serif" }}>{t.rosary.today}</div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {t.rosary.mysteries.map((m, i) => (
-          <button key={i} style={styles.mysteryBtn(selectedMystery === i)} onClick={() => setSelectedMystery(i)}>{m}</button>
+          <button key={i} onClick={() => setSelectedMystery(i)} style={{ padding: "8px 14px", borderRadius: 20, border: `1px solid ${selectedMystery === i ? WINE : CREAM_DARK}`, background: selectedMystery === i ? WINE : WHITE, color: selectedMystery === i ? WHITE : MUTED, fontSize: 11, cursor: "pointer", fontFamily: "Georgia, serif" }}>{m}</button>
         ))}
       </div>
-      <ul style={styles.stepList}>
+      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {t.rosary.steps.map((step, i) => (
-          <li key={i} style={styles.stepItem(rosaryStep === i, i < rosaryStep)} onClick={() => setRosaryStep(i)}>
+          <li key={i} onClick={() => setRosaryStep(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 12, marginBottom: 6, background: i < rosaryStep ? "#f5f0ff" : rosaryStep === i ? `${WINE}11` : WHITE, border: `1px solid ${i < rosaryStep ? "#c4b5e8" : rosaryStep === i ? WINE : CREAM_DARK}`, fontSize: 13, color: i < rosaryStep ? "#6B4F9E" : WINE_DARK, cursor: "pointer" }}>
             <span style={{ fontSize: 16 }}>{i < rosaryStep ? "✅" : rosaryStep === i ? "👉" : "○"}</span>
             <span>{step}</span>
           </li>
         ))}
       </ul>
       <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <button style={{ ...styles.btn, background: "#eee", color: DEEP }} onClick={() => setRosaryStep(Math.max(0, rosaryStep - 1))}>← Anterior</button>
-        <button style={styles.btn} onClick={() => setRosaryStep(Math.min(t.rosary.steps.length - 1, rosaryStep + 1))}>Siguiente →</button>
+        <button onClick={() => setRosaryStep(Math.max(0, rosaryStep - 1))} style={{ flex: 1, padding: "10px", background: CREAM_DARK, color: WINE_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif" }}>← {lang === 'es' ? 'Anterior' : 'Previous'}</button>
+        <button onClick={() => setRosaryStep(Math.min(t.rosary.steps.length - 1, rosaryStep + 1))} style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif" }}>{lang === 'es' ? 'Siguiente' : 'Next'} →</button>
       </div>
     </div>
   );
@@ -383,12 +341,12 @@ useEffect(() => {
   const renderPrayers = () => (
     <div>
       {t.prayers.list.map((p, i) => (
-        <div key={i} style={styles.prayerItem}>
-          <div style={styles.prayerHeader} onClick={() => setOpenPrayer(openPrayer === i ? null : i)}>
-            <span style={styles.prayerName}>🙏 {p.name}</span>
-            <span style={{ color: GOLD, fontSize: 18 }}>{openPrayer === i ? "−" : "+"}</span>
+        <div key={i} style={{ background: WHITE, borderRadius: 16, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 12px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
+          <div onClick={() => setOpenPrayer(openPrayer === i ? null : i)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer", background: openPrayer === i ? `${WINE}08` : WHITE }}>
+            <span style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 15, fontFamily: "Georgia, serif" }}>🙏 {p.name}</span>
+            <span style={{ color: WINE, fontSize: 20, fontWeight: "bold" }}>{openPrayer === i ? "−" : "+"}</span>
           </div>
-          {openPrayer === i && <div style={styles.prayerText}>{p.text}</div>}
+          {openPrayer === i && <div style={{ padding: "0 18px 16px", fontSize: 14, color: "#3A2A1E", lineHeight: 1.8, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14 }}>{p.text}</div>}
         </div>
       ))}
     </div>
@@ -397,9 +355,11 @@ useEffect(() => {
   const renderReflections = () => (
     <div>
       {t.reflections.daily.map((r, i) => (
-        <div key={i} style={styles.quoteCard}>
-          <div style={styles.quote}>{r.quote}</div>
-          <div style={styles.quoteAuthor}>— {r.author}</div>
+        <div key={i} style={{ background: `linear-gradient(135deg, ${WINE_DARK}, #6B1F3E, #7C4A1E)`, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08 }}>✝</div>
+          <div style={{ fontSize: 13, color: GOLD, marginBottom: 4 }}>✨ {lang === 'es' ? 'Reflexión del día' : 'Daily reflection'}</div>
+          <div style={{ fontSize: 16, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14, fontFamily: "Georgia, serif" }}>{r.quote}</div>
+          <div style={{ fontSize: 12, color: GOLD_LIGHT, fontWeight: "bold" }}>— {r.author}</div>
         </div>
       ))}
     </div>
@@ -407,25 +367,25 @@ useEffect(() => {
 
   const renderShop = () => (
     <div>
-      <p style={styles.shopSubtitle}>{t.shop.subtitle}</p>
-      <div style={styles.shopGrid}>
+      <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, fontStyle: "italic" }}>{t.shop.subtitle}</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {t.shop.items.map((item, i) => (
-          <div key={i} style={styles.shopCard}>
-            {item.tag && <span style={styles.shopTag}>{item.tag}</span>}
-            <div style={styles.shopIcon}>{item.icon}</div>
-            <div style={styles.shopName}>{item.name}</div>
-            <div style={styles.shopPrice}>{item.price}</div>
-            <button style={styles.shopBtn} onClick={() => setCart([...cart, item])}>
-              {lang === "es" ? "Añadir al carrito" : "Add to cart"}
+          <div key={i} style={{ background: WHITE, borderRadius: 16, padding: 16, boxShadow: "0 4px 16px rgba(74,15,40,0.08)", position: "relative", textAlign: "center", border: `1px solid ${CREAM_DARK}` }}>
+            {item.tag && <span style={{ position: "absolute", top: 8, right: 8, background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: WINE_DARK, fontSize: 9, fontWeight: "bold", padding: "3px 8px", borderRadius: 10 }}>{item.tag}</span>}
+            <div style={{ fontSize: 36, marginBottom: 8 }}>{item.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: "bold", color: WINE_DARK, marginBottom: 4, fontFamily: "Georgia, serif" }}>{item.name}</div>
+            <div style={{ fontSize: 15, color: WINE, fontWeight: "bold", marginBottom: 10 }}>{item.price}</div>
+            <button onClick={() => setCart([...cart, item])} style={{ background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", padding: "8px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%", fontFamily: "Georgia, serif" }}>
+              {lang === "es" ? "Añadir" : "Add to cart"}
             </button>
           </div>
         ))}
       </div>
       {cart.length > 0 && (
-        <div style={{ marginTop: 20, background: LIGHT_GOLD, borderRadius: 12, padding: 14, textAlign: "center" }}>
-          <span style={{ fontWeight: "bold", color: DEEP }}>🛒 {lang === "es" ? "Carrito" : "Cart"}</span>
-          <span style={styles.cartBadge}>{cart.length}</span>
-          <p style={{ fontSize: 12, color: MUTED, margin: "6px 0 0" }}>
+        <div style={{ marginTop: 20, background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`, border: `1px solid ${GOLD}44`, borderRadius: 16, padding: 16, textAlign: "center" }}>
+          <span style={{ fontWeight: "bold", color: WINE_DARK }}>🛒 {lang === "es" ? "Carrito" : "Cart"}</span>
+          <span style={{ background: WINE, color: WHITE, fontSize: 10, borderRadius: "50%", width: 18, height: 18, display: "inline-flex", alignItems: "center", justifyContent: "center", marginLeft: 6 }}>{cart.length}</span>
+          <p style={{ fontSize: 13, color: MUTED, margin: "8px 0 0", fontWeight: "bold" }}>
             Total: ${cart.reduce((a, b) => a + parseFloat(b.price.replace("$", "")), 0).toFixed(2)}
           </p>
         </div>
@@ -436,28 +396,34 @@ useEffect(() => {
   const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop];
 
   return (
-    <div style={styles.app}>
+    <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(74,15,40,0.15)" }}>
       {authMode && renderAuthModal()}
-      <div style={styles.header}>
-        <div style={styles.topBar}>
+
+      {/* Header */}
+      <div style={{ background: `linear-gradient(135deg, ${WINE_DARK} 0%, ${WINE} 100%)`, padding: "20px 20px 0", color: WHITE }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
-            <div style={styles.appName}>✝ {t.appName}</div>
-            <div style={styles.tagline}>{t.tagline}</div>
+            <div style={{ fontSize: 22, fontWeight: "bold", letterSpacing: 1, color: GOLD, fontFamily: "Georgia, serif" }}>✝ {t.appName}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontStyle: "italic" }}>{t.tagline}</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <button style={styles.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
-            <button style={styles.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
-            {!user && <button style={{ ...styles.langBtn(false), fontSize: 10 }} onClick={() => setAuthMode('login')}>👤</button>}
+            <button onClick={() => setLang("es")} style={{ padding: "4px 10px", borderRadius: 20, border: `1px solid ${lang === 'es' ? GOLD : "rgba(255,255,255,0.3)"}`, background: lang === 'es' ? GOLD : "transparent", color: lang === 'es' ? WINE_DARK : WHITE, fontSize: 11, cursor: "pointer", fontWeight: lang === 'es' ? "bold" : "normal" }}>ES</button>
+            <button onClick={() => setLang("en")} style={{ padding: "4px 10px", borderRadius: 20, border: `1px solid ${lang === 'en' ? GOLD : "rgba(255,255,255,0.3)"}`, background: lang === 'en' ? GOLD : "transparent", color: lang === 'en' ? WINE_DARK : WHITE, fontSize: 11, cursor: "pointer", fontWeight: lang === 'en' ? "bold" : "normal" }}>EN</button>
+            {!user && <button onClick={() => setAuthMode('login')} style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: WHITE, fontSize: 11, cursor: "pointer" }}>👤</button>}
           </div>
         </div>
-        <div style={styles.nav}>
+        <div style={{ display: "flex", overflowX: "auto", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
           {t.nav.map((n, i) => (
-            <button key={i} style={styles.navBtn(tab === i)} onClick={() => setTab(i)}>{n}</button>
+            <button key={i} onClick={() => setTab(i)} style={{ padding: "10px 14px", fontSize: 11, color: tab === i ? GOLD : "rgba(255,255,255,0.6)", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", background: "none", border: "none", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", cursor: "pointer", whiteSpace: "nowrap", fontFamily: "Georgia, serif" }}>{n}</button>
           ))}
         </div>
       </div>
-      <div style={styles.body}>
-        <div style={styles.sectionTitle}>{t.nav[tab]}</div>
+
+      {/* Body */}
+      <div style={{ padding: 20, paddingBottom: 40 }}>
+        <div style={{ fontSize: 20, fontWeight: "bold", color: WINE_DARK, marginBottom: 16, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "Georgia, serif" }}>
+          {t.nav[tab]}
+        </div>
         {sections[tab]()}
       </div>
     </div>
