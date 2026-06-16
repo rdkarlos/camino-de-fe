@@ -147,6 +147,7 @@ const cleanGospelText = (text) => {
 };
 
 export default function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
   const [rosaryStep, setRosaryStep] = useState(0);
@@ -412,11 +413,23 @@ export default function App() {
             {!user && <button onClick={() => setAuthMode('login')} style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: WHITE, fontSize: 11, cursor: "pointer" }}>👤</button>}
           </div>
         </div>
-        <div style={{ display: "flex", overflowX: "auto", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-          {t.nav.map((n, i) => (
-            <button key={i} onClick={() => setTab(i)} style={{ padding: "10px 14px", fontSize: 11, color: tab === i ? GOLD : "rgba(255,255,255,0.6)", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", background: "none", border: "none", borderBottom: tab === i ? `2px solid ${GOLD}` : "2px solid transparent", cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Cinzel', serif" }}>{n}</button>
-          ))}
-        </div>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 10, paddingBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  <span style={{ fontSize: 13, color: GOLD, fontFamily: "'Cinzel', serif" }}>{t.nav[tab]}</span>
+  <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: WHITE, fontSize: 22, padding: "0 4px" }}>
+    {menuOpen ? "✕" : "☰"}
+  </button>
+</div>
+
+{menuOpen && (
+  <div style={{ background: WINE_DARK, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+    {t.nav.map((n, i) => (
+      <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "14px 20px", background: tab === i ? "rgba(201,168,76,0.15)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.8)", fontSize: 14, cursor: "pointer", fontFamily: "'Cinzel', serif", textAlign: "left" }}>
+        <span>{["🏠","📖","📿","🙏","💭","🛒"][i]}</span>
+        <span>{n}</span>
+      </button>
+    ))}
+  </div>
+)}
       </div>
 
       {/* Body */}
