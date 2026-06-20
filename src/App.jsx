@@ -26,14 +26,15 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Rosario", "Oraciones", "Reflexiones", "Tienda"],
+    nav: ["Inicio", "Evangelio", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Lecturas"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Evangelio del Día", desc: "Cargando el Evangelio de hoy...", btn: "Leer más", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)" },
-        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)" },
-        { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)" },
+        { icon: "📖", title: "Evangelio del Día", desc: "Cargando el Evangelio de hoy...", btn: "Leer más", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)", tab: 1 },
+        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 6 },
+        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 2 },
+        { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 3 },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
@@ -77,14 +78,15 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Rosary", "Prayers", "Reflections", "Shop"],
+    nav: ["Home", "Gospel", "Rosary", "Prayers", "Reflections", "Shop", "Readings"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Gospel of the Day", desc: "Loading today's Gospel...", btn: "Read more", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)" },
-        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)" },
-        { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)" },
+        { icon: "📖", title: "Gospel of the Day", desc: "Loading today's Gospel...", btn: "Read more", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)", tab: 1 },
+        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 6 },
+        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 2 },
+        { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 3 },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
@@ -127,7 +129,6 @@ const translations = {
   },
 };
 
-// Color palette - warm wine, cream, gold
 const GOLD = "#C9A84C";
 const GOLD_LIGHT = "#E8C76A";
 const WINE = "#6B1F3E";
@@ -136,6 +137,8 @@ const CREAM = "#FAF5ED";
 const CREAM_DARK = "#F0E6D3";
 const MUTED = "#8B6E5A";
 const WHITE = "#FFFFFF";
+const BLUE_DARK = "#1A3A5C";
+const BLUE = "#2C5F8A";
 
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
@@ -147,7 +150,6 @@ const cleanGospelText = (text) => {
 };
 
 export default function App() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
   const [rosaryStep, setRosaryStep] = useState(0);
@@ -162,35 +164,28 @@ export default function App() {
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openReading, setOpenReading] = useState(null);
 
- useEffect(() => {
-  const today = new Date();
-  const day = today.getDate();
-  const month = today.getMonth() + 1;
-  const year = today.getFullYear();
-  const cacheKey = `gospel_${lang}_${day}_${month}_${year}`;
-
-  // Intentar cargar desde caché primero
-  try {
-    const cached = sessionStorage.getItem(cacheKey);
-    if (cached) {
-      setGospelData(JSON.parse(cached));
-      return;
-    }
-  } catch(e) {}
-
-  // Si no hay caché, cargar desde la API
-  axios.get(`/api/gospel?lang=${lang}&day=${day}&month=${month}&year=${year}`)
-    .then(res => {
-      if (res.data.success) {
-        setGospelData(res.data);
-        try {
-          sessionStorage.setItem(cacheKey, JSON.stringify(res.data));
-        } catch(e) {}
-      }
-    })
-    .catch(() => {});
-}, [lang]);
+  useEffect(() => {
+    const today = new Date();
+    const day = today.getDate();
+    const month = today.getMonth() + 1;
+    const year = today.getFullYear();
+    const cacheKey = `gospel_${lang}_${day}_${month}_${year}`;
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) { setGospelData(JSON.parse(cached)); return; }
+    } catch(e) {}
+    axios.get(`/api/gospel?lang=${lang}&day=${day}&month=${month}&year=${year}`)
+      .then(res => {
+        if (res.data.success) {
+          setGospelData(res.data);
+          try { sessionStorage.setItem(cacheKey, JSON.stringify(res.data)); } catch(e) {}
+        }
+      })
+      .catch(() => {});
+  }, [lang]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
@@ -260,11 +255,10 @@ export default function App() {
     const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
     return (
       <div>
-        {/* Hero greeting */}
         <div style={{ background: `linear-gradient(135deg, ${WINE_DARK}, ${WINE})`, borderRadius: 20, padding: "24px 20px", marginBottom: 16, color: WHITE, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -20, right: -20, fontSize: 80, opacity: 0.08 }}>✝</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", textTransform: "capitalize", marginBottom: 4 }}>{t.home.date}</div>
-          <div style={{ fontSize: 16, fontStyle: "italic", color: GOLD_LIGHT }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
+          <div style={{ fontSize: 16, fontStyle: "italic", color: GOLD_LIGHT, fontFamily: "'Crimson Text', serif" }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
           {user ? (
             <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>👤 {user.displayName || user.email}</span>
@@ -277,13 +271,9 @@ export default function App() {
             </div>
           )}
         </div>
-
-        {/* Reminder */}
         <div style={{ background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`, border: `1px solid ${GOLD}44`, borderRadius: 12, padding: "10px 14px", fontSize: 12, color: WINE_DARK, marginBottom: 16 }}>
           {t.home.reminder}
         </div>
-
-        {/* Cards */}
         {t.home.cards.map((c, i) => (
           <div key={i} style={{ background: c.gradient, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(74,15,40,0.2)" }}>
             <div style={{ position: "absolute", bottom: -15, right: -10, fontSize: 70, opacity: 0.12 }}>{c.icon}</div>
@@ -297,15 +287,21 @@ export default function App() {
                   </span>
                   {body.substring(0, 80) + "..."}
                 </>
+              ) : i === 1 && gospelData?.reading1 ? (
+                <>
+                  <span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>
+                    {gospelData.reading1.reference}
+                  </span>
+                  {gospelData.reading1.text.substring(0, 80) + "..."}
+                </>
               ) : c.desc}
             </div>
-            <button onClick={() => setTab(i + 1)} style={{ background: "rgba(255,255,255,0.2)", color: WHITE, border: "1px solid rgba(255,255,255,0.4)", padding: "8px 20px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer", backdropFilter: "blur(4px)" }}>
+            <button onClick={() => setTab(c.tab)} style={{ background: "rgba(255,255,255,0.2)", color: WHITE, border: "1px solid rgba(255,255,255,0.4)", padding: "8px 20px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
               {c.btn} →
             </button>
           </div>
         ))}
       </div>
-      
     );
   };
 
@@ -329,6 +325,36 @@ export default function App() {
             — {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}
           </span>
         </div>
+      </div>
+    );
+  };
+
+  const renderReadings = () => {
+    const sections = [];
+    if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera Lectura' : 'First Reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, icon: '📜' });
+    if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda Lectura' : 'Second Reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, icon: '📋' });
+    if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo Responsorial' : 'Responsorial Psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, icon: '🎵' });
+
+    if (!gospelData) return <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>Cargando lecturas...</div>;
+
+    return (
+      <div>
+        {sections.map((s, i) => (
+          <div key={s.key} style={{ background: WHITE, borderRadius: 16, marginBottom: 12, overflow: "hidden", boxShadow: "0 4px 16px rgba(26,58,92,0.08)", border: `1px solid ${CREAM_DARK}` }}>
+            <div onClick={() => setOpenReading(openReading === s.key ? null : s.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer", background: openReading === s.key ? `${BLUE_DARK}08` : WHITE }}>
+              <div>
+                <div style={{ fontWeight: "bold", color: BLUE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif" }}>{s.icon} {s.title}</div>
+                <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{s.ref}</div>
+              </div>
+              <span style={{ color: BLUE, fontSize: 20, fontWeight: "bold" }}>{openReading === s.key ? "−" : "+"}</span>
+            </div>
+            {openReading === s.key && (
+              <div style={{ padding: "0 18px 18px", fontSize: 14, color: "#1A2A3A", lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>
+                {s.text}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };
@@ -363,7 +389,7 @@ export default function App() {
     <div>
       {t.prayers.list.map((p, i) => (
         <div key={i} style={{ background: WHITE, borderRadius: 16, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 12px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
-          <div onClick={() => setOpenPrayer(openPrayer === i ? null : i)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer", background: openPrayer === i ? `${WINE}08` : WHITE }}>
+          <div onClick={() => setOpenPrayer(openPrayer === i ? null : i)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer" }}>
             <span style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif" }}>🙏 {p.name}</span>
             <span style={{ color: WINE, fontSize: 20, fontWeight: "bold" }}>{openPrayer === i ? "−" : "+"}</span>
           </div>
@@ -379,7 +405,7 @@ export default function App() {
         <div key={i} style={{ background: `linear-gradient(135deg, ${WINE_DARK}, #6B1F3E, #7C4A1E)`, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08 }}>✝</div>
           <div style={{ fontSize: 13, color: GOLD, marginBottom: 4 }}>✨ {lang === 'es' ? 'Reflexión del día' : 'Daily reflection'}</div>
-          <div style={{ fontSize: 16, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14, fontFamily: "'Cinzel', serif" }}>{r.quote}</div>
+          <div style={{ fontSize: 16, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14, fontFamily: "'Crimson Text', serif" }}>{r.quote}</div>
           <div style={{ fontSize: 12, color: GOLD_LIGHT, fontWeight: "bold" }}>— {r.author}</div>
         </div>
       ))}
@@ -414,17 +440,17 @@ export default function App() {
     </div>
   );
 
-  const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop];
+  const navIcons = ["🏠","📖","📿","🙏","💭","🛒","📜"];
+  const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop, renderReadings];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(74,15,40,0.15)" }}>
       {authMode && renderAuthModal()}
 
-      {/* Header */}
       <div style={{ background: `linear-gradient(135deg, ${WINE_DARK} 0%, ${WINE} 100%)`, padding: "20px 20px 0", color: WHITE }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: "700", letterSpacing: 2, color: GOLD, fontFamily: "'Cinzel', serif" }}>✝ {t.appName}</div>
+            <div style={{ fontSize: 22, fontWeight: "bold", letterSpacing: 2, color: GOLD, fontFamily: "'Cinzel', serif" }}>✝ {t.appName}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontStyle: "italic", fontFamily: "'Crimson Text', serif", letterSpacing: 1 }}>{t.tagline}</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -433,26 +459,26 @@ export default function App() {
             {!user && <button onClick={() => setAuthMode('login')} style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: WHITE, fontSize: 11, cursor: "pointer" }}>👤</button>}
           </div>
         </div>
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 10, paddingBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-  <span style={{ fontSize: 13, color: GOLD, fontFamily: "'Cinzel', serif" }}>{t.nav[tab]}</span>
-  <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: WHITE, fontSize: 22, padding: "0 4px" }}>
-    {menuOpen ? "✕" : "☰"}
-  </button>
-</div>
 
-{menuOpen && (
-  <div style={{ background: WINE_DARK, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-    {t.nav.map((n, i) => (
-      <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "14px 20px", background: tab === i ? "rgba(201,168,76,0.15)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.8)", fontSize: 14, cursor: "pointer", fontFamily: "'Cinzel', serif", textAlign: "left" }}>
-        <span>{["🏠","📖","📿","🙏","💭","🛒"][i]}</span>
-        <span>{n}</span>
-      </button>
-    ))}
-  </div>
-)}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 10, paddingBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: GOLD, fontFamily: "'Cinzel', serif" }}>{t.nav[tab]}</span>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: WHITE, fontSize: 22, padding: "0 4px" }}>
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
+
+        {menuOpen && (
+          <div style={{ background: WINE_DARK, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+            {t.nav.map((n, i) => (
+              <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "14px 20px", background: tab === i ? "rgba(201,168,76,0.15)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.8)", fontSize: 14, cursor: "pointer", fontFamily: "'Cinzel', serif", textAlign: "left" }}>
+                <span>{navIcons[i]}</span>
+                <span>{n}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Body */}
       <div style={{ padding: 20, paddingBottom: 40 }}>
         <div style={{ fontSize: 20, fontWeight: "bold", color: WINE_DARK, marginBottom: 16, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Cinzel', serif" }}>
           {t.nav[tab]}

@@ -25,6 +25,17 @@ export default async function handler(req, res) {
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
+  const extractSection = (html, sectionName) => {
+    const idx = html.indexOf(`<h3 class="name">${sectionName}`);
+    if (idx === -1) return null;
+    const section = html.substring(idx, idx + 3000);
+    const refMatch = section.match(/class="address"[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
+    const reference = refMatch ? refMatch[1].replace(/<[^>]*>/g, '').trim() : '';
+    const bodyMatch = section.match(/<div[^>]*class="content-body"[^>]*>([\s\S]*?)<\/div>/i);
+    const text = bodyMatch ? cleanText(bodyMatch[1]) : '';
+    return { reference, text };
+  };
+
   try {
     const usccbUrl = 'https://bible.usccb.org/bible/readings';
     const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(usccbUrl)}&render=false`;
@@ -32,32 +43,10 @@ export default async function handler(req, res) {
     const usccbResponse = await fetch(scraperUrl);
     const html = await usccbResponse.text();
 
-    // Extraer sección completa de lecturas
-    const extractSection = (html, sectionName) => {
-      const idx = html.indexOf(`<h3 class="name">${sectionName}`);
-      if (idx === -1) return null;
-      const section = html.substring(idx, idx + 3000);
-      
-      const refMatch = section.match(/class="address"[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
-      const reference = refMatch ? refMatch[1].replace(/<[^>]*>/g, '').trim() : '';
-      
-      const bodyMatch = section.match(/<div[^>]*class="content-body"[^>]*>([\s\S]*?)<\/div>/i);
-      const text = bodyMatch ? cleanText(bodyMatch[1]) : '';
-      
-      return { reference, text };
-    };
-
-    // Extraer Primera Lectura
     const reading1 = extractSection(html, 'Reading 1') || extractSection(html, 'Reading I');
-    
-    // Extraer Salmo
+    const reading2 = extractSection(html, 'Reading 2') || extractSection(html, 'Reading II');
     const psalm = extractSection(html, 'Responsorial Psalm') || extractSection(html, 'Psalm');
 
-    // Extraer Segunda Lectura
-    const reading2 = extractSection(html, 'Reading 2') || extractSection(html, 'Reading II');
-    
-
-    // Extraer Evangelio
     const gospelIdx = html.indexOf('<h3 class="name">Gospel');
     if (gospelIdx === -1) throw new Error('Gospel section not found');
     const htmlAfterGospel = html.substring(gospelIdx, gospelIdx + 3000);
@@ -76,13 +65,12 @@ export default async function handler(req, res) {
         reference: rawRef,
         text: enText || 'Gospel text not available',
         reading1: reading1 ? { reference: reading1.reference, text: reading1.text } : null,
-        psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
         reading2: reading2 ? { reference: reading2.reference, text: reading2.text } : null,
+        psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
         reflection: '',
       });
     }
 
-    // Para español: convertir referencia a API.Bible
     const bookMap = {
       'Matthew': 'MAT', 'Mark': 'MRK', 'Luke': 'LUK', 'John': 'JHN',
       'Mt': 'MAT', 'Mk': 'MRK', 'Lk': 'LUK', 'Jn': 'JHN',
@@ -117,8 +105,8 @@ export default async function handler(req, res) {
       reference: esRef,
       text: `Evangelio del día\nLectura del santo Evangelio según san ${esRef}\n\n${esText}`,
       reading1: reading1 ? { reference: reading1.reference, text: reading1.text } : null,
-      psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
       reading2: reading2 ? { reference: reading2.reference, text: reading2.text } : null,
+      psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
       reflection: '',
     });
 
