@@ -305,29 +305,7 @@ export default function App() {
           </div>
         ))}
       </div>
-      {gospelData?.reading1 && (
-  <div style={{ background: `linear-gradient(135deg, #1A3A5C, #2C5F8A)`, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(26,58,92,0.2)" }}>
-    <div style={{ position: "absolute", bottom: -15, right: -10, fontSize: 70, opacity: 0.12 }}>📜</div>
-    <div style={{ fontSize: 32, marginBottom: 10 }}>📜</div>
-    <div style={{ fontWeight: "bold", fontSize: 17, marginBottom: 8, fontFamily: "'Cinzel', serif" }}>
-      {lang === 'es' ? 'Lecturas del Día' : 'Daily Readings'}
-    </div>
-    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>
-      {lang === 'es' ? 'Primera Lectura:' : 'First Reading:'} {gospelData.reading1.reference}
-    </div>
-    {gospelData.reading2 && (
-      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>
-        {lang === 'es' ? 'Segunda Lectura:' : 'Second Reading:'} {gospelData.reading2.reference}
-      </div>
-    )}
-    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
-      {lang === 'es' ? 'Salmo:' : 'Psalm:'} {gospelData.psalm?.reference}
-    </div>
-    <button onClick={() => setTab(7)} style={{ background: "rgba(255,255,255,0.2)", color: WHITE, border: "1px solid rgba(255,255,255,0.4)", padding: "8px 20px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
-      {lang === 'es' ? 'Leer lecturas →' : 'Read readings →'}
-    </button>
-  </div>
-)}
+      
     );
   };
 
