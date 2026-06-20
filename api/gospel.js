@@ -53,6 +53,10 @@ export default async function handler(req, res) {
     // Extraer Salmo
     const psalm = extractSection(html, 'Responsorial Psalm') || extractSection(html, 'Psalm');
 
+    // Extraer Segunda Lectura
+    const reading2 = extractSection(html, 'Reading 2') || extractSection(html, 'Reading II');
+    
+
     // Extraer Evangelio
     const gospelIdx = html.indexOf('<h3 class="name">Gospel');
     if (gospelIdx === -1) throw new Error('Gospel section not found');
@@ -73,6 +77,7 @@ export default async function handler(req, res) {
         text: enText || 'Gospel text not available',
         reading1: reading1 ? { reference: reading1.reference, text: reading1.text } : null,
         psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
+        reading2: reading2 ? { reference: reading2.reference, text: reading2.text } : null,
         reflection: '',
       });
     }
@@ -113,6 +118,7 @@ export default async function handler(req, res) {
       text: `Evangelio del día\nLectura del santo Evangelio según san ${esRef}\n\n${esText}`,
       reading1: reading1 ? { reference: reading1.reference, text: reading1.text } : null,
       psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
+      reading2: reading2 ? { reference: reading2.reference, text: reading2.text } : null,
       reflection: '',
     });
 
