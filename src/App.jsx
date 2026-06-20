@@ -163,15 +163,34 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
 
-  useEffect(() => {
-    const today = new Date();
-    const day = today.getDate();
-    const month = today.getMonth() + 1;
-    const year = today.getFullYear();
-    axios.get(`/api/gospel?lang=${lang}&day=${day}&month=${month}&year=${year}`)
-      .then(res => { if (res.data.success) setGospelData(res.data); })
-      .catch(() => {});
-  }, [lang]);
+ useEffect(() => {
+  const today = new Date();
+  const day = today.getDate();
+  const month = today.getMonth() + 1;
+  const year = today.getFullYear();
+  const cacheKey = `gospel_${lang}_${day}_${month}_${year}`;
+
+  // Intentar cargar desde caché primero
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      setGospelData(JSON.parse(cached));
+      return;
+    }
+  } catch(e) {}
+
+  // Si no hay caché, cargar desde la API
+  axios.get(`/api/gospel?lang=${lang}&day=${day}&month=${month}&year=${year}`)
+    .then(res => {
+      if (res.data.success) {
+        setGospelData(res.data);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(res.data));
+        } catch(e) {}
+      }
+    })
+    .catch(() => {});
+}, [lang]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
