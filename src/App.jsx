@@ -26,7 +26,7 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Lecturas"],
+    nav: ["Inicio", "Evangelio", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Lecturas", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -78,7 +78,7 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Rosary", "Prayers", "Reflections", "Shop", "Readings"],
+    nav: ["Home", "Gospel", "Rosary", "Prayers", "Reflections", "Shop", "Readings", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -440,7 +440,7 @@ export default function App() {
     </div>
   );
 
-  const navIcons = ["🏠","📖","📿","🙏","💭","🛒","📜"];
+  const navIcons = ["🏠","📖","📿","🙏","💭","🛒","📜","⚙️"];
   const renderSettings = () => {
   const [notifGospel, setNotifGospel] = useState(false);
   const [notifRosary, setNotifRosary] = useState(false);
@@ -532,7 +532,7 @@ export default function App() {
     </div>
   );
 };
-  const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop, renderReadings];
+  const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop, renderReadings, renderSettings];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(74,15,40,0.15)" }}>
