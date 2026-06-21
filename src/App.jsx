@@ -441,6 +441,97 @@ export default function App() {
   );
 
   const navIcons = ["🏠","📖","📿","🙏","💭","🛒","📜"];
+  const renderSettings = () => {
+  const [notifGospel, setNotifGospel] = useState(false);
+  const [notifRosary, setNotifRosary] = useState(false);
+  const [notifLiturgy, setNotifLiturgy] = useState(false);
+  const [gospelTime, setGospelTime] = useState("07:00");
+  const [rosaryTime, setRosaryTime] = useState("19:00");
+  const [liturgyTime, setLiturgyTime] = useState("06:00");
+  const [permissionGranted, setPermissionGranted] = useState(false);
+
+  const requestPermission = async () => {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      setPermissionGranted(true);
+      scheduleNotification('evangelio', gospelTime, lang === 'es' ? '📖 Evangelio del día' : '📖 Gospel of the Day', lang === 'es' ? 'Lee el Evangelio de hoy' : "Read today's Gospel");
+    }
+  };
+
+  const scheduleNotification = (type, time, title, body) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const now = new Date();
+    const notifTime = new Date();
+    notifTime.setHours(hours, minutes, 0, 0);
+    if (notifTime <= now) notifTime.setDate(notifTime.getDate() + 1);
+    const delay = notifTime - now;
+    setTimeout(() => {
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/icon-192.png' });
+      }
+    }, delay);
+  };
+
+  const toggle = (type, value, setter, time, titleEs, titleEn, bodyEs, bodyEn) => {
+    setter(value);
+    if (value) scheduleNotification(type, time, lang === 'es' ? titleEs : titleEn, lang === 'es' ? bodyEs : bodyEn);
+  };
+
+  const switchStyle = (active) => ({
+    width: 44, height: 24, borderRadius: 12, background: active ? WINE : CREAM_DARK,
+    position: "relative", cursor: "pointer", transition: "background 0.3s", border: "none",
+    flexShrink: 0,
+  });
+
+  const knobStyle = (active) => ({
+    position: "absolute", top: 2, left: active ? 22 : 2, width: 20, height: 20,
+    borderRadius: "50%", background: WHITE, transition: "left 0.3s",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+  });
+
+  return (
+    <div>
+      {Notification.permission !== 'granted' && (
+        <div style={{ background: `linear-gradient(135deg, ${WINE_DARK}, ${WINE})`, borderRadius: 16, padding: 20, marginBottom: 16, color: WHITE, textAlign: "center" }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
+          <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8, fontFamily: "'Cinzel', serif" }}>
+            {lang === 'es' ? 'Activar notificaciones' : 'Enable notifications'}
+          </div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 16 }}>
+            {lang === 'es' ? 'Recibe recordatorios para rezar cada día' : 'Receive daily prayer reminders'}
+          </div>
+          <button onClick={requestPermission} style={{ background: GOLD, color: WINE_DARK, border: "none", padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
+            {lang === 'es' ? 'Permitir notificaciones' : 'Allow notifications'}
+          </button>
+        </div>
+      )}
+
+      {[
+        { label: lang === 'es' ? '📖 Evangelio del día' : '📖 Gospel of the Day', desc: lang === 'es' ? 'Recordatorio matutino' : 'Morning reminder', active: notifGospel, setter: setNotifGospel, time: gospelTime, setTime: setGospelTime, titleEs: '📖 Evangelio del día', titleEn: '📖 Gospel of the Day', bodyEs: 'Lee el Evangelio de hoy', bodyEn: "Read today's Gospel" },
+        { label: lang === 'es' ? '📿 Santo Rosario' : '📿 Holy Rosary', desc: lang === 'es' ? 'Recordatorio para rezar el Rosario' : 'Rosary prayer reminder', active: notifRosary, setter: setNotifRosary, time: rosaryTime, setTime: setRosaryTime, titleEs: '📿 Santo Rosario', titleEn: '📿 Holy Rosary', bodyEs: 'Es hora de rezar el Rosario', bodyEn: "Time to pray the Rosary" },
+        { label: lang === 'es' ? '🕐 Liturgia de las Horas' : '🕐 Liturgy of the Hours', desc: lang === 'es' ? 'Laudes y Vísperas' : 'Lauds and Vespers', active: notifLiturgy, setter: setNotifLiturgy, time: liturgyTime, setTime: setLiturgyTime, titleEs: '🕐 Liturgia de las Horas', titleEn: '🕐 Liturgy of the Hours', bodyEs: 'Momento de oración litúrgica', bodyEn: "Time for liturgical prayer" },
+      ].map((n, i) => (
+        <div key={i} style={{ background: WHITE, borderRadius: 16, padding: 18, marginBottom: 12, boxShadow: "0 2px 12px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: n.active ? 12 : 0 }}>
+            <div>
+              <div style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 14, fontFamily: "'Cinzel', serif" }}>{n.label}</div>
+              <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{n.desc}</div>
+            </div>
+            <button style={switchStyle(n.active)} onClick={() => toggle(i, !n.active, n.setter, n.time, n.titleEs, n.titleEn, n.bodyEs, n.bodyEn)}>
+              <div style={knobStyle(n.active)} />
+            </button>
+          </div>
+          {n.active && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+              <span style={{ fontSize: 12, color: MUTED }}>{lang === 'es' ? 'Hora:' : 'Time:'}</span>
+              <input type="time" value={n.time} onChange={e => n.setTime(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${CREAM_DARK}`, fontSize: 13, color: WINE_DARK, background: CREAM, fontFamily: "'Cinzel', serif" }} />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
   const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop, renderReadings];
 
   return (

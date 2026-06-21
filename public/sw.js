@@ -1,4 +1,4 @@
-const CACHE_NAME = 'camino-de-fe-v5';
+const CACHE_NAME = 'camino-de-fe-v7';
 const urlsToCache = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', event => {
@@ -21,4 +21,18 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
   );
+});
+
+// Notificaciones programadas
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow('/'));
+});
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SCHEDULE_NOTIFICATIONS') {
+    const { notifications } = event.data;
+    // Guardar configuración
+    self.notificationConfig = notifications;
+  }
 });
