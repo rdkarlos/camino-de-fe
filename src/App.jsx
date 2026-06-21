@@ -150,6 +150,12 @@ const cleanGospelText = (text) => {
 };
 
 export default function App() {
+  const [notifGospel, setNotifGospel] = useState(false);
+const [notifRosary, setNotifRosary] = useState(false);
+const [notifLiturgy, setNotifLiturgy] = useState(false);
+const [gospelTime, setGospelTime] = useState("07:00");
+const [rosaryTime, setRosaryTime] = useState("19:00");
+const [liturgyTime, setLiturgyTime] = useState("06:00");
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
   const [rosaryStep, setRosaryStep] = useState(0);
@@ -442,14 +448,6 @@ export default function App() {
 
   const navIcons = ["🏠","📖","📿","🙏","💭","🛒","📜","⚙️"];
   const renderSettings = () => {
-  const [notifGospel, setNotifGospel] = useState(false);
-  const [notifRosary, setNotifRosary] = useState(false);
-  const [notifLiturgy, setNotifLiturgy] = useState(false);
-  const [gospelTime, setGospelTime] = useState("07:00");
-  const [rosaryTime, setRosaryTime] = useState("19:00");
-  const [liturgyTime, setLiturgyTime] = useState("06:00");
-  const [permissionGranted, setPermissionGranted] = useState(false);
-
   const requestPermission = async () => {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
