@@ -12,6 +12,71 @@ export default async function handler(req, res) {
   const API_KEY = '8z-olVvbUPzjg2OtXjSks';
   const BIBLE_ID = 'e3f420b9665abaeb-01';
 
+  const bookMap = {
+    'Genesis': 'GEN', 'Exodus': 'EXO', 'Leviticus': 'LEV', 'Numbers': 'NUM',
+    'Deuteronomy': 'DEU', 'Joshua': 'JOS', 'Judges': 'JDG', 'Ruth': 'RUT',
+    '1 Samuel': '1SA', '2 Samuel': '2SA', '1 Kings': '1KI', '2 Kings': '2KI',
+    '1 Chronicles': '1CH', '2 Chronicles': '2CH', 'Ezra': 'EZR', 'Nehemiah': 'NEH',
+    'Tobit': 'TOB', 'Judith': 'JDT', 'Esther': 'EST', '1 Maccabees': '1MA',
+    '2 Maccabees': '2MA', 'Job': 'JOB', 'Psalm': 'PSA', 'Psalms': 'PSA',
+    'Proverbs': 'PRO', 'Ecclesiastes': 'ECC', 'Song of Solomon': 'SNG',
+    'Song of Songs': 'SNG', 'Wisdom': 'WIS', 'Sirach': 'SIR',
+    'Isaiah': 'ISA', 'Jeremiah': 'JER', 'Lamentations': 'LAM',
+    'Baruch': 'BAR', 'Ezekiel': 'EZK', 'Daniel': 'DAN', 'Hosea': 'HOS',
+    'Joel': 'JOL', 'Amos': 'AMO', 'Obadiah': 'OBA', 'Jonah': 'JON',
+    'Micah': 'MIC', 'Nahum': 'NAM', 'Habakkuk': 'HAB', 'Zephaniah': 'ZEP',
+    'Haggai': 'HAG', 'Zechariah': 'ZEC', 'Malachi': 'MAL',
+    'Matthew': 'MAT', 'Mark': 'MRK', 'Luke': 'LUK', 'John': 'JHN',
+    'Acts': 'ACT', 'Romans': 'ROM', '1 Corinthians': '1CO', '2 Corinthians': '2CO',
+    'Galatians': 'GAL', 'Ephesians': 'EPH', 'Philippians': 'PHP', 'Colossians': 'COL',
+    '1 Thessalonians': '1TH', '2 Thessalonians': '2TH', '1 Timothy': '1TI',
+    '2 Timothy': '2TI', 'Titus': 'TIT', 'Philemon': 'PHM', 'Hebrews': 'HEB',
+    'James': 'JAS', '1 Peter': '1PE', '2 Peter': '2PE', '1 John': '1JN',
+    '2 John': '2JN', '3 John': '3JN', 'Jude': 'JUD', 'Revelation': 'REV',
+  };
+
+  const parseRef = (rawRef) => {
+    if (!rawRef) return null;
+    // Manejar referencias como "2 Chronicles 24:17-25" o "Psalm 89:4-5, 29-30"
+    const match = rawRef.match(/^(\d?\s?\w+(?:\s\w+)?)\s+(\d+):(\d+)[—\-–,\s\d:]+/);
+    if (!match) return null;
+    
+    const bookName = match[1].trim();
+    const bookCode = bookMap[bookName];
+    if (!bookCode) return null;
+
+    // Extraer capítulo y versículos
+    const verseMatch = rawRef.match(/(\d+):(\d+)[—\-–]+(\d+)?:?(\d+)?/);
+    if (!verseMatch) return null;
+
+    const ch1 = verseMatch[1];
+    const v1 = verseMatch[2];
+    const hasChapter2 = verseMatch[3] && verseMatch[4];
+    const ch2 = hasChapter2 ? verseMatch[3] : ch1;
+    const v2 = hasChapter2 ? verseMatch[4] : verseMatch[3] || v1;
+
+    return `${bookCode}.${ch1}.${v1}-${bookCode}.${ch2}.${v2}`;
+  };
+
+  const getSpanishText = async (rawRef) => {
+    const passageId = parseRef(rawRef);
+    if (!passageId) return null;
+    try {
+      const url = `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/passages/${passageId}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`;
+      const response = await fetch(url, {
+        headers: { 'api-key': API_KEY, 'Accept': 'application/json' }
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return {
+        text: data?.data?.content?.replace(/\s+/g, ' ').trim(),
+        reference: data?.data?.reference,
+      };
+    } catch (e) {
+      return null;
+    }
+  };
+
   const cleanText = (html) => html
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]*>/g, '')
@@ -43,70 +108,51 @@ export default async function handler(req, res) {
     const usccbResponse = await fetch(scraperUrl);
     const html = await usccbResponse.text();
 
-    const reading1 = extractSection(html, 'Reading 1') || extractSection(html, 'Reading I');
-    const reading2 = extractSection(html, 'Reading 2') || extractSection(html, 'Reading II');
-    const psalm = extractSection(html, 'Responsorial Psalm') || extractSection(html, 'Psalm');
+    const reading1En = extractSection(html, 'Reading 1') || extractSection(html, 'Reading I');
+    const reading2En = extractSection(html, 'Reading 2') || extractSection(html, 'Reading II');
+    const psalmEn = extractSection(html, 'Responsorial Psalm') || extractSection(html, 'Psalm');
 
     const gospelIdx = html.indexOf('<h3 class="name">Gospel');
     if (gospelIdx === -1) throw new Error('Gospel section not found');
     const htmlAfterGospel = html.substring(gospelIdx, gospelIdx + 3000);
-
     const refMatch = htmlAfterGospel.match(/class="address"[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
     const rawRef = refMatch ? refMatch[1].replace(/<[^>]*>/g, '').trim() : null;
     if (!rawRef) throw new Error('Reference not found');
-
     const bodyMatch = htmlAfterGospel.match(/<div[^>]*class="content-body"[^>]*>([\s\S]*?)<\/div>/i);
-    const enText = bodyMatch ? cleanText(bodyMatch[1]) : null;
+    const enGospelText = bodyMatch ? cleanText(bodyMatch[1]) : null;
 
     if (lang === 'en') {
       return res.status(200).json({
         success: true,
         reading: `Gospel - ${rawRef}`,
         reference: rawRef,
-        text: enText || 'Gospel text not available',
-        reading1: reading1 ? { reference: reading1.reference, text: reading1.text } : null,
-        reading2: reading2 ? { reference: reading2.reference, text: reading2.text } : null,
-        psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
+        text: enGospelText || 'Gospel text not available',
+        reading1: reading1En ? { reference: reading1En.reference, text: reading1En.text } : null,
+        reading2: reading2En ? { reference: reading2En.reference, text: reading2En.text } : null,
+        psalm: psalmEn ? { reference: psalmEn.reference, text: psalmEn.text } : null,
         reflection: '',
       });
     }
 
-    const bookMap = {
-      'Matthew': 'MAT', 'Mark': 'MRK', 'Luke': 'LUK', 'John': 'JHN',
-      'Mt': 'MAT', 'Mk': 'MRK', 'Lk': 'LUK', 'Jn': 'JHN',
-    };
+    // Para español: obtener todos los textos en paralelo
+    const [gospelEs, reading1Es, reading2Es, psalmEs] = await Promise.all([
+      getSpanishText(rawRef),
+      reading1En ? getSpanishText(reading1En.reference) : Promise.resolve(null),
+      reading2En ? getSpanishText(reading2En.reference) : Promise.resolve(null),
+      psalmEn ? getSpanishText(psalmEn.reference) : Promise.resolve(null),
+    ]);
 
-    const refParsed = rawRef.match(/(\w+)\s+(\d+):(\d+)[—\-–]+(\d+)?:?(\d+)?/);
-    if (!refParsed) throw new Error('Could not parse: ' + rawRef);
-
-    const book = bookMap[refParsed[1]] || 'MAT';
-    const ch1 = refParsed[2], v1 = refParsed[3];
-    const hasChapter2 = refParsed[4] && refParsed[5];
-    const ch2 = hasChapter2 ? refParsed[4] : ch1;
-    const v2 = hasChapter2 ? refParsed[5] : refParsed[4] || v1;
-    const passageId = `${book}.${ch1}.${v1}-${book}.${ch2}.${v2}`;
-
-    const bibleUrl = `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/passages/${passageId}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`;
-    const bibleResponse = await fetch(bibleUrl, {
-      headers: { 'api-key': API_KEY, 'Accept': 'application/json' }
-    });
-
-    if (!bibleResponse.ok) throw new Error('API.Bible error: ' + bibleResponse.status);
-
-    const bibleData = await bibleResponse.json();
-    const esText = bibleData?.data?.content?.replace(/\s+/g, ' ').trim();
-    const esRef = bibleData?.data?.reference || rawRef;
-    if (!esText) throw new Error('Spanish text not found');
+    if (!gospelEs?.text) throw new Error('Spanish gospel text not found');
 
     const title = `Evangelio del ${day} de ${months[month-1].charAt(0).toUpperCase() + months[month-1].slice(1)} del ${year}`;
     return res.status(200).json({
       success: true,
       reading: title,
-      reference: esRef,
-      text: `Evangelio del día\nLectura del santo Evangelio según san ${esRef}\n\n${esText}`,
-      reading1: reading1 ? { reference: reading1.reference, text: reading1.text } : null,
-      reading2: reading2 ? { reference: reading2.reference, text: reading2.text } : null,
-      psalm: psalm ? { reference: psalm.reference, text: psalm.text } : null,
+      reference: gospelEs.reference || rawRef,
+      text: `Evangelio del día\nLectura del santo Evangelio según san ${gospelEs.reference || rawRef}\n\n${gospelEs.text}`,
+      reading1: reading1Es ? { reference: reading1Es.reference || reading1En?.reference, text: reading1Es.text } : (reading1En ? { reference: reading1En.reference, text: reading1En.text } : null),
+      reading2: reading2Es ? { reference: reading2Es.reference || reading2En?.reference, text: reading2Es.text } : (reading2En ? { reference: reading2En.reference, text: reading2En.text } : null),
+      psalm: psalmEs ? { reference: psalmEs.reference || psalmEn?.reference, text: psalmEs.text } : (psalmEn ? { reference: psalmEn.reference, text: psalmEn.text } : null),
       reflection: '',
     });
 
