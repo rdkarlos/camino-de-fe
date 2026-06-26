@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
+import { products, formatPrice } from "./products";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -26,7 +27,7 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Lecturas", "Configuración"],
+    nav: ["Inicio", "Evangelio", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Lecturas", "⚙️"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -63,22 +64,11 @@ const translations = {
         { quote: "«Haz el bien hoy, aunque no lo recuerdes mañana.»", author: "Santa Teresa de Calcuta" },
       ],
     },
-    shop: {
-      subtitle: "Artículos para acompañar tu fe",
-      items: [
-        { name: "Rosario de madera", price: "$12.99", icon: "📿", tag: "Más vendido" },
-        { name: "Biblia Católica", price: "$24.99", icon: "📖", tag: "Nuevo" },
-        { name: "Vela votiva", price: "$8.50", icon: "🕯️", tag: "" },
-        { name: "Medalla de la Virgen", price: "$15.00", icon: "✨", tag: "Popular" },
-        { name: "Libro de oraciones", price: "$18.00", icon: "📔", tag: "" },
-        { name: "Cruz de pared", price: "$29.99", icon: "✝️", tag: "Artesanal" },
-      ],
-    },
   },
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Rosary", "Prayers", "Reflections", "Shop", "Readings", "Settings"],
+    nav: ["Home", "Gospel", "Rosary", "Prayers", "Reflections", "Shop", "Readings", "⚙️"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -115,17 +105,6 @@ const translations = {
         { quote: "«Do good today, even if you won't remember it tomorrow.»", author: "St. Teresa of Calcutta" },
       ],
     },
-    shop: {
-      subtitle: "Items to accompany your faith",
-      items: [
-        { name: "Wooden Rosary", price: "$12.99", icon: "📿", tag: "Best Seller" },
-        { name: "Catholic Bible", price: "$24.99", icon: "📖", tag: "New" },
-        { name: "Votive Candle", price: "$8.50", icon: "🕯️", tag: "" },
-        { name: "Virgin Mary Medal", price: "$15.00", icon: "✨", tag: "Popular" },
-        { name: "Prayer Book", price: "$18.00", icon: "📔", tag: "" },
-        { name: "Wall Cross", price: "$29.99", icon: "✝️", tag: "Handmade" },
-      ],
-    },
   },
 };
 
@@ -150,12 +129,6 @@ const cleanGospelText = (text) => {
 };
 
 export default function App() {
-  const [notifGospel, setNotifGospel] = useState(false);
-const [notifRosary, setNotifRosary] = useState(false);
-const [notifLiturgy, setNotifLiturgy] = useState(false);
-const [gospelTime, setGospelTime] = useState("07:00");
-const [rosaryTime, setRosaryTime] = useState("19:00");
-const [liturgyTime, setLiturgyTime] = useState("06:00");
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
   const [rosaryStep, setRosaryStep] = useState(0);
@@ -172,6 +145,18 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
   const [authLoading, setAuthLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openReading, setOpenReading] = useState(null);
+  const [notifGospel, setNotifGospel] = useState(false);
+  const [notifRosary, setNotifRosary] = useState(false);
+  const [notifLiturgy, setNotifLiturgy] = useState(false);
+  const [gospelTime, setGospelTime] = useState("07:00");
+  const [rosaryTime, setRosaryTime] = useState("19:00");
+  const [liturgyTime, setLiturgyTime] = useState("06:00");
+  const [showCart, setShowCart] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState(0);
+  const [checkoutName, setCheckoutName] = useState(user?.displayName || "");
+  const [checkoutEmail, setCheckoutEmail] = useState(user?.email || "");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     const today = new Date();
@@ -194,7 +179,13 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
   }, [lang]);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      if (u) {
+        setCheckoutName(u.displayName || "");
+        setCheckoutEmail(u.email || "");
+      }
+    });
     return () => unsub();
   }, []);
 
@@ -223,6 +214,61 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
   };
 
   const handleLogout = async () => { await signOut(auth); };
+
+  const addToCart = (product) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.id === product.id);
+      if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(prev => prev.filter(i => i.id !== productId));
+  };
+
+  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const handleCheckout = async () => {
+    if (!checkoutName || !checkoutEmail) return;
+    setCheckoutLoading(true);
+    try {
+      const res = await axios.post('/api/order', {
+        items: cart.map(i => ({ id: i.id, name: lang === 'es' ? i.nameEs : i.nameEn, price: i.price, quantity: i.quantity })),
+        customer: { name: checkoutName, email: checkoutEmail },
+      });
+      if (res.data.success) {
+        const { publicKey, reference, amountInCents, currency, signature, customerEmail } = res.data;
+        // Crear y enviar formulario de Wompi
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = 'https://checkout.wompi.co/p/';
+        const params = {
+          'public-key': publicKey,
+          'currency': currency,
+          'amount-in-cents': amountInCents,
+          'reference': reference,
+          'signature:integrity': signature,
+          'customer-data:email': customerEmail,
+          'customer-data:full-name': checkoutName,
+          'redirect-url': window.location.origin + '?payment=success',
+        };
+        Object.entries(params).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setCheckoutLoading(false);
+  };
 
   const t = translations[lang];
 
@@ -253,6 +299,68 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
             : <>{lang === 'es' ? '¿No tienes cuenta? ' : "Don't have an account? "}<span style={{ color: WINE, cursor: "pointer", fontWeight: "bold" }} onClick={() => setAuthMode('register')}>{lang === 'es' ? 'Regístrate' : 'Register'}</span></>
           }
         </div>
+      </div>
+    </div>
+  );
+
+  const renderCartModal = () => (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(74,15,40,0.7)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => setShowCart(false)}>
+      <div style={{ background: WHITE, borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 430, maxHeight: "80vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div style={{ fontSize: 18, fontWeight: "bold", color: WINE_DARK, fontFamily: "'Cinzel', serif" }}>
+            🛒 {lang === 'es' ? 'Tu carrito' : 'Your cart'}
+          </div>
+          <button onClick={() => setShowCart(false)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: MUTED }}>✕</button>
+        </div>
+
+        {cart.length === 0 ? (
+          <div style={{ textAlign: "center", color: MUTED, padding: 30, fontSize: 14 }}>
+            {lang === 'es' ? 'Tu carrito está vacío' : 'Your cart is empty'}
+          </div>
+        ) : (
+          <>
+            {cart.map(item => (
+              <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${CREAM_DARK}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 28 }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 13 }}>{lang === 'es' ? item.nameEs : item.nameEn}</div>
+                    <div style={{ fontSize: 12, color: MUTED }}>x{item.quantity} · {formatPrice(item.price)}</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ fontWeight: "bold", color: WINE, fontSize: 14 }}>{formatPrice(item.price * item.quantity)}</div>
+                  <button onClick={() => removeFromCart(item.id)} style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", fontSize: 16 }}>✕</button>
+                </div>
+              </div>
+            ))}
+
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "16px 0", fontWeight: "bold" }}>
+              <span style={{ color: WINE_DARK, fontFamily: "'Cinzel', serif" }}>Total</span>
+              <span style={{ color: WINE, fontSize: 18 }}>{formatPrice(cartTotal)}</span>
+            </div>
+
+            {checkoutStep === 0 ? (
+              <button onClick={() => setCheckoutStep(1)} style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
+                {lang === 'es' ? 'Proceder al pago →' : 'Proceed to checkout →'}
+              </button>
+            ) : (
+              <div>
+                <div style={{ fontSize: 14, fontWeight: "bold", color: WINE_DARK, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
+                  {lang === 'es' ? 'Datos de contacto' : 'Contact details'}
+                </div>
+                <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Nombre completo' : 'Full name'} value={checkoutName} onChange={e => setCheckoutName(e.target.value)} />
+                <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder="Email" type="email" value={checkoutEmail} onChange={e => setCheckoutEmail(e.target.value)} />
+                <button onClick={handleCheckout} disabled={checkoutLoading || !checkoutName || !checkoutEmail} style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg, #2E7D32, #1B5E20)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif", marginBottom: 8 }}>
+                  {checkoutLoading ? '...' : `💳 ${lang === 'es' ? 'Pagar con Wompi' : 'Pay with Wompi'} · ${formatPrice(cartTotal)}`}
+                </button>
+                <button onClick={() => setCheckoutStep(0)} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: WINE_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer" }}>
+                  ← {lang === 'es' ? 'Volver' : 'Back'}
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -288,16 +396,12 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
             <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", marginBottom: 16 }}>
               {i === 0 && gospelData ? (
                 <>
-                  <span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>
-                    {lang === 'en' ? gospelData?.reference : reference}
-                  </span>
+                  <span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{lang === 'en' ? gospelData?.reference : reference}</span>
                   {body.substring(0, 80) + "..."}
                 </>
               ) : i === 1 && gospelData?.reading1 ? (
                 <>
-                  <span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>
-                    {gospelData.reading1.reference}
-                  </span>
+                  <span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{gospelData.reading1.reference}</span>
                   {gospelData.reading1.text.substring(0, 80) + "..."}
                 </>
               ) : c.desc}
@@ -317,19 +421,12 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
     return (
       <div>
         <div style={{ background: `linear-gradient(135deg, ${WINE_DARK}, ${WINE})`, borderRadius: 16, padding: "18px 20px", marginBottom: 16, color: WHITE }}>
-          <div style={{ fontSize: 13, color: GOLD_LIGHT, fontStyle: "italic", marginBottom: 4 }}>
-            {lang === 'es' ? 'Lectura del santo Evangelio' : 'Reading of the Holy Gospel'}
-          </div>
-          <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>
-            {lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading)}
-          </div>
+          <div style={{ fontSize: 13, color: GOLD_LIGHT, fontStyle: "italic", marginBottom: 4 }}>{lang === 'es' ? 'Lectura del santo Evangelio' : 'Reading of the Holy Gospel'}</div>
+          <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading)}</div>
         </div>
         <div style={{ background: WHITE, borderRadius: 16, padding: 20, fontSize: 14, lineHeight: 1.9, color: "#3A2A1E", whiteSpace: "pre-wrap", boxShadow: "0 4px 16px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
           {formatted}
-          {"\n\n"}
-          <span style={{ color: WINE, fontWeight: "bold", fontStyle: "italic" }}>
-            — {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}
-          </span>
+          {"\n\n"}<span style={{ color: WINE, fontWeight: "bold", fontStyle: "italic" }}>— {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}</span>
         </div>
       </div>
     );
@@ -340,25 +437,19 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
     if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera Lectura' : 'First Reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, icon: '📜' });
     if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda Lectura' : 'Second Reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, icon: '📋' });
     if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo Responsorial' : 'Responsorial Psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, icon: '🎵' });
-
-    if (!gospelData) return <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>Cargando lecturas...</div>;
-
+    if (!gospelData) return <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>{lang === 'es' ? 'Cargando lecturas...' : 'Loading readings...'}</div>;
     return (
       <div>
-        {sections.map((s, i) => (
+        {sections.map((s) => (
           <div key={s.key} style={{ background: WHITE, borderRadius: 16, marginBottom: 12, overflow: "hidden", boxShadow: "0 4px 16px rgba(26,58,92,0.08)", border: `1px solid ${CREAM_DARK}` }}>
-            <div onClick={() => setOpenReading(openReading === s.key ? null : s.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer", background: openReading === s.key ? `${BLUE_DARK}08` : WHITE }}>
+            <div onClick={() => setOpenReading(openReading === s.key ? null : s.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer" }}>
               <div>
                 <div style={{ fontWeight: "bold", color: BLUE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif" }}>{s.icon} {s.title}</div>
                 <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{s.ref}</div>
               </div>
               <span style={{ color: BLUE, fontSize: 20, fontWeight: "bold" }}>{openReading === s.key ? "−" : "+"}</span>
             </div>
-            {openReading === s.key && (
-              <div style={{ padding: "0 18px 18px", fontSize: 14, color: "#1A2A3A", lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>
-                {s.text}
-              </div>
-            )}
+            {openReading === s.key && <div style={{ padding: "0 18px 18px", fontSize: 14, color: "#1A2A3A", lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>{s.text}</div>}
           </div>
         ))}
       </div>
@@ -420,121 +511,99 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
 
   const renderShop = () => (
     <div>
-      <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, fontStyle: "italic" }}>{t.shop.subtitle}</p>
+      <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, fontStyle: "italic" }}>{lang === 'es' ? 'Artículos para acompañar tu fe' : 'Items to accompany your faith'}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        {t.shop.items.map((item, i) => (
-          <div key={i} style={{ background: WHITE, borderRadius: 16, padding: 16, boxShadow: "0 4px 16px rgba(74,15,40,0.08)", position: "relative", textAlign: "center", border: `1px solid ${CREAM_DARK}` }}>
+        {products.map((item) => (
+          <div key={item.id} style={{ background: WHITE, borderRadius: 16, padding: 16, boxShadow: "0 4px 16px rgba(74,15,40,0.08)", position: "relative", textAlign: "center", border: `1px solid ${CREAM_DARK}` }}>
             {item.tag && <span style={{ position: "absolute", top: 8, right: 8, background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: WINE_DARK, fontSize: 9, fontWeight: "bold", padding: "3px 8px", borderRadius: 10 }}>{item.tag}</span>}
             <div style={{ fontSize: 36, marginBottom: 8 }}>{item.icon}</div>
-            <div style={{ fontSize: 13, fontWeight: "bold", color: WINE_DARK, marginBottom: 4, fontFamily: "'Cinzel', serif" }}>{item.name}</div>
-            <div style={{ fontSize: 15, color: WINE, fontWeight: "bold", marginBottom: 10 }}>{item.price}</div>
-            <button onClick={() => setCart([...cart, item])} style={{ background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", padding: "8px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%", fontFamily: "'Cinzel', serif" }}>
-              {lang === "es" ? "Añadir" : "Add to cart"}
+            <div style={{ fontSize: 13, fontWeight: "bold", color: WINE_DARK, marginBottom: 4, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? item.nameEs : item.nameEn}</div>
+            <div style={{ fontSize: 15, color: WINE, fontWeight: "bold", marginBottom: 10 }}>{formatPrice(item.price)}</div>
+            <button onClick={() => addToCart(item)} style={{ background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", padding: "8px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%", fontFamily: "'Cinzel', serif" }}>
+              {lang === "es" ? "Añadir al carrito" : "Add to cart"}
             </button>
           </div>
         ))}
       </div>
       {cart.length > 0 && (
-        <div style={{ marginTop: 20, background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`, border: `1px solid ${GOLD}44`, borderRadius: 16, padding: 16, textAlign: "center" }}>
-          <span style={{ fontWeight: "bold", color: WINE_DARK }}>🛒 {lang === "es" ? "Carrito" : "Cart"}</span>
-          <span style={{ background: WINE, color: WHITE, fontSize: 10, borderRadius: "50%", width: 18, height: 18, display: "inline-flex", alignItems: "center", justifyContent: "center", marginLeft: 6 }}>{cart.length}</span>
-          <p style={{ fontSize: 13, color: MUTED, margin: "8px 0 0", fontWeight: "bold" }}>
-            Total: ${cart.reduce((a, b) => a + parseFloat(b.price.replace("$", "")), 0).toFixed(2)}
-          </p>
-        </div>
+        <button onClick={() => setShowCart(true)} style={{ position: "fixed", bottom: 24, right: 24, background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 30, padding: "14px 20px", fontSize: 14, fontWeight: "bold", cursor: "pointer", boxShadow: "0 4px 20px rgba(74,15,40,0.4)", zIndex: 50, fontFamily: "'Cinzel', serif" }}>
+          🛒 {cartCount} · {formatPrice(cartTotal)}
+        </button>
       )}
     </div>
   );
+
+  const renderSettings = () => {
+    const scheduleNotification = (type, time, title, body) => {
+      const [hours, minutes] = time.split(':').map(Number);
+      const now = new Date();
+      const notifTime = new Date();
+      notifTime.setHours(hours, minutes, 0, 0);
+      if (notifTime <= now) notifTime.setDate(notifTime.getDate() + 1);
+      const delay = notifTime - now;
+      setTimeout(() => {
+        if (Notification.permission === 'granted') new Notification(title, { body, icon: '/icon-192.png' });
+      }, delay);
+    };
+
+    const requestPermission = async () => {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        if (notifGospel) scheduleNotification('gospel', gospelTime, '📖 Evangelio del día', 'Lee el Evangelio de hoy');
+        if (notifRosary) scheduleNotification('rosary', rosaryTime, '📿 Santo Rosario', 'Es hora de rezar el Rosario');
+        if (notifLiturgy) scheduleNotification('liturgy', liturgyTime, '🕐 Liturgia de las Horas', 'Momento de oración litúrgica');
+      }
+    };
+
+    const switchStyle = (active) => ({ width: 44, height: 24, borderRadius: 12, background: active ? WINE : CREAM_DARK, position: "relative", cursor: "pointer", border: "none", flexShrink: 0 });
+    const knobStyle = (active) => ({ position: "absolute", top: 2, left: active ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: WHITE, transition: "left 0.3s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" });
+
+    const notifs = [
+      { label: lang === 'es' ? '📖 Evangelio del día' : '📖 Gospel of the Day', desc: lang === 'es' ? 'Recordatorio matutino' : 'Morning reminder', active: notifGospel, setter: setNotifGospel, time: gospelTime, setTime: setGospelTime },
+      { label: lang === 'es' ? '📿 Santo Rosario' : '📿 Holy Rosary', desc: lang === 'es' ? 'Recordatorio para rezar el Rosario' : 'Rosary reminder', active: notifRosary, setter: setNotifRosary, time: rosaryTime, setTime: setRosaryTime },
+      { label: lang === 'es' ? '🕐 Liturgia de las Horas' : '🕐 Liturgy of the Hours', desc: lang === 'es' ? 'Laudes y Vísperas' : 'Lauds and Vespers', active: notifLiturgy, setter: setNotifLiturgy, time: liturgyTime, setTime: setLiturgyTime },
+    ];
+
+    return (
+      <div>
+        {Notification.permission !== 'granted' && (
+          <div style={{ background: `linear-gradient(135deg, ${WINE_DARK}, ${WINE})`, borderRadius: 16, padding: 20, marginBottom: 16, color: WHITE, textAlign: "center" }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
+            <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Activar notificaciones' : 'Enable notifications'}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 16 }}>{lang === 'es' ? 'Recibe recordatorios para rezar cada día' : 'Receive daily prayer reminders'}</div>
+            <button onClick={requestPermission} style={{ background: GOLD, color: WINE_DARK, border: "none", padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Permitir notificaciones' : 'Allow notifications'}</button>
+          </div>
+        )}
+        {notifs.map((n, i) => (
+          <div key={i} style={{ background: WHITE, borderRadius: 16, padding: 18, marginBottom: 12, boxShadow: "0 2px 12px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 14, fontFamily: "'Cinzel', serif" }}>{n.label}</div>
+                <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{n.desc}</div>
+              </div>
+              <button style={switchStyle(n.active)} onClick={() => n.setter(!n.active)}>
+                <div style={knobStyle(n.active)} />
+              </button>
+            </div>
+            {n.active && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
+                <span style={{ fontSize: 12, color: MUTED }}>{lang === 'es' ? 'Hora:' : 'Time:'}</span>
+                <input type="time" value={n.time} onChange={e => n.setTime(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${CREAM_DARK}`, fontSize: 13, color: WINE_DARK, background: CREAM }} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   const navIcons = ["🏠","📖","📿","🙏","💭","🛒","📜","⚙️"];
-  const renderSettings = () => {
-  const requestPermission = async () => {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      setPermissionGranted(true);
-      scheduleNotification('evangelio', gospelTime, lang === 'es' ? '📖 Evangelio del día' : '📖 Gospel of the Day', lang === 'es' ? 'Lee el Evangelio de hoy' : "Read today's Gospel");
-    }
-  };
-
-  const scheduleNotification = (type, time, title, body) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const now = new Date();
-    const notifTime = new Date();
-    notifTime.setHours(hours, minutes, 0, 0);
-    if (notifTime <= now) notifTime.setDate(notifTime.getDate() + 1);
-    const delay = notifTime - now;
-    setTimeout(() => {
-      if (Notification.permission === 'granted') {
-        new Notification(title, { body, icon: '/icon-192.png' });
-      }
-    }, delay);
-  };
-
-  const toggle = (type, value, setter, time, titleEs, titleEn, bodyEs, bodyEn) => {
-    setter(value);
-    if (value) scheduleNotification(type, time, lang === 'es' ? titleEs : titleEn, lang === 'es' ? bodyEs : bodyEn);
-  };
-
-  const switchStyle = (active) => ({
-    width: 44, height: 24, borderRadius: 12, background: active ? WINE : CREAM_DARK,
-    position: "relative", cursor: "pointer", transition: "background 0.3s", border: "none",
-    flexShrink: 0,
-  });
-
-  const knobStyle = (active) => ({
-    position: "absolute", top: 2, left: active ? 22 : 2, width: 20, height: 20,
-    borderRadius: "50%", background: WHITE, transition: "left 0.3s",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-  });
-
-  return (
-    <div>
-      {Notification.permission !== 'granted' && (
-        <div style={{ background: `linear-gradient(135deg, ${WINE_DARK}, ${WINE})`, borderRadius: 16, padding: 20, marginBottom: 16, color: WHITE, textAlign: "center" }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
-          <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8, fontFamily: "'Cinzel', serif" }}>
-            {lang === 'es' ? 'Activar notificaciones' : 'Enable notifications'}
-          </div>
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 16 }}>
-            {lang === 'es' ? 'Recibe recordatorios para rezar cada día' : 'Receive daily prayer reminders'}
-          </div>
-          <button onClick={requestPermission} style={{ background: GOLD, color: WINE_DARK, border: "none", padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
-            {lang === 'es' ? 'Permitir notificaciones' : 'Allow notifications'}
-          </button>
-        </div>
-      )}
-
-      {[
-        { label: lang === 'es' ? '📖 Evangelio del día' : '📖 Gospel of the Day', desc: lang === 'es' ? 'Recordatorio matutino' : 'Morning reminder', active: notifGospel, setter: setNotifGospel, time: gospelTime, setTime: setGospelTime, titleEs: '📖 Evangelio del día', titleEn: '📖 Gospel of the Day', bodyEs: 'Lee el Evangelio de hoy', bodyEn: "Read today's Gospel" },
-        { label: lang === 'es' ? '📿 Santo Rosario' : '📿 Holy Rosary', desc: lang === 'es' ? 'Recordatorio para rezar el Rosario' : 'Rosary prayer reminder', active: notifRosary, setter: setNotifRosary, time: rosaryTime, setTime: setRosaryTime, titleEs: '📿 Santo Rosario', titleEn: '📿 Holy Rosary', bodyEs: 'Es hora de rezar el Rosario', bodyEn: "Time to pray the Rosary" },
-        { label: lang === 'es' ? '🕐 Liturgia de las Horas' : '🕐 Liturgy of the Hours', desc: lang === 'es' ? 'Laudes y Vísperas' : 'Lauds and Vespers', active: notifLiturgy, setter: setNotifLiturgy, time: liturgyTime, setTime: setLiturgyTime, titleEs: '🕐 Liturgia de las Horas', titleEn: '🕐 Liturgy of the Hours', bodyEs: 'Momento de oración litúrgica', bodyEn: "Time for liturgical prayer" },
-      ].map((n, i) => (
-        <div key={i} style={{ background: WHITE, borderRadius: 16, padding: 18, marginBottom: 12, boxShadow: "0 2px 12px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: n.active ? 12 : 0 }}>
-            <div>
-              <div style={{ fontWeight: "bold", color: WINE_DARK, fontSize: 14, fontFamily: "'Cinzel', serif" }}>{n.label}</div>
-              <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{n.desc}</div>
-            </div>
-            <button style={switchStyle(n.active)} onClick={() => toggle(i, !n.active, n.setter, n.time, n.titleEs, n.titleEn, n.bodyEs, n.bodyEn)}>
-              <div style={knobStyle(n.active)} />
-            </button>
-          </div>
-          {n.active && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-              <span style={{ fontSize: 12, color: MUTED }}>{lang === 'es' ? 'Hora:' : 'Time:'}</span>
-              <input type="time" value={n.time} onChange={e => n.setTime(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${CREAM_DARK}`, fontSize: 13, color: WINE_DARK, background: CREAM, fontFamily: "'Cinzel', serif" }} />
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
   const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop, renderReadings, renderSettings];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(74,15,40,0.15)" }}>
       {authMode && renderAuthModal()}
+      {showCart && renderCartModal()}
 
       <div style={{ background: `linear-gradient(135deg, ${WINE_DARK} 0%, ${WINE} 100%)`, padding: "20px 20px 0", color: WHITE }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -545,6 +614,7 @@ const [liturgyTime, setLiturgyTime] = useState("06:00");
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button onClick={() => setLang("es")} style={{ padding: "4px 10px", borderRadius: 20, border: `1px solid ${lang === 'es' ? GOLD : "rgba(255,255,255,0.3)"}`, background: lang === 'es' ? GOLD : "transparent", color: lang === 'es' ? WINE_DARK : WHITE, fontSize: 11, cursor: "pointer", fontWeight: lang === 'es' ? "bold" : "normal" }}>ES</button>
             <button onClick={() => setLang("en")} style={{ padding: "4px 10px", borderRadius: 20, border: `1px solid ${lang === 'en' ? GOLD : "rgba(255,255,255,0.3)"}`, background: lang === 'en' ? GOLD : "transparent", color: lang === 'en' ? WINE_DARK : WHITE, fontSize: 11, cursor: "pointer", fontWeight: lang === 'en' ? "bold" : "normal" }}>EN</button>
+            {cartCount > 0 && <button onClick={() => setShowCart(true)} style={{ padding: "4px 10px", borderRadius: 20, border: `1px solid ${GOLD}`, background: GOLD, color: WINE_DARK, fontSize: 11, cursor: "pointer", fontWeight: "bold" }}>🛒 {cartCount}</button>}
             {!user && <button onClick={() => setAuthMode('login')} style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: WHITE, fontSize: 11, cursor: "pointer" }}>👤</button>}
           </div>
         </div>
