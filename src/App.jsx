@@ -163,7 +163,7 @@ export default function App() {
     const day = today.getDate();
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
-    const cacheKey = `gospel_v2_${lang}_${day}_${month}_${year}`;
+    const cacheKey = `gospel_v3_${lang}_${day}_${month}_${year}`;
     try {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) { setGospelData(JSON.parse(cached)); return; }
