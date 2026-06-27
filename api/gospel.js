@@ -35,28 +35,33 @@ export default async function handler(req, res) {
     '2 John': '2JN', '3 John': '3JN', 'Jude': 'JUD', 'Revelation': 'REV',
   };
 
-  const parseRef = (rawRef) => {
-    if (!rawRef) return null;
-    // Manejar referencias como "2 Chronicles 24:17-25" o "Psalm 89:4-5, 29-30"
-    const match = rawRef.match(/^(\d?\s?\w+(?:\s\w+)?)\s+(\d+):(\d+)[—\-–,\s\d:]+/);
-    if (!match) return null;
-    
-    const bookName = match[1].trim();
-    const bookCode = bookMap[bookName];
-    if (!bookCode) return null;
+const parseRef = (rawRef) => {
+  if (!rawRef) return null;
+  
+  // Limpiar la referencia - tomar solo el primer rango
+  // "Lamentations 2:2, 10-14, 18-19" → "Lamentations 2:2-19"
+  const bookMatch = rawRef.match(/^(\d?\s?[A-Za-z]+(?:\s[A-Za-z]+)?)\s+(\d+):(\d+)/);
+  if (!bookMatch) return null;
+  
+  const bookName = bookMatch[1].trim();
+  const bookCode = bookMap[bookName];
+  if (!bookCode) return null;
 
-    // Extraer capítulo y versículos
-    const verseMatch = rawRef.match(/(\d+):(\d+)[—\-–]+(\d+)?:?(\d+)?/);
-    if (!verseMatch) return null;
+  const ch1 = bookMatch[2];
+  const v1 = bookMatch[3];
 
-    const ch1 = verseMatch[1];
-    const v1 = verseMatch[2];
-    const hasChapter2 = verseMatch[3] && verseMatch[4];
-    const ch2 = hasChapter2 ? verseMatch[3] : ch1;
-    const v2 = hasChapter2 ? verseMatch[4] : verseMatch[3] || v1;
+  // Buscar el último número para el versículo final
+  const allNums = rawRef.match(/\d+/g) || [];
+  const lastNum = allNums[allNums.length - 1];
+  
+  // Verificar si hay cambio de capítulo
+  const chapterChange = rawRef.match(/(\d+):(\d+)[—\-–]+(\d+):(\d+)/);
+  if (chapterChange) {
+    return `${bookCode}.${chapterChange[1]}.${chapterChange[2]}-${bookCode}.${chapterChange[3]}.${chapterChange[4]}`;
+  }
 
-    return `${bookCode}.${ch1}.${v1}-${bookCode}.${ch2}.${v2}`;
-  };
+  return `${bookCode}.${ch1}.${v1}-${bookCode}.${ch1}.${lastNum}`;
+};
 
   const getSpanishText = async (rawRef) => {
     const passageId = parseRef(rawRef);
