@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   const PRIV_KEY = 'prv_test_UejvuFaIJ4dG7srQNeR1i4GFleXwX58M';
   const PUB_KEY = 'pub_test_xPgU55YobCslPvoYbXPegPXLDxC1RFyd';
-  const INTEGRITY_KEY = 'test_integrity_Gp4G2jzLWlL8qnxKdqAMC2KF2rFM6LoX';
+  const INTEGRITY_KEY = 'test_integrity_MhVJMSER6egsMuu8efy3bKH3At2NLI1a';
 
   try {
     const { items, customer } = req.body;
