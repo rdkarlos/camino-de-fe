@@ -1,5 +1,5 @@
 const CACHE_NAME = 'camino-de-fe-v5';
-const urlsToCache = ['/', '/index.html', '/manifest.json'];
+const urlsToCache = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -18,21 +18,22 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Para HTML y JS siempre va a la red primero
+  if (event.request.mode === 'navigate' || 
+      event.request.url.includes('.js') || 
+      event.request.url.includes('.jsx')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  // Para otros recursos usa caché primero
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
   );
 });
 
-// Notificaciones programadas
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(clients.openWindow('/'));
-});
-
-self.addEventListener('message', event => {
-  if (event.data?.type === 'SCHEDULE_NOTIFICATIONS') {
-    const { notifications } = event.data;
-    // Guardar configuración
-    self.notificationConfig = notifications;
-  }
 });
