@@ -27,15 +27,15 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Lecturas", "⚙️"],
+    nav: ["Inicio", "Evangelio", "Lecturas del Día", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
         { icon: "📖", title: "Evangelio del Día", desc: "Cargando el Evangelio de hoy...", btn: "Leer más", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)", tab: 1 },
-        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 6 },
-        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 2 },
-        { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 3 },
+        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 2 },
+        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 3 },
+        { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 4 },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
@@ -68,15 +68,15 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Rosary", "Prayers", "Reflections", "Shop", "Readings", "⚙️"],
+    nav: ["Home", "Gospel", "Daily Readings", "Rosary", "Prayers", "Reflections", "Shop", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
         { icon: "📖", title: "Gospel of the Day", desc: "Loading today's Gospel...", btn: "Read more", gradient: "linear-gradient(135deg, #6B1F3E, #A0294E)", tab: 1 },
-        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 6 },
-        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 2 },
-        { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 3 },
+        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 2 },
+        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 3 },
+        { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 4 },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
@@ -627,8 +627,8 @@ export default function App() {
     );
   };
 
-  const navIcons = ["🏠","📖","📿","🙏","💭","🛒","📜","⚙️"];
-  const sections = [renderHome, renderGospel, renderRosary, renderPrayers, renderReflections, renderShop, renderReadings, renderSettings];
+  const navIcons = ["🏠","📖","📜","📿","🙏","💭","🛒","⚙️"];
+  const sections = [renderHome, renderGospel, renderReadings, renderRosary, renderPrayers, renderReflections, renderShop, renderSettings];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(74,15,40,0.15)" }}>
