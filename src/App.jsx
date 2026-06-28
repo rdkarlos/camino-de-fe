@@ -153,10 +153,20 @@ export default function App() {
   const [liturgyTime, setLiturgyTime] = useState("06:00");
   const [showCart, setShowCart] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(0);
-  const [checkoutName, setCheckoutName] = useState(user?.displayName || "");
-  const [checkoutEmail, setCheckoutEmail] = useState(user?.email || "");
+  const [checkoutName, setCheckoutName] = useState("");
+  const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      setPaymentSuccess(true);
+      setCart([]);
+      setCheckoutStep(0);
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   useEffect(() => {
     const today = new Date();
@@ -223,10 +233,7 @@ export default function App() {
     });
   };
 
-  const removeFromCart = (productId) => {
-    setCart(prev => prev.filter(i => i.id !== productId));
-  };
-
+  const removeFromCart = (productId) => setCart(prev => prev.filter(i => i.id !== productId));
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -240,7 +247,6 @@ export default function App() {
       });
       if (res.data.success) {
         const { publicKey, reference, amountInCents, currency, signature, customerEmail } = res.data;
-        // Crear y enviar formulario de Wompi
         const form = document.createElement('form');
         form.method = 'GET';
         form.action = 'https://checkout.wompi.co/p/';
@@ -264,13 +270,31 @@ export default function App() {
         document.body.appendChild(form);
         form.submit();
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
     setCheckoutLoading(false);
   };
 
   const t = translations[lang];
+
+  const renderPaymentSuccess = () => (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(74,15,40,0.85)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: WHITE, borderRadius: 24, padding: 32, width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "0 20px 60px rgba(74,15,40,0.3)" }}>
+        <div style={{ fontSize: 60, marginBottom: 16 }}>🙏</div>
+        <div style={{ fontSize: 24, fontWeight: "bold", color: WINE_DARK, fontFamily: "'Cinzel', serif", marginBottom: 8 }}>
+          {lang === 'es' ? '¡Gracias por tu compra!' : 'Thank you for your purchase!'}
+        </div>
+        <div style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginBottom: 8 }}>
+          {lang === 'es' ? 'Tu pago fue aprobado. Recibirás un email de confirmación pronto.' : 'Your payment was approved. You will receive a confirmation email soon.'}
+        </div>
+        <div style={{ fontSize: 13, color: WINE, fontStyle: "italic", marginBottom: 24, fontFamily: "'Crimson Text', serif" }}>
+          {lang === 'es' ? '«Gratis recibisteis, dad gratis» — Mateo 10:8' : '«Freely you have received, freely give» — Matthew 10:8'}
+        </div>
+        <button onClick={() => setPaymentSuccess(false)} style={{ background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", padding: "12px 28px", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
+          {lang === 'es' ? 'Continuar →' : 'Continue →'}
+        </button>
+      </div>
+    </div>
+  );
 
   const renderAuthModal = () => (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(74,15,40,0.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setAuthMode(null)}>
@@ -304,19 +328,14 @@ export default function App() {
   );
 
   const renderCartModal = () => (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(74,15,40,0.7)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => setShowCart(false)}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(74,15,40,0.7)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => { setShowCart(false); setCheckoutStep(0); }}>
       <div style={{ background: WHITE, borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 430, maxHeight: "80vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 18, fontWeight: "bold", color: WINE_DARK, fontFamily: "'Cinzel', serif" }}>
-            🛒 {lang === 'es' ? 'Tu carrito' : 'Your cart'}
-          </div>
-          <button onClick={() => setShowCart(false)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: MUTED }}>✕</button>
+          <div style={{ fontSize: 18, fontWeight: "bold", color: WINE_DARK, fontFamily: "'Cinzel', serif" }}>🛒 {lang === 'es' ? 'Tu carrito' : 'Your cart'}</div>
+          <button onClick={() => { setShowCart(false); setCheckoutStep(0); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: MUTED }}>✕</button>
         </div>
-
         {cart.length === 0 ? (
-          <div style={{ textAlign: "center", color: MUTED, padding: 30, fontSize: 14 }}>
-            {lang === 'es' ? 'Tu carrito está vacío' : 'Your cart is empty'}
-          </div>
+          <div style={{ textAlign: "center", color: MUTED, padding: 30, fontSize: 14 }}>{lang === 'es' ? 'Tu carrito está vacío' : 'Your cart is empty'}</div>
         ) : (
           <>
             {cart.map(item => (
@@ -334,29 +353,23 @@ export default function App() {
                 </div>
               </div>
             ))}
-
             <div style={{ display: "flex", justifyContent: "space-between", padding: "16px 0", fontWeight: "bold" }}>
               <span style={{ color: WINE_DARK, fontFamily: "'Cinzel', serif" }}>Total</span>
               <span style={{ color: WINE, fontSize: 18 }}>{formatPrice(cartTotal)}</span>
             </div>
-
             {checkoutStep === 0 ? (
               <button onClick={() => setCheckoutStep(1)} style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg, ${WINE}, ${WINE_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
                 {lang === 'es' ? 'Proceder al pago →' : 'Proceed to checkout →'}
               </button>
             ) : (
               <div>
-                <div style={{ fontSize: 14, fontWeight: "bold", color: WINE_DARK, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
-                  {lang === 'es' ? 'Datos de contacto' : 'Contact details'}
-                </div>
+                <div style={{ fontSize: 14, fontWeight: "bold", color: WINE_DARK, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Datos de contacto' : 'Contact details'}</div>
                 <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Nombre completo' : 'Full name'} value={checkoutName} onChange={e => setCheckoutName(e.target.value)} />
                 <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder="Email" type="email" value={checkoutEmail} onChange={e => setCheckoutEmail(e.target.value)} />
                 <button onClick={handleCheckout} disabled={checkoutLoading || !checkoutName || !checkoutEmail} style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg, #2E7D32, #1B5E20)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif", marginBottom: 8 }}>
                   {checkoutLoading ? '...' : `💳 ${lang === 'es' ? 'Pagar con Wompi' : 'Pay with Wompi'} · ${formatPrice(cartTotal)}`}
                 </button>
-                <button onClick={() => setCheckoutStep(0)} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: WINE_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer" }}>
-                  ← {lang === 'es' ? 'Volver' : 'Back'}
-                </button>
+                <button onClick={() => setCheckoutStep(0)} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: WINE_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer" }}>← {lang === 'es' ? 'Volver' : 'Back'}</button>
               </div>
             )}
           </>
@@ -385,9 +398,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <div style={{ background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`, border: `1px solid ${GOLD}44`, borderRadius: 12, padding: "10px 14px", fontSize: 12, color: WINE_DARK, marginBottom: 16 }}>
-          {t.home.reminder}
-        </div>
+        <div style={{ background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}11)`, border: `1px solid ${GOLD}44`, borderRadius: 12, padding: "10px 14px", fontSize: 12, color: WINE_DARK, marginBottom: 16 }}>{t.home.reminder}</div>
         {t.home.cards.map((c, i) => (
           <div key={i} style={{ background: c.gradient, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden", boxShadow: "0 8px 24px rgba(74,15,40,0.2)" }}>
             <div style={{ position: "absolute", bottom: -15, right: -10, fontSize: 70, opacity: 0.12 }}>{c.icon}</div>
@@ -395,20 +406,12 @@ export default function App() {
             <div style={{ fontWeight: "bold", fontSize: 17, marginBottom: 8, fontFamily: "'Cinzel', serif" }}>{c.title}</div>
             <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", marginBottom: 16 }}>
               {i === 0 && gospelData ? (
-                <>
-                  <span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{lang === 'en' ? gospelData?.reference : reference}</span>
-                  {body.substring(0, 80) + "..."}
-                </>
+                <><span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{lang === 'en' ? gospelData?.reference : reference}</span>{body.substring(0, 80) + "..."}</>
               ) : i === 1 && gospelData?.reading1 ? (
-                <>
-                  <span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{gospelData.reading1.reference}</span>
-                  {gospelData.reading1.text.substring(0, 80) + "..."}
-                </>
+                <><span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{gospelData.reading1.reference}</span>{gospelData.reading1.text.substring(0, 80) + "..."}</>
               ) : c.desc}
             </div>
-            <button onClick={() => setTab(c.tab)} style={{ background: "rgba(255,255,255,0.2)", color: WHITE, border: "1px solid rgba(255,255,255,0.4)", padding: "8px 20px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
-              {c.btn} →
-            </button>
+            <button onClick={() => setTab(c.tab)} style={{ background: "rgba(255,255,255,0.2)", color: WHITE, border: "1px solid rgba(255,255,255,0.4)", padding: "8px 20px", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>{c.btn} →</button>
           </div>
         ))}
       </div>
@@ -425,8 +428,7 @@ export default function App() {
           <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading)}</div>
         </div>
         <div style={{ background: WHITE, borderRadius: 16, padding: 20, fontSize: 14, lineHeight: 1.9, color: "#3A2A1E", whiteSpace: "pre-wrap", boxShadow: "0 4px 16px rgba(74,15,40,0.08)", border: `1px solid ${CREAM_DARK}` }}>
-          {formatted}
-          {"\n\n"}<span style={{ color: WINE, fontWeight: "bold", fontStyle: "italic" }}>— {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}</span>
+          {formatted}{"\n\n"}<span style={{ color: WINE, fontWeight: "bold", fontStyle: "italic" }}>— {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}</span>
         </div>
       </div>
     );
@@ -534,24 +536,23 @@ export default function App() {
   );
 
   const renderSettings = () => {
-    const scheduleNotification = (type, time, title, body) => {
+    const scheduleNotification = (time, title, body) => {
       const [hours, minutes] = time.split(':').map(Number);
       const now = new Date();
       const notifTime = new Date();
       notifTime.setHours(hours, minutes, 0, 0);
       if (notifTime <= now) notifTime.setDate(notifTime.getDate() + 1);
-      const delay = notifTime - now;
       setTimeout(() => {
         if (Notification.permission === 'granted') new Notification(title, { body, icon: '/icon-192.png' });
-      }, delay);
+      }, notifTime - now);
     };
 
     const requestPermission = async () => {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        if (notifGospel) scheduleNotification('gospel', gospelTime, '📖 Evangelio del día', 'Lee el Evangelio de hoy');
-        if (notifRosary) scheduleNotification('rosary', rosaryTime, '📿 Santo Rosario', 'Es hora de rezar el Rosario');
-        if (notifLiturgy) scheduleNotification('liturgy', liturgyTime, '🕐 Liturgia de las Horas', 'Momento de oración litúrgica');
+        if (notifGospel) scheduleNotification(gospelTime, '📖 Evangelio del día', 'Lee el Evangelio de hoy');
+        if (notifRosary) scheduleNotification(rosaryTime, '📿 Santo Rosario', 'Es hora de rezar el Rosario');
+        if (notifLiturgy) scheduleNotification(liturgyTime, '🕐 Liturgia de las Horas', 'Momento de oración litúrgica');
       }
     };
 
@@ -602,6 +603,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(74,15,40,0.15)" }}>
+      {paymentSuccess && renderPaymentSuccess()}
       {authMode && renderAuthModal()}
       {showCart && renderCartModal()}
 
@@ -618,14 +620,12 @@ export default function App() {
             {!user && <button onClick={() => setAuthMode('login')} style={{ padding: "4px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: WHITE, fontSize: 11, cursor: "pointer" }}>👤</button>}
           </div>
         </div>
-
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 10, paddingBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 13, color: GOLD, fontFamily: "'Cinzel', serif" }}>{t.nav[tab]}</span>
           <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: WHITE, fontSize: 22, padding: "0 4px" }}>
             {menuOpen ? "✕" : "☰"}
           </button>
         </div>
-
         {menuOpen && (
           <div style={{ background: WINE_DARK, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
             {t.nav.map((n, i) => (
