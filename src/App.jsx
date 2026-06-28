@@ -162,20 +162,32 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
       const reference = params.get('reference');
+      const transactionId = params.get('id');
+
+      // LOG TEMPORAL — ver qué envía Wompi en la URL de redirect
+      console.log('[wompi-redirect] params completos:', window.location.search);
+      console.log('[wompi-redirect] reference:', reference, '| transactionId:', transactionId);
+
       setPaymentSuccess(true);
       setCart([]);
       setCheckoutStep(0);
       window.history.replaceState({}, '', '/');
 
-      const transactionId = params.get('id');
       if (reference && transactionId) {
         try {
           const stored = localStorage.getItem(`order_${reference}`);
+          console.log('[wompi-redirect] localStorage key:', `order_${reference}`, '| encontrado:', !!stored);
           if (stored) {
             localStorage.removeItem(`order_${reference}`);
-            axios.post('/api/confirm-payment', { ...JSON.parse(stored), reference, transactionId }).catch(() => {});
+            axios.post('/api/confirm-payment', { ...JSON.parse(stored), reference, transactionId })
+              .then(r => console.log('[wompi-redirect] confirm-payment OK:', r.data))
+              .catch(e => console.error('[wompi-redirect] confirm-payment ERROR:', e.response?.data || e.message));
           }
-        } catch (_) {}
+        } catch (e) {
+          console.error('[wompi-redirect] excepción parseando localStorage:', e.message);
+        }
+      } else {
+        console.warn('[wompi-redirect] faltan params — reference:', reference, '| transactionId:', transactionId);
       }
     }
   }, []);

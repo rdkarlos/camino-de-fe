@@ -97,22 +97,41 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { transactionId, customerName, customerEmail, items, total, reference } = req.body;
+
+  console.log('[confirm-payment] body recibido:', JSON.stringify({
+    transactionId,
+    reference,
+    customerEmail,
+    customerName,
+    itemsCount: items?.length,
+    total,
+  }));
+
   if (!transactionId || !customerEmail || !items?.length) {
+    console.error('[confirm-payment] campos faltantes:', { transactionId: !!transactionId, customerEmail: !!customerEmail, itemsLength: items?.length });
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
     // Verificar con Wompi que el pago fue aprobado
-    const wompiRes = await fetch(`${WOMPI_BASE}/transactions/${transactionId}`, {
+    const wompiUrl = `${WOMPI_BASE}/transactions/${transactionId}`;
+    console.log('[confirm-payment] consultando Wompi:', wompiUrl);
+
+    const wompiRes = await fetch(wompiUrl, {
       headers: { Authorization: `Bearer ${PRIV_KEY}` },
     });
 
+    console.log('[confirm-payment] Wompi HTTP status:', wompiRes.status);
+
     if (!wompiRes.ok) {
+      const errBody = await wompiRes.text();
+      console.error('[confirm-payment] Wompi error body:', errBody);
       return res.status(502).json({ success: false, error: 'Could not verify transaction with Wompi' });
     }
 
     const wompiData = await wompiRes.json();
     const status = wompiData?.data?.status;
+    console.log('[confirm-payment] Wompi transaction status:', status, '| reference:', wompiData?.data?.reference);
 
     if (status !== 'APPROVED') {
       return res.status(400).json({ success: false, error: `Transaction not approved (status: ${status})` });
@@ -120,19 +139,21 @@ export default async function handler(req, res) {
 
     // Pago confirmado — enviar email
     const resend = new Resend(process.env.RESEND_API_KEY);
-    // RESEND_FROM debe ser un email de un dominio verificado en resend.com
-    // En desarrollo sin dominio propio usa onboarding@resend.dev (solo envía al dueño de la cuenta)
     const from = process.env.RESEND_FROM || 'onboarding@resend.dev';
-    await resend.emails.send({
+    console.log('[confirm-payment] enviando email a:', customerEmail, '| from:', from);
+
+    const emailRes = await resend.emails.send({
       from: `Camino de Fe <${from}>`,
       to: customerEmail,
       subject: `✝️ Tu pedido ${reference} está confirmado — Camino de Fe`,
       html: buildEmailHtml({ customerName, customerEmail, items, total, reference }),
     });
 
+    console.log('[confirm-payment] Resend respuesta:', JSON.stringify(emailRes));
+
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('confirm-payment error:', error);
+    console.error('[confirm-payment] excepción:', error.message, error.stack);
     return res.status(500).json({ success: false, error: error.message });
   }
 }
