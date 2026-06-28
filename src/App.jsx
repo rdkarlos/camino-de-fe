@@ -161,25 +161,23 @@ export default function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
-      const reference = params.get('reference');
       const transactionId = params.get('id');
 
-      // LOG TEMPORAL — ver qué envía Wompi en la URL de redirect
       console.log('[wompi-redirect] params completos:', window.location.search);
-      console.log('[wompi-redirect] reference:', reference, '| transactionId:', transactionId);
+      console.log('[wompi-redirect] transactionId:', transactionId);
 
       setPaymentSuccess(true);
       setCart([]);
       setCheckoutStep(0);
       window.history.replaceState({}, '', '/');
 
-      if (reference && transactionId) {
+      if (transactionId) {
         try {
-          const stored = localStorage.getItem(`order_${reference}`);
-          console.log('[wompi-redirect] localStorage key:', `order_${reference}`, '| encontrado:', !!stored);
+          const stored = localStorage.getItem('pendingOrder');
+          console.log('[wompi-redirect] pendingOrder encontrado:', !!stored);
           if (stored) {
-            localStorage.removeItem(`order_${reference}`);
-            axios.post('/api/confirm-payment', { ...JSON.parse(stored), reference, transactionId })
+            localStorage.removeItem('pendingOrder');
+            axios.post('/api/confirm-payment', { ...JSON.parse(stored), transactionId })
               .then(r => console.log('[wompi-redirect] confirm-payment OK:', r.data))
               .catch(e => console.error('[wompi-redirect] confirm-payment ERROR:', e.response?.data || e.message));
           }
@@ -187,7 +185,7 @@ export default function App() {
           console.error('[wompi-redirect] excepción parseando localStorage:', e.message);
         }
       } else {
-        console.warn('[wompi-redirect] faltan params — reference:', reference, '| transactionId:', transactionId);
+        console.warn('[wompi-redirect] Wompi no envió el parámetro "id" en la URL');
       }
     }
   }, []);
@@ -291,11 +289,12 @@ export default function App() {
           input.value = value;
           form.appendChild(input);
         });
-        localStorage.setItem(`order_${reference}`, JSON.stringify({
+        localStorage.setItem('pendingOrder', JSON.stringify({
           customerName: checkoutName,
           customerEmail: checkoutEmail,
           items: cart.map(i => ({ id: i.id, name: lang === 'es' ? i.nameEs : i.nameEn, icon: i.icon, price: i.price, quantity: i.quantity })),
           total: cartTotal,
+          reference,
         }));
         document.body.appendChild(form);
         form.submit();
