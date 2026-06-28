@@ -27,7 +27,7 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Lecturas del Día", "Rosario", "Oraciones", "Reflexiones", "Tienda", "Configuración"],
+    nav: ["Inicio", "Evangelio", "Lecturas del Día", "Rosario", "Oraciones", "Reflexiones", "Oración Personal", "Tienda", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -68,7 +68,7 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Daily Readings", "Rosary", "Prayers", "Reflections", "Shop", "Settings"],
+    nav: ["Home", "Gospel", "Daily Readings", "Rosary", "Prayers", "Reflections", "Personal Prayer", "Shop", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -119,6 +119,27 @@ const WHITE = "#FFFFFF";
 const BLUE_DARK = "#1A3A5C";
 const BLUE = "#2C5F8A";
 
+const PRAYER_MOODS = {
+  es: [
+    { id: "gratitud",   icon: "🙏", label: "Gratitud",   verse: "«Dad gracias en todo» — 1 Tes 5:18",                           saint: "San Francisco de Asís",       template: "Señor, te doy gracias por..." },
+    { id: "ansiedad",   icon: "🌊", label: "Ansiedad",   verse: "«No se turbe vuestro corazón» — Jn 14:1",                      saint: "Santa Teresa de Ávila",       template: "Señor, siento angustia por... confío en Ti porque..." },
+    { id: "familia",    icon: "🏡", label: "Familia",    verse: "«El amor es paciente» — 1 Cor 13:4",                           saint: "San José",                    template: "Señor, pongo en tus manos a mi familia, especialmente a..." },
+    { id: "trabajo",    icon: "💼", label: "Trabajo",    verse: "«Todo lo que hagan, háganlo de corazón» — Col 3:23",           saint: "San José Obrero",             template: "Señor, bendice mi trabajo hoy en..." },
+    { id: "duelo",      icon: "🕯️", label: "Duelo",     verse: "«Bienaventurados los que lloran» — Mt 5:4",                    saint: "Nuestra Señora de los Dolores", template: "Señor, llevo en mi corazón la pérdida de..." },
+    { id: "salud",      icon: "❤️", label: "Salud",      verse: "«Sana a los enfermos» — Lc 9:2",                              saint: "San Rafael Arcángel",         template: "Señor, te pido por la salud de..." },
+    { id: "decisiones", icon: "⚖️", label: "Decisiones", verse: "«Fíate del Señor con todo tu corazón» — Prov 3:5",            saint: "Espíritu Santo",              template: "Señor, necesito sabiduría para decidir sobre..." },
+  ],
+  en: [
+    { id: "gratitud",   icon: "🙏", label: "Gratitude",  verse: "«Give thanks in all circumstances» — 1 Thes 5:18",            saint: "St. Francis of Assisi",       template: "Lord, I am grateful for..." },
+    { id: "ansiedad",   icon: "🌊", label: "Anxiety",    verse: "«Let not your hearts be troubled» — Jn 14:1",                 saint: "St. Teresa of Ávila",         template: "Lord, I feel anxious about... I trust in You because..." },
+    { id: "familia",    icon: "🏡", label: "Family",     verse: "«Love is patient» — 1 Cor 13:4",                              saint: "St. Joseph",                  template: "Lord, I place my family in Your hands, especially..." },
+    { id: "trabajo",    icon: "💼", label: "Work",       verse: "«Whatever you do, do it from the heart» — Col 3:23",          saint: "St. Joseph the Worker",       template: "Lord, bless my work today in..." },
+    { id: "duelo",      icon: "🕯️", label: "Grief",     verse: "«Blessed are those who mourn» — Mt 5:4",                     saint: "Our Lady of Sorrows",         template: "Lord, I carry in my heart the loss of..." },
+    { id: "salud",      icon: "❤️", label: "Health",     verse: "«Heal the sick» — Lk 9:2",                                   saint: "St. Raphael the Archangel",   template: "Lord, I pray for the health of..." },
+    { id: "decisiones", icon: "⚖️", label: "Decisions",  verse: "«Trust in the Lord with all your heart» — Prov 3:5",         saint: "Holy Spirit",                 template: "Lord, I need wisdom to decide about..." },
+  ],
+};
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -157,6 +178,10 @@ export default function App() {
   const [checkoutEmail, setCheckoutEmail] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [personalTab, setPersonalTab] = useState("builder");
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [prayerIntention, setPrayerIntention] = useState("");
+  const [savedPrayers, setSavedPrayers] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -219,6 +244,13 @@ export default function App() {
       }
     });
     return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("personal_prayers");
+      if (stored) setSavedPrayers(JSON.parse(stored));
+    } catch (_) {}
   }, []);
 
   const handleGoogle = async () => {
@@ -540,6 +572,144 @@ export default function App() {
     </div>
   );
 
+  const renderPersonalPrayer = () => {
+    const moods = PRAYER_MOODS[lang];
+    const mood = moods.find(m => m.id === selectedMood);
+
+    const savePrayer = () => {
+      if (!mood || !prayerIntention.trim()) return;
+      const newPrayer = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString(lang === "es" ? "es-ES" : "en-US", { day: "numeric", month: "long", year: "numeric" }),
+        moodId: mood.id,
+        moodLabel: mood.label,
+        moodIcon: mood.icon,
+        intention: prayerIntention.trim(),
+        received: false,
+      };
+      const updated = [newPrayer, ...savedPrayers];
+      setSavedPrayers(updated);
+      localStorage.setItem("personal_prayers", JSON.stringify(updated));
+      setPrayerIntention("");
+      setSelectedMood(null);
+      setPersonalTab("journal");
+    };
+
+    const toggleReceived = (id) => {
+      const updated = savedPrayers.map(p => p.id === id ? { ...p, received: !p.received } : p);
+      setSavedPrayers(updated);
+      localStorage.setItem("personal_prayers", JSON.stringify(updated));
+    };
+
+    const deletePrayer = (id) => {
+      const updated = savedPrayers.filter(p => p.id !== id);
+      setSavedPrayers(updated);
+      localStorage.setItem("personal_prayers", JSON.stringify(updated));
+    };
+
+    return (
+      <div>
+        {/* Tab switcher */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+          {[["builder", "🕊️", lang === "es" ? "Constructor" : "Builder"], ["journal", "📔", lang === "es" ? "Diario de Gracias" : "Gratitude Journal"]].map(([key, icon, label]) => (
+            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${WINE}, ${WINE_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? WINE : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
+              {icon} {label}
+            </button>
+          ))}
+        </div>
+
+        {personalTab === "builder" ? (
+          <div>
+            <div style={{ fontSize: 15, fontWeight: "bold", color: WINE_DARK, marginBottom: 14, fontFamily: "'Cinzel', serif" }}>
+              {lang === "es" ? "¿Cómo está tu corazón hoy?" : "How is your heart today?"}
+            </div>
+
+            {/* Mood grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
+              {moods.map(m => (
+                <button key={m.id} onClick={() => setSelectedMood(selectedMood === m.id ? null : m.id)} style={{ padding: "10px 4px", borderRadius: 12, background: selectedMood === m.id ? `linear-gradient(135deg, ${WINE}, ${WINE_DARK})` : WHITE, color: selectedMood === m.id ? WHITE : WINE_DARK, border: `1.5px solid ${selectedMood === m.id ? WINE : CREAM_DARK}`, cursor: "pointer", textAlign: "center" }}>
+                  <div style={{ fontSize: 20, marginBottom: 4 }}>{m.icon}</div>
+                  <div style={{ fontSize: 9, fontWeight: "bold", fontFamily: "'Cinzel', serif", lineHeight: 1.2 }}>{m.label}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Selected mood content */}
+            {mood && (
+              <div>
+                <div style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}55`, borderRadius: 12, padding: "14px 16px", marginBottom: 12 }}>
+                  <div style={{ fontSize: 14, fontStyle: "italic", color: WINE_DARK, lineHeight: 1.7, fontFamily: "'Crimson Text', serif" }}>{mood.verse}</div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 10, background: WHITE, borderRadius: 12, padding: "12px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                  <span style={{ fontSize: 22 }}>🕯️</span>
+                  <div>
+                    <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1 }}>{lang === "es" ? "Santo patrono sugerido" : "Suggested patron saint"}</div>
+                    <div style={{ fontSize: 14, fontWeight: "bold", color: WINE_DARK, fontFamily: "'Cinzel', serif" }}>{mood.saint}</div>
+                  </div>
+                </div>
+
+                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                  <div style={{ fontSize: 13, color: MUTED, marginBottom: 10, fontStyle: "italic", lineHeight: 1.5 }}>{mood.template}</div>
+                  <textarea
+                    value={prayerIntention}
+                    onChange={e => setPrayerIntention(e.target.value)}
+                    placeholder={lang === "es" ? "Escribe tu intención aquí..." : "Write your intention here..."}
+                    style={{ width: "100%", minHeight: 100, padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: WINE_DARK, background: CREAM, fontFamily: "'Georgia', serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6, outline: "none" }}
+                  />
+                </div>
+
+                <button onClick={savePrayer} disabled={!prayerIntention.trim()} style={{ width: "100%", padding: "13px", background: prayerIntention.trim() ? `linear-gradient(135deg, ${WINE}, ${WINE_DARK})` : CREAM_DARK, color: prayerIntention.trim() ? WHITE : MUTED, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: prayerIntention.trim() ? "pointer" : "default", fontFamily: "'Cinzel', serif" }}>
+                  🕊️ {lang === "es" ? "Guardar oración" : "Save prayer"}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            {savedPrayers.length === 0 ? (
+              <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>📔</div>
+                <div style={{ fontSize: 14, marginBottom: 6 }}>{lang === "es" ? "Aún no tienes oraciones guardadas." : "No saved prayers yet."}</div>
+                <div style={{ fontSize: 13, color: MUTED }}>{lang === "es" ? "Usa el Constructor para crear tu primera oración ↑" : "Use the Builder to create your first prayer ↑"}</div>
+              </div>
+            ) : savedPrayers.map(p => (
+              <div key={p.id} style={{ background: WHITE, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${p.received ? GOLD + "66" : CREAM_DARK}`, boxShadow: p.received ? `0 2px 16px ${GOLD}22` : "0 2px 8px rgba(74,15,40,0.05)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 22 }}>{p.moodIcon}</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: "bold", color: WINE_DARK, fontFamily: "'Cinzel', serif" }}>{p.moodLabel}</div>
+                      <div style={{ fontSize: 11, color: MUTED }}>{p.date}</div>
+                    </div>
+                  </div>
+                  {p.received && (
+                    <span style={{ fontSize: 11, background: `${GOLD}22`, color: "#8B6A1A", padding: "3px 10px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
+                      ✨ {lang === "es" ? "Recibida" : "Received"}
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ fontSize: 13, color: "#5A3A2E", lineHeight: 1.65, marginBottom: 12, fontStyle: "italic", borderLeft: `3px solid ${CREAM_DARK}`, paddingLeft: 10 }}>
+                  {p.intention.length > 140 ? p.intention.substring(0, 140) + "…" : p.intention}
+                </div>
+
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => toggleReceived(p.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 20, border: `1px solid ${p.received ? GOLD : CREAM_DARK}`, background: p.received ? `${GOLD}18` : WHITE, color: p.received ? "#8B6A1A" : MUTED, fontSize: 12, cursor: "pointer", fontWeight: "bold" }}>
+                    {p.received ? `✨ ${lang === "es" ? "Gracia recibida" : "Grace received"}` : `○ ${lang === "es" ? "Marcar como recibida" : "Mark as received"}`}
+                  </button>
+                  <button onClick={() => deletePrayer(p.id)} style={{ padding: "7px 12px", borderRadius: 20, border: `1px solid ${CREAM_DARK}`, background: WHITE, color: MUTED, fontSize: 12, cursor: "pointer" }}>
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderShop = () => (
     <div>
       <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, fontStyle: "italic" }}>{lang === 'es' ? 'Artículos para acompañar tu fe' : 'Items to accompany your faith'}</p>
@@ -627,8 +797,8 @@ export default function App() {
     );
   };
 
-  const navIcons = ["🏠","📖","📜","📿","🙏","💭","🛒","⚙️"];
-  const sections = [renderHome, renderGospel, renderReadings, renderRosary, renderPrayers, renderReflections, renderShop, renderSettings];
+  const navIcons = ["🏠","📖","📜","📿","🙏","💭","🕊️","🛒","⚙️"];
+  const sections = [renderHome, renderGospel, renderReadings, renderRosary, renderPrayers, renderReflections, renderPersonalPrayer, renderShop, renderSettings];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(74,15,40,0.15)" }}>
