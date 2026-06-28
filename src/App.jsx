@@ -169,11 +169,13 @@ export default function App() {
 
       const transactionId = params.get('id');
       if (reference && transactionId) {
-        const stored = localStorage.getItem(`order_${reference}`);
-        if (stored) {
-          localStorage.removeItem(`order_${reference}`);
-          axios.post('/api/confirm-payment', { ...JSON.parse(stored), reference, transactionId }).catch(() => {});
-        }
+        try {
+          const stored = localStorage.getItem(`order_${reference}`);
+          if (stored) {
+            localStorage.removeItem(`order_${reference}`);
+            axios.post('/api/confirm-payment', { ...JSON.parse(stored), reference, transactionId }).catch(() => {});
+          }
+        } catch (_) {}
       }
     }
   }, []);

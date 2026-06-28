@@ -9,11 +9,15 @@ const PRIV_KEY = process.env.WOMPI_PRIV_KEY || 'prv_test_UejvuFaIJ4dG7srQNeR1i4G
 const formatCOP = (price) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(price);
 
-function buildEmailHtml({ customerName, customerEmail, items, total, reference }) {
+const escapeHtml = (str) =>
+  String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function buildEmailHtml({ customerName, items, total, reference }) {
+  const safeName = escapeHtml(customerName) || 'cliente';
   const itemsHtml = items.map(item => `
     <tr>
       <td style="padding:10px 0;border-bottom:1px solid #F0E6D3;color:#3A2A1E;font-size:14px;">
-        ${item.icon || ''} ${item.name}
+        ${escapeHtml(item.icon)} ${escapeHtml(item.name)}
       </td>
       <td style="padding:10px 0;border-bottom:1px solid #F0E6D3;text-align:center;color:#8B6E5A;font-size:14px;">
         ×${item.quantity}
@@ -39,7 +43,7 @@ function buildEmailHtml({ customerName, customerEmail, items, total, reference }
   <div style="background:#ffffff;padding:32px 28px;border:1px solid #F0E6D3;border-top:none;">
     <div style="font-size:26px;margin-bottom:10px;">🙏</div>
     <div style="font-size:20px;font-weight:bold;color:#4A0F28;margin-bottom:10px;">
-      ¡Gracias por tu compra, ${customerName}!
+      ¡Gracias por tu compra, ${safeName}!
     </div>
     <p style="font-size:14px;color:#8B6E5A;line-height:1.75;margin:0 0 28px;">
       Tu pago fue aprobado exitosamente. Que estos artículos acompañen tu fe y tu oración diaria.
@@ -47,7 +51,7 @@ function buildEmailHtml({ customerName, customerEmail, items, total, reference }
 
     <div style="background:#FAF5ED;border-radius:12px;padding:20px;margin-bottom:28px;">
       <div style="font-size:11px;color:#8B6E5A;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">
-        Resumen del pedido · <span style="color:#6B1F3E;">${reference}</span>
+        Resumen del pedido · <span style="color:#6B1F3E;">${escapeHtml(reference)}</span>
       </div>
       <table style="width:100%;border-collapse:collapse;">
         ${itemsHtml}
@@ -69,7 +73,7 @@ function buildEmailHtml({ customerName, customerEmail, items, total, reference }
 
     <p style="font-size:13px;color:#8B6E5A;line-height:1.6;margin:0;">
       Si tienes preguntas sobre tu pedido, responde este correo indicando la referencia
-      <strong style="color:#6B1F3E;">${reference}</strong>.
+      <strong style="color:#6B1F3E;">${escapeHtml(reference)}</strong>.
     </p>
   </div>
 
@@ -116,8 +120,11 @@ export default async function handler(req, res) {
 
     // Pago confirmado — enviar email
     const resend = new Resend(process.env.RESEND_API_KEY);
+    // RESEND_FROM debe ser un email de un dominio verificado en resend.com
+    // En desarrollo sin dominio propio usa onboarding@resend.dev (solo envía al dueño de la cuenta)
+    const from = process.env.RESEND_FROM || 'onboarding@resend.dev';
     await resend.emails.send({
-      from: 'Camino de Fe <onboarding@resend.dev>',
+      from: `Camino de Fe <${from}>`,
       to: customerEmail,
       subject: `✝️ Tu pedido ${reference} está confirmado — Camino de Fe`,
       html: buildEmailHtml({ customerName, customerEmail, items, total, reference }),
