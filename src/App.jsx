@@ -394,38 +394,27 @@ export default function App() {
   const handleLogout = async () => { await signOut(auth); };
 
   const handleLambClick = async () => {
-    const gospelText = gospelData?.text?.substring(0, 1500) || '';
-    console.log('[lamb] Función ejecutada. gospelText:', gospelText, 'lambText:', lambText);
-    setLambOpen(true);
-    if (lambText) return;
+    console.log('[lamb] Iniciando llamada directa a spiritual-guide');
     setLambLoading(true);
+    setLambOpen(true);
+    setLambText('');
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const refDoc = doc(db, 'reflexiones', today);
-      const snap = await getDoc(refDoc);
-      if (snap.exists()) {
-        setLambText(snap.data().texto);
-        setLambLoading(false);
-        return;
-      }
-      const gospelReference = gospelData?.reference || '';
-      console.log('[lamb] Llamando /api/spiritual-guide con:', { gospelRef: gospelReference, lang, gospelTextLen: gospelText.length });
-      const res = await fetch('/api/spiritual-guide', {
+      const response = await fetch('/api/spiritual-guide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gospelRef: gospelReference, gospelText, lang }),
+        body: JSON.stringify({
+          gospelRef: gospelData?.reference || '',
+          gospelText: gospelData?.text || '',
+          lang,
+        }),
       });
-      console.log('[lamb] HTTP status:', res.status, res.statusText);
-      const rawText = await res.text();
-      console.log('[lamb] Respuesta raw:', rawText);
-      const data = JSON.parse(rawText);
-      console.log('[lamb] data.text:', data.text);
-      const texto = data.text || (lang === 'es' ? 'No se pudo obtener la reflexión.' : 'Could not load reflection.');
-      setLambText(texto);
-      await setDoc(refDoc, { texto, evangelio: gospelReference, fecha: serverTimestamp(), idioma: lang });
-    } catch (e) {
-      console.error('[lamb] excepción completa:', e);
-      setLambText(lang === 'es' ? 'Error al consultar la guía espiritual.' : 'Error loading spiritual guide.');
+      console.log('[lamb] Status:', response.status);
+      const data = await response.json();
+      console.log('[lamb] Data:', data);
+      setLambText(data.text || 'No se pudo obtener la reflexión.');
+    } catch (error) {
+      console.error('[lamb] Error:', error);
+      setLambText('Error de conexión.');
     } finally {
       setLambLoading(false);
     }

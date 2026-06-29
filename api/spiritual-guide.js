@@ -32,13 +32,15 @@ export default async function handler(req, res) {
       }),
     });
 
+    console.log('Status Anthropic:', response.status);
+    const rawData = await response.text();
+    console.log('Respuesta Anthropic raw:', rawData);
+
     if (!response.ok) {
-      const err = await response.text();
-      console.error('[spiritual-guide] Anthropic error:', err);
-      return res.status(502).json({ error: 'Anthropic API error' });
+      return res.status(502).json({ error: 'Anthropic API error', detail: rawData });
     }
 
-    const data = await response.json();
+    const data = JSON.parse(rawData);
     return res.status(200).json({ text: data.content?.[0]?.text ?? '' });
   } catch (error) {
     console.error('[spiritual-guide] exception:', error.message);
