@@ -394,27 +394,9 @@ export default function App() {
   const handleLogout = async () => { await signOut(auth); };
 
   const handleLambClick = async () => {
-    console.log('[lamb] Iniciando...');
     setLambLoading(true);
     setLambOpen(true);
     setLambText('');
-
-    const today = new Date().toISOString().split('T')[0];
-
-    try {
-      const docRef = doc(db, 'reflexiones', today);
-      const docSnap = await getDoc(docRef);
-      console.log('[lamb] Firestore result:', docSnap.exists(), docSnap.exists() ? docSnap.data() : 'no existe');
-      if (docSnap.exists() && docSnap.data().texto) {
-        setLambText(docSnap.data().texto);
-        setLambLoading(false);
-        return;
-      }
-    } catch (firestoreError) {
-      console.log('[lamb] Firestore no disponible, llamando API:', firestoreError.message);
-    }
-
-    console.log('[lamb] Llamando API...');
     try {
       const response = await fetch('/api/spiritual-guide', {
         method: 'POST',
@@ -426,16 +408,7 @@ export default function App() {
         }),
       });
       const data = await response.json();
-      const texto = data.text || '';
-      setLambText(texto || 'No se pudo obtener la reflexión.');
-      if (texto) {
-        try {
-          const docRef = doc(db, 'reflexiones', today);
-          await setDoc(docRef, { texto, fecha: today, evangelio: gospelData?.reference || '' });
-        } catch (e) {
-          console.log('[lamb] No se pudo guardar en Firestore:', e.message);
-        }
-      }
+      setLambText(data.text || 'No se pudo obtener la reflexión.');
     } catch (error) {
       setLambText('No se pudo obtener la reflexión.');
     } finally {
