@@ -852,7 +852,7 @@ export default function App() {
             { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 1 },
             { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 2 },
             { icon: "📿", label: lang === 'es' ? "Rosario"   : "Rosary",   idx: 3 },
-            { icon: "🕊️", label: lang === 'es' ? "Oración"  : "Prayer",   idx: 6 },
+            { icon: "✝️", label: lang === 'es' ? "Oración"  : "Prayer",   idx: 6 },
             { icon: "🛒", label: lang === 'es' ? "Tienda"    : "Shop",     idx: 7 },
           ].map(({ icon, label, idx }) => (
             <button key={idx} onClick={() => setTab(idx)} style={{ flex: 1, padding: "6px 4px", background: tab === idx ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.12)", border: `1px solid ${tab === idx ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.2)"}`, borderRadius: 10, color: tab === idx ? GOLD : "rgba(255,255,255,0.75)", cursor: "pointer", textAlign: "center" }}>
