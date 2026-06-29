@@ -1975,7 +1975,7 @@ export default function App() {
             letterSpacing: 12,
             marginTop: 18,
             textTransform: "uppercase",
-          }}>LUMORA</div>
+          }}>{t.appName}</div>
 
           {/* Tagline */}
           <div style={{
@@ -1986,7 +1986,7 @@ export default function App() {
             marginTop: 10,
             letterSpacing: 0.5,
           }}>
-            {lang === "es" ? "Luz que guía, amor que une" : "Light that guides, love that unites"}
+            {t.tagline}
           </div>
         </div>
       )}
