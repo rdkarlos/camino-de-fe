@@ -1346,7 +1346,7 @@ export default function App() {
     return null;
   };
 
-  const navIcons = ["🏠","📖","📜","📿","🙏","💭","🕊️","🛒","⚙️","📚"];
+  const navIcons = ["🏠","📖","📜","📿","🙏","💭","🕊️","🛒","⚙️","✝"];
   const sections = [renderHome, renderGospel, renderReadings, renderRosary, renderPrayers, renderReflections, renderPersonalPrayer, renderShop, renderSettings, renderBible];
 
   return (
@@ -1389,7 +1389,7 @@ export default function App() {
           {[
             { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 1 },
             { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 2 },
-            { icon: "📚", label: lang === 'es' ? "La Biblia" : "Bible",    idx: 9 },
+            { icon: "✝", label: lang === 'es' ? "La Biblia" : "Bible",    idx: 9 },
             { icon: "✝️", label: lang === 'es' ? "Oración"  : "Prayer",   idx: 6 },
             { icon: "🛒", label: lang === 'es' ? "Tienda"    : "Shop",     idx: 7 },
           ].map(({ icon, label, idx }) => (
