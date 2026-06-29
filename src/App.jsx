@@ -27,7 +27,7 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Lecturas del Día", "Rosario", "Devocional", "Reflexiones", "Oración Personal", "Tienda", "Configuración"],
+    nav: ["Inicio", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "Reflexiones", "Oración personal", "Tienda", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -70,7 +70,7 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Daily Readings", "Rosary", "Devotional", "Reflections", "Personal Prayer", "Shop", "Settings"],
+    nav: ["Home", "Gospel", "Daily readings", "Rosary", "Devotional", "Reflections", "Personal prayer", "Shop", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -864,7 +864,7 @@ export default function App() {
         {menuOpen && (
           <div style={{ background: NAVY_DARK, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
             {t.nav.map((n, i) => (
-              <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "13px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 14, cursor: "pointer", fontFamily: "'Cinzel', serif", textAlign: "left" }}>
+              <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif", textAlign: "left" }}>
                 <span style={{ fontSize: 18 }}>{navIcons[i]}</span>
                 <span>{n}</span>
               </button>
