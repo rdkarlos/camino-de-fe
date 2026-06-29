@@ -1,20 +1,15 @@
-const CACHE_NAME = 'camino-de-fe-v10';
+const CACHE_NAME = 'camino-de-fe-v11';
 const urlsToCache = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  );
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cache => caches.delete(cache))
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(cacheNames =>
+      Promise.all(cacheNames.map(cache => caches.delete(cache)))
+    ).then(() => self.clients.claim())
   );
 });
 
