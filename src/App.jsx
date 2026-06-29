@@ -519,19 +519,19 @@ export default function App() {
     const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
     return (
       <div>
-        <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 20, padding: "24px 20px", marginBottom: 16, color: WHITE, position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -20, right: -20, fontSize: 80, opacity: 0.08 }}>✝</div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", textTransform: "capitalize", marginBottom: 4 }}>{t.home.date}</div>
-          <div style={{ fontSize: 16, fontStyle: "italic", color: GOLD_LIGHT, fontFamily: "'Crimson Text', serif" }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
+        <div style={{ background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "14px 18px", marginBottom: 16, border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08, color: GOLD }}>✝</div>
+          <div style={{ fontSize: 11, color: NAVY, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
+          <div style={{ fontSize: 15, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif" }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
           {user ? (
-            <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>👤 {user.displayName || user.email}</span>
-              <span style={{ fontSize: 12, color: GOLD, cursor: "pointer" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
+            <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: NAVY_DARK }}>👤 {user.displayName || user.email}</span>
+              <span style={{ fontSize: 12, color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
             </div>
           ) : (
-            <div onClick={() => setAuthMode('login')} style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", padding: "6px 14px", borderRadius: 20, cursor: "pointer" }}>
+            <div onClick={() => setAuthMode('login')} style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, background: NAVY_DARK, padding: "5px 12px", borderRadius: 20, cursor: "pointer" }}>
               <span style={{ fontSize: 12, color: WHITE }}>👤 {lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span>
-              <span style={{ color: GOLD, fontSize: 14 }}>→</span>
+              <span style={{ color: GOLD, fontSize: 13 }}>→</span>
             </div>
           )}
         </div>
