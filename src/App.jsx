@@ -841,17 +841,17 @@ export default function App() {
         </div>
 
         {/* Accesos rápidos — scroll horizontal, chips con recuadro */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 6, padding: "8px 12px 10px", overflowX: "auto", scrollbarWidth: "none" }}>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 5, padding: "7px 10px 9px", overflowX: "auto", scrollbarWidth: "none" }}>
           {[
             { icon: "📖", label: lang === 'es' ? "Evangelio"  : "Gospel",      idx: 1 },
             { icon: "📜", label: lang === 'es' ? "Lecturas"   : "Readings",     idx: 2 },
             { icon: "📿", label: lang === 'es' ? "Rosario"    : "Rosary",       idx: 3 },
             { icon: "🙏", label: lang === 'es' ? "Devocional" : "Devotional",   idx: 4 },
-            { icon: "🕊️", label: lang === 'es' ? "Personal"  : "Personal",     idx: 6 },
+            { icon: "🕊️", label: lang === 'es' ? "Oración"   : "Prayer",       idx: 6 },
             { icon: "🛒", label: lang === 'es' ? "Tienda"     : "Shop",         idx: 7 },
           ].map(({ icon, label, idx }) => (
-            <button key={idx} onClick={() => setTab(idx)} style={{ flexShrink: 0, padding: "7px 10px 6px", background: tab === idx ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.08)", border: `1px solid ${tab === idx ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.12)"}`, borderRadius: 10, color: tab === idx ? GOLD : "rgba(255,255,255,0.7)", cursor: "pointer", textAlign: "center", minWidth: 52 }}>
-              <div style={{ fontSize: 17, marginBottom: 2 }}>{icon}</div>
+            <button key={idx} onClick={() => setTab(idx)} style={{ flexShrink: 0, minWidth: 70, padding: "6px 8px", background: tab === idx ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.12)", border: `1px solid ${tab === idx ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.2)"}`, borderRadius: 10, color: tab === idx ? GOLD : "rgba(255,255,255,0.75)", cursor: "pointer", textAlign: "center" }}>
+              <div style={{ fontSize: 18, marginBottom: 2, lineHeight: 1 }}>{icon}</div>
               <div style={{ fontSize: 9, fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.3, whiteSpace: "nowrap" }}>{label}</div>
             </button>
           ))}
