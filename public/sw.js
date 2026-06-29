@@ -1,4 +1,4 @@
-const CACHE_NAME = 'camino-de-fe-v7';
+const CACHE_NAME = 'camino-de-fe-v8';
 const urlsToCache = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
@@ -19,16 +19,22 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Para HTML y JS siempre va a la red primero
-  if (event.request.mode === 'navigate' ||
-      event.request.url.includes('.js') ||
-      event.request.url.includes('.jsx')) {
+  const url = event.request.url;
+
+  // APIs y navegación siempre van a la red, nunca al caché
+  if (
+    event.request.mode === 'navigate' ||
+    url.includes('/api/') ||
+    url.includes('.js') ||
+    url.includes('.jsx')
+  ) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
-  // Para otros recursos usa caché primero
+
+  // Para otros recursos (imágenes, CSS, fuentes) usa caché primero
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
   );

@@ -603,8 +603,9 @@ export default function App() {
     const mood = moods.find(m => m.id === selectedMood);
 
     const generatePrayer = () => {
-      if (!mood) return;
-      const base = mood.prayer;
+      const currentMood = PRAYER_MOODS[lang].find(m => m.id === selectedMood);
+      if (!currentMood) return;
+      const base = currentMood.prayer;
       const full = prayerIntention.trim()
         ? `${base}\n\n${lang === "es" ? "Te lo pido especialmente por" : "I especially pray for"}: ${prayerIntention.trim()}.`
         : base;
