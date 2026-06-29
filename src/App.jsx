@@ -469,7 +469,6 @@ export default function App() {
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,20,40,0.4) 0%, rgba(10,20,40,0.82) 100%)" }} />
             <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
               <div>
-                <div style={{ fontSize: 32, marginBottom: 8, lineHeight: 1 }}>{c.icon}</div>
                 <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
                 <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>
                   {i === 0 && gospelData ? (
@@ -817,7 +816,7 @@ export default function App() {
       {showCart && renderCartModal()}
 
       {/* ── HEADER ── */}
-      <div style={{ background: `linear-gradient(180deg, ${NAVY_DARK} 0%, ${NAVY} 100%)`, color: WHITE, position: "sticky", top: 0, zIndex: 40 }}>
+      <div style={{ background: `linear-gradient(180deg, ${NAVY_DARK} 0%, ${NAVY} 100%)`, color: WHITE, position: "sticky", top: 0, zIndex: 40, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
 
         {/* Barra superior: hamburguesa + logo izquierda | acciones derecha */}
         <div style={{ display: "flex", alignItems: "center", padding: "12px 14px 10px", gap: 10 }}>
