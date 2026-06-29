@@ -29,7 +29,7 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "Reflexiones", "Oración personal", "Tienda", "Configuración"],
+    nav: ["Inicio", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "Reflexiones", "Oración personal", "Tienda", "Configuración", "La Biblia"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -72,7 +72,7 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Daily readings", "Rosary", "Devotional", "Reflections", "Personal prayer", "Shop", "Settings"],
+    nav: ["Home", "Gospel", "Daily readings", "Rosary", "Devotional", "Reflections", "Personal prayer", "Shop", "Settings", "Bible"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -149,6 +149,89 @@ const PRAYER_MOODS = {
   ],
 };
 
+const BIBLE_BOOKS = {
+  es: {
+    ot: [
+      { id: "GEN", name: "Génesis" },    { id: "EXO", name: "Éxodo" },
+      { id: "LEV", name: "Levítico" },   { id: "NUM", name: "Números" },
+      { id: "DEU", name: "Deuteronomio" }, { id: "JOS", name: "Josué" },
+      { id: "JDG", name: "Jueces" },     { id: "RUT", name: "Rut" },
+      { id: "1SA", name: "1 Samuel" },   { id: "2SA", name: "2 Samuel" },
+      { id: "1KI", name: "1 Reyes" },    { id: "2KI", name: "2 Reyes" },
+      { id: "1CH", name: "1 Crónicas" }, { id: "2CH", name: "2 Crónicas" },
+      { id: "EZR", name: "Esdras" },     { id: "NEH", name: "Nehemías" },
+      { id: "EST", name: "Ester" },      { id: "JOB", name: "Job" },
+      { id: "PSA", name: "Salmos" },     { id: "PRO", name: "Proverbios" },
+      { id: "ECC", name: "Eclesiastés" }, { id: "SNG", name: "Cantares" },
+      { id: "ISA", name: "Isaías" },     { id: "JER", name: "Jeremías" },
+      { id: "LAM", name: "Lamentaciones" }, { id: "EZK", name: "Ezequiel" },
+      { id: "DAN", name: "Daniel" },     { id: "HOS", name: "Oseas" },
+      { id: "JOL", name: "Joel" },       { id: "AMO", name: "Amós" },
+      { id: "OBA", name: "Abdías" },     { id: "JON", name: "Jonás" },
+      { id: "MIC", name: "Miqueas" },    { id: "NAM", name: "Nahúm" },
+      { id: "HAB", name: "Habacuc" },    { id: "ZEP", name: "Sofonías" },
+      { id: "HAG", name: "Hageo" },      { id: "ZEC", name: "Zacarías" },
+      { id: "MAL", name: "Malaquías" },
+    ],
+    nt: [
+      { id: "MAT", name: "Mateo" },      { id: "MRK", name: "Marcos" },
+      { id: "LUK", name: "Lucas" },      { id: "JHN", name: "Juan" },
+      { id: "ACT", name: "Hechos" },     { id: "ROM", name: "Romanos" },
+      { id: "1CO", name: "1 Corintios" }, { id: "2CO", name: "2 Corintios" },
+      { id: "GAL", name: "Gálatas" },    { id: "EPH", name: "Efesios" },
+      { id: "PHP", name: "Filipenses" }, { id: "COL", name: "Colosenses" },
+      { id: "1TH", name: "1 Tesalonicenses" }, { id: "2TH", name: "2 Tesalonicenses" },
+      { id: "1TI", name: "1 Timoteo" },  { id: "2TI", name: "2 Timoteo" },
+      { id: "TIT", name: "Tito" },       { id: "PHM", name: "Filemón" },
+      { id: "HEB", name: "Hebreos" },    { id: "JAS", name: "Santiago" },
+      { id: "1PE", name: "1 Pedro" },    { id: "2PE", name: "2 Pedro" },
+      { id: "1JN", name: "1 Juan" },     { id: "2JN", name: "2 Juan" },
+      { id: "3JN", name: "3 Juan" },     { id: "JUD", name: "Judas" },
+      { id: "REV", name: "Apocalipsis" },
+    ],
+  },
+  en: {
+    ot: [
+      { id: "GEN", name: "Genesis" },    { id: "EXO", name: "Exodus" },
+      { id: "LEV", name: "Leviticus" },  { id: "NUM", name: "Numbers" },
+      { id: "DEU", name: "Deuteronomy" }, { id: "JOS", name: "Joshua" },
+      { id: "JDG", name: "Judges" },     { id: "RUT", name: "Ruth" },
+      { id: "1SA", name: "1 Samuel" },   { id: "2SA", name: "2 Samuel" },
+      { id: "1KI", name: "1 Kings" },    { id: "2KI", name: "2 Kings" },
+      { id: "1CH", name: "1 Chronicles" }, { id: "2CH", name: "2 Chronicles" },
+      { id: "EZR", name: "Ezra" },       { id: "NEH", name: "Nehemiah" },
+      { id: "EST", name: "Esther" },     { id: "JOB", name: "Job" },
+      { id: "PSA", name: "Psalms" },     { id: "PRO", name: "Proverbs" },
+      { id: "ECC", name: "Ecclesiastes" }, { id: "SNG", name: "Song of Songs" },
+      { id: "ISA", name: "Isaiah" },     { id: "JER", name: "Jeremiah" },
+      { id: "LAM", name: "Lamentations" }, { id: "EZK", name: "Ezekiel" },
+      { id: "DAN", name: "Daniel" },     { id: "HOS", name: "Hosea" },
+      { id: "JOL", name: "Joel" },       { id: "AMO", name: "Amos" },
+      { id: "OBA", name: "Obadiah" },    { id: "JON", name: "Jonah" },
+      { id: "MIC", name: "Micah" },      { id: "NAM", name: "Nahum" },
+      { id: "HAB", name: "Habakkuk" },   { id: "ZEP", name: "Zephaniah" },
+      { id: "HAG", name: "Haggai" },     { id: "ZEC", name: "Zechariah" },
+      { id: "MAL", name: "Malachi" },
+    ],
+    nt: [
+      { id: "MAT", name: "Matthew" },    { id: "MRK", name: "Mark" },
+      { id: "LUK", name: "Luke" },       { id: "JHN", name: "John" },
+      { id: "ACT", name: "Acts" },       { id: "ROM", name: "Romans" },
+      { id: "1CO", name: "1 Corinthians" }, { id: "2CO", name: "2 Corinthians" },
+      { id: "GAL", name: "Galatians" },  { id: "EPH", name: "Ephesians" },
+      { id: "PHP", name: "Philippians" }, { id: "COL", name: "Colossians" },
+      { id: "1TH", name: "1 Thessalonians" }, { id: "2TH", name: "2 Thessalonians" },
+      { id: "1TI", name: "1 Timothy" },  { id: "2TI", name: "2 Timothy" },
+      { id: "TIT", name: "Titus" },      { id: "PHM", name: "Philemon" },
+      { id: "HEB", name: "Hebrews" },    { id: "JAS", name: "James" },
+      { id: "1PE", name: "1 Peter" },    { id: "2PE", name: "2 Peter" },
+      { id: "1JN", name: "1 John" },     { id: "2JN", name: "2 John" },
+      { id: "3JN", name: "3 John" },     { id: "JUD", name: "Jude" },
+      { id: "REV", name: "Revelation" },
+    ],
+  },
+};
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -195,6 +278,14 @@ export default function App() {
   const [prayerBook, setPrayerBook] = useState([]);
   const [prayerBookLoading, setPrayerBookLoading] = useState(false);
   const [expandedPrayerId, setExpandedPrayerId] = useState(null);
+  const [bibleView, setBibleView] = useState("books");
+  const [bibleSelectedBook, setBibleSelectedBook] = useState(null);
+  const [bibleChapters, setBibleChapters] = useState([]);
+  const [bibleSelectedChapter, setBibleSelectedChapter] = useState(null);
+  const [bibleChapterText, setBibleChapterText] = useState("");
+  const [bibleSearch, setBibleSearch] = useState("");
+  const [bibleSearchResults, setBibleSearchResults] = useState(null);
+  const [bibleLoading, setBibleLoading] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1014,8 +1105,249 @@ export default function App() {
     );
   };
 
-  const navIcons = ["🏠","📖","📜","📿","🙏","💭","🕊️","🛒","⚙️"];
-  const sections = [renderHome, renderGospel, renderReadings, renderRosary, renderPrayers, renderReflections, renderPersonalPrayer, renderShop, renderSettings];
+  const renderBible = () => {
+    const BIBLE_ID = "e3f420b9665abaeb-01";
+    const API_KEY = "8z-olVvbUPzjg2OtXjSks";
+    const books = BIBLE_BOOKS[lang];
+
+    const loadChapters = async (book) => {
+      setBibleSelectedBook(book);
+      setBibleView("chapters");
+      setBibleChapters([]);
+      setBibleLoading(true);
+      try {
+        const r = await fetch(
+          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/books/${book.id}/chapters`,
+          { headers: { "api-key": API_KEY } }
+        );
+        const json = await r.json();
+        setBibleChapters((json.data || []).filter(c => c.number !== "intro"));
+      } catch (_) {}
+      setBibleLoading(false);
+    };
+
+    const loadChapter = async (chapter) => {
+      setBibleSelectedChapter(chapter);
+      setBibleView("verses");
+      setBibleChapterText("");
+      setBibleLoading(true);
+      try {
+        const r = await fetch(
+          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/chapters/${chapter.id}?content-type=html&include-verse-numbers=true&include-titles=false&include-notes=false&include-chapter-numbers=false`,
+          { headers: { "api-key": API_KEY } }
+        );
+        const json = await r.json();
+        setBibleChapterText(json.data?.content || "");
+      } catch (_) {}
+      setBibleLoading(false);
+    };
+
+    const doSearch = async () => {
+      const q = bibleSearch.trim();
+      if (!q) return;
+      setBibleView("search");
+      setBibleLoading(true);
+      setBibleSearchResults(null);
+      try {
+        const r = await fetch(
+          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/search?query=${encodeURIComponent(q)}&limit=20`,
+          { headers: { "api-key": API_KEY } }
+        );
+        const json = await r.json();
+        setBibleSearchResults(json.data?.verses || []);
+      } catch (_) {
+        setBibleSearchResults([]);
+      }
+      setBibleLoading(false);
+    };
+
+    const parseVerses = (html) => {
+      if (!html) return [];
+      try {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const result = [];
+        const vSpans = Array.from(doc.querySelectorAll(".v[data-number]"));
+        if (vSpans.length === 0) {
+          const text = doc.body.textContent.replace(/\s+/g, " ").trim();
+          return text ? [{ num: 0, text }] : [];
+        }
+        vSpans.forEach(span => {
+          const num = parseInt(span.getAttribute("data-number"));
+          if (isNaN(num) || num < 1) return;
+          let text = "";
+          let cur = span.nextSibling;
+          while (cur) {
+            if (cur.nodeType === 1 && cur.getAttribute?.("data-number") && cur.classList?.contains("v")) break;
+            text += cur.textContent || "";
+            cur = cur.nextSibling;
+          }
+          text = text.replace(/\s+/g, " ").trim();
+          if (text) result.push({ num, text });
+        });
+        return result.sort((a, b) => a.num - b.num);
+      } catch (_) {
+        return [];
+      }
+    };
+
+    const searchBarJsx = (autoFocus = false) => (
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <input
+          autoFocus={autoFocus}
+          value={bibleSearch}
+          onChange={e => setBibleSearch(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && doSearch()}
+          placeholder={lang === "es" ? "Buscar versículo..." : "Search verse..."}
+          style={{ flex: 1, padding: "10px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: NAVY_DARK, background: CREAM, fontFamily: "'Georgia', serif", outline: "none", boxSizing: "border-box" }}
+        />
+        <button onClick={doSearch} style={{ padding: "10px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 16, cursor: "pointer", flexShrink: 0 }}>
+          🔍
+        </button>
+      </div>
+    );
+
+    if (bibleView === "books") {
+      return (
+        <div>
+          {searchBarJsx(false)}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 10, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "'Cinzel', serif" }}>
+              {lang === "es" ? "Antiguo Testamento" : "Old Testament"}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+              {books.ot.map(b => (
+                <button key={b.id} onClick={() => loadChapters(b)} style={{ padding: "9px 6px", borderRadius: 10, background: WHITE, border: `1px solid ${CREAM_DARK}`, color: NAVY_DARK, fontSize: 12, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", fontWeight: "600", lineHeight: 1.3 }}>
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 10, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "'Cinzel', serif" }}>
+              {lang === "es" ? "Nuevo Testamento" : "New Testament"}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+              {books.nt.map(b => (
+                <button key={b.id} onClick={() => loadChapters(b)} style={{ padding: "9px 6px", borderRadius: 10, background: WHITE, border: `1px solid ${CREAM_DARK}`, color: NAVY_DARK, fontSize: 12, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", fontWeight: "600", lineHeight: 1.3 }}>
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (bibleView === "chapters") {
+      return (
+        <div>
+          <button onClick={() => setBibleView("books")} style={{ marginBottom: 16, background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif", display: "flex", alignItems: "center", gap: 4 }}>
+            ← {lang === "es" ? "Libros" : "Books"}
+          </button>
+          <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 14, padding: "14px 18px", marginBottom: 16, color: WHITE }}>
+            <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{bibleSelectedBook?.name}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>
+              {lang === "es" ? "Selecciona un capítulo" : "Select a chapter"}
+            </div>
+          </div>
+          {bibleLoading ? (
+            <div style={{ textAlign: "center", color: MUTED, padding: 40, fontSize: 24 }}>🙏</div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+              {bibleChapters.map(c => (
+                <button key={c.id} onClick={() => loadChapter(c)} style={{ padding: "13px 6px", borderRadius: 10, background: WHITE, border: `1px solid ${CREAM_DARK}`, color: NAVY_DARK, fontSize: 15, cursor: "pointer", fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>
+                  {c.number}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (bibleView === "search") {
+      return (
+        <div>
+          <button onClick={() => { setBibleView("books"); setBibleSearchResults(null); }} style={{ marginBottom: 16, background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif" }}>
+            ← {lang === "es" ? "Libros" : "Books"}
+          </button>
+          {searchBarJsx(true)}
+          {bibleLoading ? (
+            <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🙏</div>
+              <div style={{ fontSize: 14 }}>{lang === "es" ? "Buscando..." : "Searching..."}</div>
+            </div>
+          ) : bibleSearchResults === null ? null : bibleSearchResults.length === 0 ? (
+            <div style={{ textAlign: "center", color: MUTED, padding: 40, fontSize: 14 }}>
+              {lang === "es" ? "Sin resultados para " : "No results for "}«{bibleSearch}»
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: 12, color: MUTED, marginBottom: 14 }}>
+                {bibleSearchResults.length} {lang === "es" ? "versículos encontrados" : "verses found"}
+              </div>
+              {bibleSearchResults.map((v, i) => (
+                <div key={i} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
+                  <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 6, fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>
+                    {v.reference}
+                  </div>
+                  <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif" }}>
+                    {v.text?.replace(/\s+/g, " ").trim()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (bibleView === "verses") {
+      const verses = parseVerses(bibleChapterText);
+      return (
+        <div>
+          <button onClick={() => setBibleView("chapters")} style={{ marginBottom: 14, background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif" }}>
+            ← {bibleSelectedBook?.name}
+          </button>
+          <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 14, padding: "14px 18px", marginBottom: 16, color: WHITE }}>
+            <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>
+              {bibleSelectedBook?.name} {bibleSelectedChapter?.number}
+            </div>
+          </div>
+          {bibleLoading ? (
+            <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🙏</div>
+              <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando capítulo..." : "Loading chapter..."}</div>
+            </div>
+          ) : verses.length === 0 ? (
+            <div style={{ textAlign: "center", color: MUTED, padding: 40, fontSize: 14 }}>
+              {lang === "es" ? "No se pudo cargar el capítulo." : "Could not load chapter."}
+            </div>
+          ) : (
+            <div>
+              {verses.map(v => (
+                <div key={v.num} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: `1px solid ${CREAM_DARK}` }}>
+                  {v.num > 0 && (
+                    <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, minWidth: 22, paddingTop: 3, fontFamily: "'Cinzel', serif", flexShrink: 0, textAlign: "right" }}>
+                      {v.num}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 15, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", flex: 1 }}>
+                    {v.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const navIcons = ["🏠","📖","📜","📿","🙏","💭","🕊️","🛒","⚙️","📚"];
+  const sections = [renderHome, renderGospel, renderReadings, renderRosary, renderPrayers, renderReflections, renderPersonalPrayer, renderShop, renderSettings, renderBible];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(15,28,50,0.12)" }}>
@@ -1057,7 +1389,7 @@ export default function App() {
           {[
             { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 1 },
             { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 2 },
-            { icon: "📿", label: lang === 'es' ? "Rosario"   : "Rosary",   idx: 3 },
+            { icon: "📚", label: lang === 'es' ? "La Biblia" : "Bible",    idx: 9 },
             { icon: "✝️", label: lang === 'es' ? "Oración"  : "Prayer",   idx: 6 },
             { icon: "🛒", label: lang === 'es' ? "Tienda"    : "Shop",     idx: 7 },
           ].map(({ icon, label, idx }) => (
