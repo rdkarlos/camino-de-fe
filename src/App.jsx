@@ -400,14 +400,23 @@ export default function App() {
 
     const today = new Date().toISOString().split('T')[0];
 
+    // 1. localStorage — instantáneo
+    const cached = localStorage.getItem(`reflexion_${today}`);
+    if (cached) {
+      setLambText(cached);
+      setLambLoading(false);
+      return;
+    }
+
+    // 2. Firestore — compartido entre usuarios, timeout 1.5s
     try {
       const firestorePromise = getDoc(doc(db, 'reflexiones', today));
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Firestore timeout')), 3000)
-      );
-      const docSnap = await Promise.race([firestorePromise, timeoutPromise]);
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500));
+      const docSnap = await Promise.race([firestorePromise, timeout]);
       if (docSnap.exists() && docSnap.data().texto) {
-        setLambText(docSnap.data().texto);
+        const texto = docSnap.data().texto;
+        localStorage.setItem(`reflexion_${today}`, texto);
+        setLambText(texto);
         setLambLoading(false);
         return;
       }
@@ -415,6 +424,7 @@ export default function App() {
       console.log('[lamb] Firestore skip:', e.message);
     }
 
+    // 3. API Anthropic — solo si los dos anteriores fallan
     try {
       const response = await fetch('/api/spiritual-guide', {
         method: 'POST',
@@ -429,12 +439,9 @@ export default function App() {
       const texto = data.text || '';
       setLambText(texto || 'No se pudo obtener la reflexión.');
       if (texto) {
-        getDoc(doc(db, 'reflexiones', today)).then(snap => {
-          if (!snap.exists()) {
-            setDoc(doc(db, 'reflexiones', today), {
-              texto, fecha: today, evangelio: gospelData?.reference || '',
-            }).catch(() => {});
-          }
+        localStorage.setItem(`reflexion_${today}`, texto);
+        setDoc(doc(db, 'reflexiones', today), {
+          texto, fecha: today, evangelio: gospelData?.reference || '',
         }).catch(() => {});
       }
     } catch (error) {
