@@ -987,15 +987,26 @@ export default function App() {
 
     const toggleOrando = async (intent) => {
       const isOrando = intent.orando?.includes(user.uid);
+      const updatedOrando = isOrando
+        ? (intent.orando || []).filter(u => u !== user.uid)
+        : [...(intent.orando || []), user.uid];
+
+      // Optimistic update — UI responds immediately
+      setCircleIntenciones(prev => prev.map(i =>
+        i.id === intent.id ? { ...i, orando: updatedOrando } : i
+      ));
+
       try {
         await updateDoc(doc(db, "circulos", selectedCircle.id, "intenciones", intent.id), {
           orando: isOrando ? arrayRemove(user.uid) : arrayUnion(user.uid),
         });
-        setCircleIntenciones(prev => prev.map(i => i.id === intent.id ? {
-          ...i,
-          orando: isOrando ? (i.orando || []).filter(u => u !== user.uid) : [...(i.orando || []), user.uid],
-        } : i));
-      } catch (e) {}
+      } catch (e) {
+        console.error("[toggleOrando] Firestore error:", e.message);
+        // Revert on failure
+        setCircleIntenciones(prev => prev.map(i =>
+          i.id === intent.id ? { ...i, orando: intent.orando || [] } : i
+        ));
+      }
     };
 
     const deleteIntencion = async (intent) => {
