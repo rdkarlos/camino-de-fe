@@ -224,6 +224,8 @@ const DAILY_VERSES = [
   { es:{ text:"Bienaventurados los pobres de espíritu, porque de ellos es el reino de los cielos.", ref:"Mateo 5:3" }, en:{ text:"Blessed are the poor in spirit, for theirs is the kingdom of heaven.", ref:"Matthew 5:3" } },
 ];
 
+const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1,$2') : r;
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -604,7 +606,7 @@ export default function App() {
               <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
               <div style={{ fontSize: 12, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.5 }}>"{dailyVerse.text}"</div>
             </div>
-            <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {dailyVerse.ref}</div>
+            <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {formatRef(dailyVerse.ref)}</div>
           </div>
         </div>
         {t.home.cards.map((c, i) => (
@@ -619,9 +621,9 @@ export default function App() {
                 <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
                 <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>
                   {i === 1 && gospelData ? (
-                    <><span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{lang === 'en' ? gospelData?.reference : reference}</span>{body.substring(0, 90) + "…"}</>
+                    <><span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{formatRef(lang === 'en' ? gospelData?.reference : reference)}</span>{body.substring(0, 90) + "…"}</>
                   ) : i === 2 && gospelData?.reading1 ? (
-                    <><span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{gospelData.reading1.reference}</span>{gospelData.reading1.text.substring(0, 90) + "…"}</>
+                    <><span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{formatRef(gospelData.reading1.reference)}</span>{gospelData.reading1.text.substring(0, 90) + "…"}</>
                   ) : c.desc}
                 </div>
               </div>
@@ -642,7 +644,7 @@ export default function App() {
       <div>
         <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 16, padding: "18px 20px", marginBottom: 16, color: WHITE }}>
           <div style={{ fontSize: 13, color: GOLD_LIGHT, fontStyle: "italic", marginBottom: 4 }}>{lang === 'es' ? 'Lectura del santo Evangelio' : 'Reading of the Holy Gospel'}</div>
-          <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading)}</div>
+          <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{formatRef(lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading))}</div>
         </div>
         <div style={{ background: WHITE, borderRadius: 16, padding: 20, fontSize: 14, lineHeight: 1.9, color: "#3A2A1E", whiteSpace: "pre-wrap", boxShadow: "0 4px 16px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
           {formatted}{"\n\n"}<span style={{ color: NAVY, fontWeight: "bold", fontStyle: "italic" }}>— {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}</span>
@@ -664,7 +666,7 @@ export default function App() {
             <div onClick={() => setOpenReading(openReading === s.key ? null : s.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer" }}>
               <div>
                 <div style={{ fontWeight: "bold", color: BLUE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif" }}>{s.icon} {s.title}</div>
-                <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{s.ref}</div>
+                <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{formatRef(s.ref)}</div>
               </div>
               <span style={{ color: BLUE, fontSize: 20, fontWeight: "bold" }}>{openReading === s.key ? "−" : "+"}</span>
             </div>
@@ -1382,7 +1384,7 @@ export default function App() {
               {bibleSearchResults.map((v, i) => (
                 <div key={i} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
                   <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 6, fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>
-                    {v.reference}
+                    {formatRef(v.reference)}
                   </div>
                   <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif" }}>
                     {v.text?.replace(/\s+/g, " ").trim()}
@@ -1463,10 +1465,11 @@ export default function App() {
           style={{
             position: "fixed", bottom: 80, left: 20, zIndex: 60,
             width: 50, height: 50, borderRadius: "50%",
-            background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+            background: NAVY_DARK,
             border: "none", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 24, animation: "lambPulse 2.5s ease-in-out infinite",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
           }}
         >🐑</button>
       )}
@@ -1488,7 +1491,7 @@ export default function App() {
               {lang === 'es' ? 'Reflexión basada en el Evangelio de hoy' : 'Reflection based on today\'s Gospel'}
             </div>
             {gospelData?.reference && (
-              <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginBottom: 16 }}>{gospelData.reference}</div>
+              <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginBottom: 16 }}>{formatRef(gospelData.reference)}</div>
             )}
             {lambLoading ? (
               <div style={{ textAlign: "center", padding: "30px 0", color: NAVY }}>
@@ -1499,7 +1502,7 @@ export default function App() {
               </div>
             ) : lambText ? (
               <div style={{ fontSize: 15, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
-                {lambText}
+                {formatRef(lambText)}
               </div>
             ) : null}
             <button
@@ -1531,7 +1534,7 @@ export default function App() {
       )}
 
       {/* ── HEADER ── */}
-      <div style={{ background: `linear-gradient(180deg, ${NAVY_DARK} 0%, ${NAVY} 100%)`, color: WHITE, position: "sticky", top: 0, zIndex: 40, borderRadius: 24, margin: 8 }}>
+      <div style={{ background: "linear-gradient(135deg, #1B2A4A 0%, #2A3F6B 100%)", color: WHITE, position: "sticky", top: 0, zIndex: 40, borderRadius: 24, margin: 8 }}>
 
         {/* Barra superior: hamburguesa + logo izquierda | acciones derecha */}
         <div style={{ display: "flex", alignItems: "center", padding: "12px 14px 10px", gap: 10 }}>
