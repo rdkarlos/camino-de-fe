@@ -460,7 +460,6 @@ export default function App() {
             </div>
           )}
         </div>
-        <div style={{ background: `${GOLD}14`, border: `1px solid ${GOLD}40`, borderRadius: 12, padding: "10px 16px", fontSize: 12, color: NAVY, marginBottom: 24 }}>{t.home.reminder}</div>
         {t.home.cards.map((c, i) => (
           <div key={i} style={{ background: c.gradient, borderRadius: 22, padding: "26px 24px", marginBottom: 18, color: WHITE, position: "relative", overflow: "hidden", boxShadow: "0 8px 28px rgba(15,28,50,0.18)", minHeight: 152, display: "flex", flexDirection: "column", justifyContent: "space-between", cursor: "pointer" }} onClick={() => setTab(c.tab)}>
             <div style={{ position: "absolute", bottom: -24, right: -12, fontSize: 120, opacity: 0.09, lineHeight: 1 }}>{c.icon}</div>
