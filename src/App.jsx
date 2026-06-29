@@ -2108,7 +2108,7 @@ export default function App() {
           </button>
 
           <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
-            <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 5, color: GOLD, fontFamily: "'Cinzel', serif" }}>LUMORA</div>
+            <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 5, color: GOLD, fontFamily: "'Cinzel', serif" }}>{t.appName}</div>
             <div style={{ width: 64, height: 1.5, background: GOLD, margin: "4px auto 0", borderRadius: 1, opacity: 0.75 }}/>
           </div>
 
