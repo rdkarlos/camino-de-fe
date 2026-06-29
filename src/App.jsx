@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 
 const firebaseConfig = {
@@ -128,24 +128,24 @@ const BLUE = "#2C5F8A";
 
 const PRAYER_MOODS = {
   es: [
-    { id: "gratitud",   icon: "🙏", label: "Gratitud",   verse: "«Dad gracias en todo» — 1 Tes 5:18",                           saint: "San Francisco de Asís",       template: "Señor, te doy gracias por..." },
-    { id: "ansiedad",   icon: "🌊", label: "Ansiedad",   verse: "«No se turbe vuestro corazón» — Jn 14:1",                      saint: "Santa Teresa de Ávila",       template: "Señor, siento angustia por... confío en Ti porque..." },
-    { id: "familia",    icon: "🏡", label: "Familia",    verse: "«El amor es paciente» — 1 Cor 13:4",                           saint: "San José",                    template: "Señor, pongo en tus manos a mi familia, especialmente a..." },
-    { id: "trabajo",    icon: "💼", label: "Trabajo",    verse: "«Todo lo que hagan, háganlo de corazón» — Col 3:23",           saint: "San José Obrero",             template: "Señor, bendice mi trabajo hoy en..." },
-    { id: "duelo",      icon: "🕯️", label: "Duelo",     verse: "«Bienaventurados los que lloran» — Mt 5:4",                    saint: "Nuestra Señora de los Dolores", template: "Señor, llevo en mi corazón la pérdida de..." },
-    { id: "salud",      icon: "❤️", label: "Salud",      verse: "«Sana a los enfermos» — Lc 9:2",                              saint: "San Rafael Arcángel",         template: "Señor, te pido por la salud de..." },
-    { id: "decisiones", icon: "⚖️", label: "Decisiones", verse: "«Fíate del Señor con todo tu corazón» — Prov 3:5",            saint: "Espíritu Santo",              template: "Señor, necesito sabiduría para decidir sobre..." },
-    { id: "otra",       icon: "🌿", label: "Otra",       verse: "«Todo lo que pidan en mi nombre, lo haré» — Jn 14:13",       saint: "Espíritu Santo",              template: "Señor, quiero hablarte de..." },
+    { id: "gratitud",   icon: "🙏", label: "Gratitud",   verse: "«Dad gracias en todo» — 1 Tes 5:18",                           saint: "San Francisco de Asís",         template: "Señor, te doy gracias por...",                       prayer: "Señor y Dios mío,\n\nCon el corazón lleno de gratitud me postro ante Ti. Gracias por cada bendición que derramas sobre mi vida, por Tu amor que nunca falla y por la gracia de este nuevo día. Tu bondad me rodea y Tu misericordia me sostiene.\n\nQue mis labios siempre Te bendigan y que mi corazón nunca olvide lo que Tu mano ha hecho por mí.\n\nAmén." },
+    { id: "ansiedad",   icon: "🌊", label: "Ansiedad",   verse: "«No se turbe vuestro corazón» — Jn 14:1",                      saint: "Santa Teresa de Ávila",         template: "Señor, siento angustia por... confío en Ti porque...", prayer: "Señor Jesús,\n\nTú que dijiste «No se turbe vuestro corazón», vengo a Ti cargado/a de preocupaciones. Deposito en Tus manos todo lo que me inquieta y perturba mi paz. Tú conoces lo que siento mejor que yo mismo/a.\n\nQue Tu paz, que sobrepasa todo entendimiento, guarde mi corazón y mi mente en Ti. Confío en Tu amor.\n\nAmén." },
+    { id: "familia",    icon: "🏡", label: "Familia",    verse: "«El amor es paciente» — 1 Cor 13:4",                           saint: "San José",                      template: "Señor, pongo en tus manos a mi familia, especialmente a...", prayer: "Padre celestial,\n\nTe encomiendo a mi familia. Que Tu amor sea el cimiento de nuestro hogar, que el perdón sea nuestra práctica diaria y la alegría nuestra herencia. Protege a cada uno de los que amo.\n\nSan José, modelo de fidelidad y amor, intercede por nosotros. Que Dios bendiga nuestro hogar.\n\nAmén." },
+    { id: "trabajo",    icon: "💼", label: "Trabajo",    verse: "«Todo lo que hagan, háganlo de corazón» — Col 3:23",           saint: "San José Obrero",               template: "Señor, bendice mi trabajo hoy en...",                 prayer: "Señor,\n\nBendice el trabajo de mis manos. Que todo lo que realice hoy sea ofrendado a Ti, para Tu gloria y el bien de mis hermanos. Dame sabiduría para decidir, fortaleza para perseverar y un corazón generoso para servir.\n\nSan José Obrero, patrono del trabajo honesto, intercede por mí.\n\nAmén." },
+    { id: "duelo",      icon: "🕯️", label: "Duelo",     verse: "«Bienaventurados los que lloran» — Mt 5:4",                    saint: "Nuestra Señora de los Dolores", template: "Señor, llevo en mi corazón la pérdida de...",         prayer: "Señor de la vida y de la muerte,\n\nVengo a Ti con el corazón roto. En medio de la oscuridad del dolor, creo que Tú estás presente y que ninguna lágrima cae sin que Tú la veas. Tú que resucitaste, transforma mi duelo en esperanza.\n\nNuestra Señora de los Dolores, que conociste el dolor junto a la cruz, acompáñame en este camino.\n\nAmén." },
+    { id: "salud",      icon: "❤️", label: "Salud",      verse: "«Sana a los enfermos» — Lc 9:2",                              saint: "San Rafael Arcángel",           template: "Señor, te pido por la salud de...",                  prayer: "Señor Jesucristo,\n\nTú que recorriste los caminos de Galilea sanando a los enfermos con Tu sola palabra, te pido salud y restauración. Pon Tu mano misericordiosa sobre quien sufre y devuélvele la fortaleza y la paz.\n\nSan Rafael Arcángel, medicina de Dios, intercede ante el Señor por esta intención.\n\nAmén." },
+    { id: "decisiones", icon: "⚖️", label: "Decisiones", verse: "«Fíate del Señor con todo tu corazón» — Prov 3:5",            saint: "Espíritu Santo",                template: "Señor, necesito sabiduría para decidir sobre...",    prayer: "Espíritu Santo,\n\nVen a iluminar mi mente y a guiar mis pasos. Me encuentro en una encrucijada y necesito Tu sabiduría. Dame el discernimiento para reconocer Tu voluntad y el valor para seguirla, aunque no lo entienda todo.\n\nSeñor, no mi voluntad sino la Tuya.\n\nAmén." },
+    { id: "otra",       icon: "🌿", label: "Otra",       verse: "«Todo lo que pidan en mi nombre, lo haré» — Jn 14:13",        saint: "Espíritu Santo",                template: "Señor, quiero hablarte de...",                       prayer: "Señor,\n\nAquí estoy ante Ti con todo lo que llevo en el corazón. No sé cómo expresarlo con palabras, pero Tú conoces mis necesidades antes de que yo las formule. Escucha el clamor de mi alma.\n\nResponde según Tu voluntad perfecta y que en todo sea glorificado Tu santo nombre.\n\nAmén." },
   ],
   en: [
-    { id: "gratitud",   icon: "🙏", label: "Gratitude",  verse: "«Give thanks in all circumstances» — 1 Thes 5:18",            saint: "St. Francis of Assisi",       template: "Lord, I am grateful for..." },
-    { id: "ansiedad",   icon: "🌊", label: "Anxiety",    verse: "«Let not your hearts be troubled» — Jn 14:1",                 saint: "St. Teresa of Ávila",         template: "Lord, I feel anxious about... I trust in You because..." },
-    { id: "familia",    icon: "🏡", label: "Family",     verse: "«Love is patient» — 1 Cor 13:4",                              saint: "St. Joseph",                  template: "Lord, I place my family in Your hands, especially..." },
-    { id: "trabajo",    icon: "💼", label: "Work",       verse: "«Whatever you do, do it from the heart» — Col 3:23",          saint: "St. Joseph the Worker",       template: "Lord, bless my work today in..." },
-    { id: "duelo",      icon: "🕯️", label: "Grief",     verse: "«Blessed are those who mourn» — Mt 5:4",                     saint: "Our Lady of Sorrows",         template: "Lord, I carry in my heart the loss of..." },
-    { id: "salud",      icon: "❤️", label: "Health",     verse: "«Heal the sick» — Lk 9:2",                                   saint: "St. Raphael the Archangel",   template: "Lord, I pray for the health of..." },
-    { id: "decisiones", icon: "⚖️", label: "Decisions",  verse: "«Trust in the Lord with all your heart» — Prov 3:5",         saint: "Holy Spirit",                 template: "Lord, I need wisdom to decide about..." },
-    { id: "otra",       icon: "🌿", label: "Other",      verse: "«Whatever you ask in my name, I will do it» — Jn 14:13",     saint: "Holy Spirit",                 template: "Lord, I want to talk to you about..." },
+    { id: "gratitud",   icon: "🙏", label: "Gratitude",  verse: "«Give thanks in all circumstances» — 1 Thes 5:18",            saint: "St. Francis of Assisi",       template: "Lord, I am grateful for...",                         prayer: "Lord my God,\n\nWith a heart full of gratitude I come before You. Thank You for every blessing You pour into my life, for Your love that never fails, and for the grace of this new day. Your goodness surrounds me and Your mercy sustains me.\n\nMay my lips always bless You and may my heart never forget what Your hand has done for me.\n\nAmen." },
+    { id: "ansiedad",   icon: "🌊", label: "Anxiety",    verse: "«Let not your hearts be troubled» — Jn 14:1",                 saint: "St. Teresa of Ávila",         template: "Lord, I feel anxious about... I trust in You because...", prayer: "Lord Jesus,\n\nYou who said 'Let not your hearts be troubled,' I come to You burdened with worries. I place in Your hands everything that unsettles me and disturbs my peace. You know what I feel better than I do myself.\n\nMay Your peace, which surpasses all understanding, guard my heart and mind in You. I trust in Your love.\n\nAmen." },
+    { id: "familia",    icon: "🏡", label: "Family",     verse: "«Love is patient» — 1 Cor 13:4",                              saint: "St. Joseph",                  template: "Lord, I place my family in Your hands, especially...", prayer: "Heavenly Father,\n\nI entrust my family to You. May Your love be the foundation of our home, may forgiveness be our daily practice, and joy our inheritance. Protect each one of those I love.\n\nSt. Joseph, model of faithful love, intercede for us. May God bless our home.\n\nAmen." },
+    { id: "trabajo",    icon: "💼", label: "Work",       verse: "«Whatever you do, do it from the heart» — Col 3:23",          saint: "St. Joseph the Worker",       template: "Lord, bless my work today in...",                     prayer: "Lord,\n\nBless the work of my hands. May everything I do today be offered to You, for Your glory and the good of my brothers and sisters. Give me wisdom to decide, strength to persevere, and a generous heart to serve.\n\nSt. Joseph the Worker, patron of honest labor, intercede for me.\n\nAmen." },
+    { id: "duelo",      icon: "🕯️", label: "Grief",     verse: "«Blessed are those who mourn» — Mt 5:4",                     saint: "Our Lady of Sorrows",         template: "Lord, I carry in my heart the loss of...",            prayer: "Lord of life and death,\n\nI come to You with a broken heart. In the darkness of pain, I believe that You are present and that no tear falls without You seeing it. You who rose again, transform my grief into hope.\n\nOur Lady of Sorrows, who knew pain beside the cross, accompany me on this journey.\n\nAmen." },
+    { id: "salud",      icon: "❤️", label: "Health",     verse: "«Heal the sick» — Lk 9:2",                                   saint: "St. Raphael the Archangel",   template: "Lord, I pray for the health of...",                   prayer: "Lord Jesus Christ,\n\nYou who healed the sick with Your word alone, I ask You for health and restoration. Lay Your merciful hand upon those who suffer and restore their strength and peace.\n\nSt. Raphael the Archangel, medicine of God, intercede before the Lord for this intention.\n\nAmen." },
+    { id: "decisiones", icon: "⚖️", label: "Decisions",  verse: "«Trust in the Lord with all your heart» — Prov 3:5",         saint: "Holy Spirit",                 template: "Lord, I need wisdom to decide about...",              prayer: "Holy Spirit,\n\nCome to enlighten my mind and guide my steps. I find myself at a crossroads and I need Your wisdom. Give me the discernment to recognize Your will and the courage to follow it, even when I don't understand everything.\n\nLord, not my will but Yours.\n\nAmen." },
+    { id: "otra",       icon: "🌿", label: "Other",      verse: "«Whatever you ask in my name, I will do it» — Jn 14:13",     saint: "Holy Spirit",                 template: "Lord, I want to talk to you about...",                prayer: "Lord,\n\nHere I am before You with everything I carry in my heart. I don't know how to put it into words, but You know my needs before I express them. Hear the cry of my soul.\n\nRespond according to Your perfect will and may Your holy name be glorified in all things.\n\nAmen." },
   ],
 };
 
@@ -190,6 +190,7 @@ export default function App() {
   const [personalTab, setPersonalTab] = useState("builder");
   const [selectedMood, setSelectedMood] = useState(null);
   const [prayerIntention, setPrayerIntention] = useState("");
+  const [generatedPrayer, setGeneratedPrayer] = useState(null);
   const [savedPrayers, setSavedPrayers] = useState([]);
 
   useEffect(() => {
@@ -589,22 +590,45 @@ export default function App() {
     const moods = PRAYER_MOODS[lang];
     const mood = moods.find(m => m.id === selectedMood);
 
-    const savePrayer = () => {
-      if (!mood || !prayerIntention.trim()) return;
-      const newPrayer = {
+    const generatePrayer = () => {
+      if (!mood) return;
+      const base = mood.prayer;
+      const full = prayerIntention.trim()
+        ? `${base}\n\n${lang === "es" ? "Te lo pido especialmente por" : "I especially pray for"}: ${prayerIntention.trim()}.`
+        : base;
+      setGeneratedPrayer(full);
+    };
+
+    const savePrayer = async () => {
+      if (!mood || !generatedPrayer) return;
+      const entry = {
         id: Date.now(),
         date: new Date().toLocaleDateString(lang === "es" ? "es-ES" : "en-US", { day: "numeric", month: "long", year: "numeric" }),
         moodId: mood.id,
         moodLabel: mood.label,
         moodIcon: mood.icon,
         intention: prayerIntention.trim(),
+        oracion: generatedPrayer,
         received: false,
       };
-      const updated = [newPrayer, ...savedPrayers];
+      const updated = [entry, ...savedPrayers];
       setSavedPrayers(updated);
       localStorage.setItem("personal_prayers", JSON.stringify(updated));
+      if (user) {
+        try {
+          await addDoc(collection(db, "usuarios", user.uid, "oraciones"), {
+            estado: mood.label,
+            intencion: prayerIntention.trim(),
+            oracion: generatedPrayer,
+            fecha: serverTimestamp(),
+          });
+        } catch (e) {
+          console.error("[firestore] error guardando oración:", e.message);
+        }
+      }
       setPrayerIntention("");
       setSelectedMood(null);
+      setGeneratedPrayer(null);
       setPersonalTab("journal");
     };
 
@@ -647,8 +671,8 @@ export default function App() {
               ))}
             </div>
 
-            {/* Selected mood content */}
-            {mood && (
+            {/* Paso 2: intención + generar */}
+            {mood && !generatedPrayer && (
               <div>
                 <div style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}55`, borderRadius: 12, padding: "14px 16px", marginBottom: 12 }}>
                   <div style={{ fontSize: 14, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.7, fontFamily: "'Crimson Text', serif" }}>{mood.verse}</div>
@@ -663,17 +687,49 @@ export default function App() {
                 </div>
 
                 <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
-                  <div style={{ fontSize: 13, color: MUTED, marginBottom: 10, fontStyle: "italic", lineHeight: 1.5 }}>{mood.template}</div>
+                  <div style={{ fontSize: 13, color: MUTED, marginBottom: 8, fontFamily: "'Crimson Text', serif" }}>
+                    {lang === "es" ? "¿Tienes una intención específica? (opcional)" : "Do you have a specific intention? (optional)"}
+                  </div>
                   <textarea
                     value={prayerIntention}
                     onChange={e => setPrayerIntention(e.target.value)}
-                    placeholder={lang === "es" ? "Escribe tu intención aquí..." : "Write your intention here..."}
-                    style={{ width: "100%", minHeight: 100, padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, fontFamily: "'Georgia', serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6, outline: "none" }}
+                    placeholder={lang === "es" ? "Ej: por mi mamá enferma, por mi trabajo..." : "E.g.: for my sick mother, for my job..."}
+                    style={{ width: "100%", minHeight: 80, padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, fontFamily: "'Georgia', serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6, outline: "none" }}
                   />
                 </div>
 
-                <button onClick={savePrayer} disabled={!prayerIntention.trim()} style={{ width: "100%", padding: "13px", background: prayerIntention.trim() ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : CREAM_DARK, color: prayerIntention.trim() ? WHITE : MUTED, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: prayerIntention.trim() ? "pointer" : "default", fontFamily: "'Crimson Text', serif" }}>
-                  🕊️ {lang === "es" ? "Guardar oración" : "Save prayer"}
+                <button onClick={generatePrayer} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                  ✝️ {lang === "es" ? "Generar mi oración" : "Generate my prayer"}
+                </button>
+              </div>
+            )}
+
+            {/* Paso 3: oración generada */}
+            {mood && generatedPrayer && (
+              <div>
+                <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 16, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: -16, right: -10, fontSize: 80, opacity: 0.06 }}>✝</div>
+                  <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", letterSpacing: 1, marginBottom: 12, textTransform: "uppercase" }}>{mood.icon} {mood.label}</div>
+                  <div style={{ fontSize: 15, fontFamily: "'Crimson Text', serif", lineHeight: 1.8, color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>{generatedPrayer}</div>
+                </div>
+
+                {user ? (
+                  <button onClick={savePrayer} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", marginBottom: 10 }}>
+                    🙏 {lang === "es" ? "Guardar oración" : "Save prayer"}
+                  </button>
+                ) : (
+                  <div style={{ background: CREAM, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "16px", marginBottom: 10, textAlign: "center" }}>
+                    <div style={{ fontSize: 14, color: NAVY_DARK, marginBottom: 10, fontFamily: "'Crimson Text', serif" }}>
+                      {lang === "es" ? "Inicia sesión para guardar tus oraciones" : "Sign in to save your prayers"}
+                    </div>
+                    <button onClick={() => setAuthMode("login")} style={{ padding: "9px 24px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                      👤 {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                    </button>
+                  </div>
+                )}
+
+                <button onClick={() => { setGeneratedPrayer(null); setSelectedMood(null); setPrayerIntention(""); }} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: NAVY_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                  ← {lang === "es" ? "Nueva oración" : "New prayer"}
                 </button>
               </div>
             )}
