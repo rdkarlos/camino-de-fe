@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 
 const firebaseConfig = {
@@ -288,6 +288,19 @@ export default function App() {
   const [bibleSearch, setBibleSearch] = useState("");
   const [bibleSearchResults, setBibleSearchResults] = useState(null);
   const [bibleLoading, setBibleLoading] = useState(false);
+  const [circleView, setCircleView] = useState("list");
+  const [myCircles, setMyCircles] = useState([]);
+  const [circleLoading, setCircleLoading] = useState(false);
+  const [selectedCircle, setSelectedCircle] = useState(null);
+  const [circleIntenciones, setCircleIntenciones] = useState([]);
+  const [newCircleName, setNewCircleName] = useState("");
+  const [newCircleDesc, setNewCircleDesc] = useState("");
+  const [newCircleType, setNewCircleType] = useState("publico");
+  const [joinCode, setJoinCode] = useState("");
+  const [joinMode, setJoinMode] = useState("private");
+  const [publicCircles, setPublicCircles] = useState([]);
+  const [newIntencion, setNewIntencion] = useState("");
+  const [circleError, setCircleError] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -366,6 +379,16 @@ export default function App() {
       .then(snap => setPrayerBook(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
       .catch(() => {})
       .finally(() => setPrayerBookLoading(false));
+  }, [personalTab, user]);
+
+  useEffect(() => {
+    if (personalTab !== "circles" || !user) return;
+    setCircleLoading(true);
+    setCircleView("list");
+    getDocs(query(collection(db, "circulos"), where("miembros", "array-contains", user.uid)))
+      .then(snap => setMyCircles(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
+      .catch(() => {})
+      .finally(() => setCircleLoading(false));
   }, [personalTab, user]);
 
   const handleGoogle = async () => {
@@ -858,16 +881,150 @@ export default function App() {
       localStorage.setItem("personal_prayers", JSON.stringify(updated));
     };
 
+    // Circles helpers
+    const generateCode = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    };
+
+    const loadPublicCircles = async () => {
+      setCircleLoading(true);
+      try {
+        const snap = await getDocs(query(collection(db, "circulos"), where("tipo", "==", "publico")));
+        setPublicCircles(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {}
+      setCircleLoading(false);
+    };
+
+    const loadIntenciones = async (circulo) => {
+      setCircleLoading(true);
+      try {
+        const snap = await getDocs(query(collection(db, "circulos", circulo.id, "intenciones"), orderBy("fecha", "desc")));
+        setCircleIntenciones(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {}
+      setCircleLoading(false);
+    };
+
+    const openCircle = async (circulo) => {
+      setSelectedCircle(circulo);
+      setCircleView("inside");
+      setCircleIntenciones([]);
+      await loadIntenciones(circulo);
+    };
+
+    const createCircle = async () => {
+      if (!newCircleName.trim()) { setCircleError(lang === "es" ? "El nombre es requerido" : "Name is required"); return; }
+      setCircleLoading(true);
+      setCircleError("");
+      const codigo = newCircleType === "privado" ? generateCode() : "";
+      try {
+        const circuloData = {
+          nombre: newCircleName.trim(),
+          descripcion: newCircleDesc.trim(),
+          tipo: newCircleType,
+          codigo,
+          creadorId: user.uid,
+          creadorNombre: user.displayName || user.email,
+          miembros: [user.uid],
+          fechaCreacion: serverTimestamp(),
+        };
+        const ref = await addDoc(collection(db, "circulos"), circuloData);
+        setMyCircles(prev => [{ id: ref.id, ...circuloData, fechaCreacion: new Date() }, ...prev]);
+        setNewCircleName("");
+        setNewCircleDesc("");
+        setNewCircleType("publico");
+        setCircleView("list");
+      } catch (e) { setCircleError(e.message); }
+      setCircleLoading(false);
+    };
+
+    const joinCircleByCode = async () => {
+      if (!joinCode.trim()) return;
+      setCircleLoading(true);
+      setCircleError("");
+      try {
+        const snap = await getDocs(query(collection(db, "circulos"), where("codigo", "==", joinCode.trim().toUpperCase())));
+        if (snap.empty) { setCircleError(lang === "es" ? "Código no encontrado" : "Code not found"); setCircleLoading(false); return; }
+        const d = snap.docs[0];
+        const circulo = { id: d.id, ...d.data() };
+        if (circulo.miembros?.includes(user.uid)) { setCircleError(lang === "es" ? "Ya eres miembro de este círculo" : "Already a member"); setCircleLoading(false); return; }
+        if ((circulo.miembros?.length || 0) >= 10) { setCircleError(lang === "es" ? "El círculo está lleno (máx. 10)" : "Circle is full (max 10)"); setCircleLoading(false); return; }
+        await updateDoc(doc(db, "circulos", circulo.id), { miembros: arrayUnion(user.uid) });
+        setMyCircles(prev => [{ ...circulo, miembros: [...(circulo.miembros || []), user.uid] }, ...prev]);
+        setJoinCode("");
+        setCircleView("list");
+      } catch (e) { setCircleError(e.message); }
+      setCircleLoading(false);
+    };
+
+    const joinPublicCircle = async (circulo) => {
+      if (circulo.miembros?.includes(user.uid) || (circulo.miembros?.length || 0) >= 10) return;
+      try {
+        await updateDoc(doc(db, "circulos", circulo.id), { miembros: arrayUnion(user.uid) });
+        const updated = { ...circulo, miembros: [...(circulo.miembros || []), user.uid] };
+        setMyCircles(prev => [updated, ...prev]);
+        setPublicCircles(prev => prev.map(c => c.id === circulo.id ? updated : c));
+        setCircleView("list");
+      } catch (e) { setCircleError(e.message); }
+    };
+
+    const addIntencion = async () => {
+      if (!newIntencion.trim() || !selectedCircle) return;
+      try {
+        const data = {
+          texto: newIntencion.trim(),
+          autorId: user.uid,
+          autorNombre: user.displayName || user.email.split("@")[0],
+          fecha: serverTimestamp(),
+          orando: [],
+        };
+        const ref = await addDoc(collection(db, "circulos", selectedCircle.id, "intenciones"), data);
+        setCircleIntenciones(prev => [{ id: ref.id, ...data, fecha: new Date() }, ...prev]);
+        setNewIntencion("");
+      } catch (e) {}
+    };
+
+    const toggleOrando = async (intent) => {
+      const isOrando = intent.orando?.includes(user.uid);
+      try {
+        await updateDoc(doc(db, "circulos", selectedCircle.id, "intenciones", intent.id), {
+          orando: isOrando ? arrayRemove(user.uid) : arrayUnion(user.uid),
+        });
+        setCircleIntenciones(prev => prev.map(i => i.id === intent.id ? {
+          ...i,
+          orando: isOrando ? (i.orando || []).filter(u => u !== user.uid) : [...(i.orando || []), user.uid],
+        } : i));
+      } catch (e) {}
+    };
+
+    const deleteIntencion = async (intent) => {
+      try {
+        await deleteDoc(doc(db, "circulos", selectedCircle.id, "intenciones", intent.id));
+        setCircleIntenciones(prev => prev.filter(i => i.id !== intent.id));
+      } catch (e) {}
+    };
+
+    const leaveCircle = async () => {
+      if (!selectedCircle) return;
+      try {
+        await updateDoc(doc(db, "circulos", selectedCircle.id), { miembros: arrayRemove(user.uid) });
+        setMyCircles(prev => prev.filter(c => c.id !== selectedCircle.id));
+        setSelectedCircle(null);
+        setCircleView("list");
+      } catch (e) {}
+    };
+
     return (
       <div>
         {/* Tab switcher */}
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
           {[
-            ["builder", "✝", lang === "es" ? "Crear Oración" : "Create Prayer"],
+            ["builder", "✝", lang === "es" ? "Crear Oración" : "Crear"],
             ["journal", "📔", lang === "es" ? "Diario" : "Journal"],
-            ["book",    "📖", lang === "es" ? "Mis Oraciones" : "My Prayers"],
+            ["book",    "📖", lang === "es" ? "Mis Oraciones" : "Mis Orac."],
+            ["circles", "🔵", lang === "es" ? "Círculos" : "Circles"],
           ].map(([key, icon, label]) => (
-            <button key={key} onClick={() => setPersonalTab(key)} style={{ width: 110, flexShrink: 0, padding: "9px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3 }}>
+            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3 }}>
               <div style={{ fontSize: 16 }}>{icon}</div>
               <div>{label}</div>
             </button>
@@ -992,6 +1149,222 @@ export default function App() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : personalTab === "circles" ? (
+          /* Círculos de Oración */
+          <div>
+            {!user ? (
+              <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>🔵</div>
+                <div style={{ fontSize: 14, color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                  {lang === "es" ? "Inicia sesión para unirte a Círculos de Oración" : "Sign in to join Prayer Circles"}
+                </div>
+                <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                  👤 {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                </button>
+              </div>
+            ) : circleView === "list" ? (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>
+                    {lang === "es" ? "Mis Círculos" : "My Circles"}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => { setCircleError(""); setNewCircleName(""); setNewCircleDesc(""); setNewCircleType("publico"); setCircleView("create"); }} style={{ padding: "8px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                      + {lang === "es" ? "Crear" : "Create"}
+                    </button>
+                    <button onClick={() => { setCircleError(""); setJoinCode(""); setJoinMode("private"); setPublicCircles([]); setCircleView("join"); }} style={{ padding: "8px 14px", background: WHITE, color: NAVY, border: `1px solid ${NAVY}`, borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                      {lang === "es" ? "Unirse" : "Join"}
+                    </button>
+                  </div>
+                </div>
+                {circleLoading ? (
+                  <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+                    <div style={{ fontSize: 32, marginBottom: 12 }}>🔵</div>
+                    <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando círculos..." : "Loading circles..."}</div>
+                  </div>
+                ) : myCircles.length === 0 ? (
+                  <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+                    <div style={{ fontSize: 44, marginBottom: 12 }}>🙏</div>
+                    <div style={{ fontSize: 15, color: NAVY_DARK, marginBottom: 8, fontFamily: "'Crimson Text', serif" }}>
+                      {lang === "es" ? "Aún no perteneces a ningún círculo" : "You're not in any circles yet"}
+                    </div>
+                    <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea uno o únete a uno para orar juntos" : "Create or join one to pray together"}</div>
+                  </div>
+                ) : myCircles.map(c => (
+                  <div key={c.id} onClick={() => openCircle(c)} style={{ background: WHITE, borderRadius: 16, padding: "14px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)", cursor: "pointer" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
+                        <div style={{ fontSize: 15, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif", marginBottom: 3 }}>{c.nombre}</div>
+                        {c.descripcion && <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.5 }}>{c.descripcion.length > 80 ? c.descripcion.substring(0, 80) + "…" : c.descripcion}</div>}
+                      </div>
+                      <span style={{ fontSize: 11, background: c.tipo === "privado" ? `${NAVY}18` : `${GOLD}22`, color: c.tipo === "privado" ? NAVY : "#8B6A1A", padding: "3px 8px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
+                        {c.tipo === "privado" ? "🔒" : "🌍"} {c.tipo === "privado" ? (lang === "es" ? "Privado" : "Private") : (lang === "es" ? "Público" : "Public")}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: MUTED, marginTop: 8 }}>
+                      👥 {c.miembros?.length || 1}/10 · {c.creadorId === user.uid ? (lang === "es" ? "Tú eres el creador" : "You're the creator") : c.creadorNombre}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : circleView === "create" ? (
+              <div>
+                <button onClick={() => setCircleView("list")} style={{ background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: "0 0 16px 0", fontWeight: "bold" }}>
+                  ← {lang === "es" ? "Volver" : "Back"}
+                </button>
+                <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                  {lang === "es" ? "Crear Círculo de Oración" : "Create Prayer Circle"}
+                </div>
+                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                  <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Nombre del círculo*" : "Circle name*"}</div>
+                  <input value={newCircleName} onChange={e => setNewCircleName(e.target.value)} placeholder={lang === "es" ? "Ej: Familia López" : "E.g.: Lopez Family"} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif" }} />
+                </div>
+                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                  <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Descripción (opcional)" : "Description (optional)"}</div>
+                  <textarea value={newCircleDesc} onChange={e => setNewCircleDesc(e.target.value)} placeholder={lang === "es" ? "¿De qué trata este círculo?" : "What is this circle about?"} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, minHeight: 70, boxSizing: "border-box", resize: "vertical", outline: "none", fontFamily: "Georgia, serif" }} />
+                </div>
+                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
+                  <div style={{ fontSize: 12, color: MUTED, marginBottom: 10 }}>{lang === "es" ? "Tipo de círculo" : "Circle type"}</div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {[["publico", "🌍", lang === "es" ? "Público" : "Public"], ["privado", "🔒", lang === "es" ? "Privado" : "Private"]].map(([type, icon, label]) => (
+                      <button key={type} onClick={() => setNewCircleType(type)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${newCircleType === type ? NAVY : CREAM_DARK}`, background: newCircleType === type ? `${NAVY}18` : WHITE, color: newCircleType === type ? NAVY : MUTED, fontSize: 13, fontWeight: "bold", cursor: "pointer" }}>
+                        {icon} {label}
+                      </button>
+                    ))}
+                  </div>
+                  {newCircleType === "privado" && (
+                    <div style={{ marginTop: 12, background: `${GOLD}18`, borderRadius: 10, padding: "10px 14px", border: `1px solid ${GOLD}44` }}>
+                      <div style={{ fontSize: 11, color: "#8B6A1A", fontWeight: "bold", marginBottom: 4 }}>
+                        {lang === "es" ? "CÓDIGO DE ACCESO (se genera al crear)" : "ACCESS CODE (generated on create)"}
+                      </div>
+                      <div style={{ fontSize: 18, color: MUTED, letterSpacing: 4, fontFamily: "monospace" }}>
+                        {lang === "es" ? "· · · · · ·" : "· · · · · ·"}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
+                <button onClick={createCircle} disabled={circleLoading || !newCircleName.trim()} style={{ width: "100%", padding: 13, background: !newCircleName.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newCircleName.trim() ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: newCircleName.trim() ? "pointer" : "default", fontFamily: "'Crimson Text', serif" }}>
+                  🙏 {circleLoading ? (lang === "es" ? "Creando..." : "Creating...") : (lang === "es" ? "Crear Círculo" : "Create Circle")}
+                </button>
+              </div>
+            ) : circleView === "join" ? (
+              <div>
+                <button onClick={() => setCircleView("list")} style={{ background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: "0 0 16px 0", fontWeight: "bold" }}>
+                  ← {lang === "es" ? "Volver" : "Back"}
+                </button>
+                <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                  {lang === "es" ? "Unirse a un Círculo" : "Join a Circle"}
+                </div>
+                <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+                  {[["private", "🔒", lang === "es" ? "Código privado" : "Private code"], ["public", "🌍", lang === "es" ? "Círculos públicos" : "Public circles"]].map(([mode, icon, label]) => (
+                    <button key={mode} onClick={() => { setJoinMode(mode); if (mode === "public") loadPublicCircles(); }} style={{ flex: 1, padding: "9px 8px", borderRadius: 12, background: joinMode === mode ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: joinMode === mode ? WHITE : MUTED, border: `1px solid ${joinMode === mode ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                      {icon} {label}
+                    </button>
+                  ))}
+                </div>
+                {joinMode === "private" ? (
+                  <div>
+                    <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                      <div style={{ fontSize: 12, color: MUTED, marginBottom: 8 }}>{lang === "es" ? "Código del círculo" : "Circle code"}</div>
+                      <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} placeholder="XXXXXX" maxLength={6} style={{ width: "100%", padding: "12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 22, fontFamily: "monospace", letterSpacing: 6, color: NAVY_DARK, background: CREAM, boxSizing: "border-box", textAlign: "center", outline: "none" }} />
+                    </div>
+                    {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
+                    <button onClick={joinCircleByCode} disabled={circleLoading || joinCode.length < 6} style={{ width: "100%", padding: 13, background: joinCode.length < 6 ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: joinCode.length < 6 ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: joinCode.length >= 6 ? "pointer" : "default", fontFamily: "'Crimson Text', serif" }}>
+                      {circleLoading ? (lang === "es" ? "Buscando..." : "Searching...") : (lang === "es" ? "Unirse al Círculo" : "Join Circle")}
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    {circleLoading ? (
+                      <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
+                        <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando círculos..." : "Loading circles..."}</div>
+                      </div>
+                    ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).length === 0 ? (
+                      <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
+                        <div style={{ fontSize: 36, marginBottom: 10 }}>🌍</div>
+                        <div style={{ fontSize: 14 }}>{lang === "es" ? "No hay círculos públicos disponibles" : "No public circles available"}</div>
+                      </div>
+                    ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).map(c => (
+                      <div key={c.id} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}` }}>
+                        <div style={{ fontSize: 14, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{c.nombre}</div>
+                        {c.descripcion && <div style={{ fontSize: 13, color: MUTED, marginTop: 3, marginBottom: 8 }}>{c.descripcion}</div>}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ fontSize: 12, color: MUTED }}>👥 {c.miembros?.length || 1}/10</div>
+                          <button onClick={() => joinPublicCircle(c)} disabled={(c.miembros?.length || 0) >= 10} style={{ padding: "7px 16px", background: (c.miembros?.length || 0) >= 10 ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: (c.miembros?.length || 0) >= 10 ? MUTED : WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: (c.miembros?.length || 0) >= 10 ? "default" : "pointer" }}>
+                            {(c.miembros?.length || 0) >= 10 ? (lang === "es" ? "Lleno" : "Full") : (lang === "es" ? "Unirse" : "Join")}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Inside circle */
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                  <button onClick={() => { setCircleView("list"); setSelectedCircle(null); setCircleIntenciones([]); }} style={{ background: "none", border: "none", color: NAVY, fontSize: 18, cursor: "pointer", fontWeight: "bold", padding: 0 }}>
+                    ←
+                  </button>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{selectedCircle?.nombre}</div>
+                    {selectedCircle?.descripcion && <div style={{ fontSize: 12, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCircle.descripcion}</div>}
+                  </div>
+                  <div style={{ fontSize: 12, color: MUTED, flexShrink: 0 }}>👥 {selectedCircle?.miembros?.length || 1}/10</div>
+                </div>
+
+                {/* Add intention */}
+                <div style={{ background: WHITE, borderRadius: 12, padding: 14, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
+                  <textarea value={newIntencion} onChange={e => setNewIntencion(e.target.value)} placeholder={lang === "es" ? "Comparte una intención de oración..." : "Share a prayer intention..."} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, minHeight: 60, boxSizing: "border-box", resize: "none", outline: "none", fontFamily: "Georgia, serif" }} />
+                  <button onClick={addIntencion} disabled={!newIntencion.trim()} style={{ marginTop: 8, width: "100%", padding: "9px", background: !newIntencion.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newIntencion.trim() ? MUTED : WHITE, border: "none", borderRadius: 10, fontSize: 13, fontWeight: "bold", cursor: newIntencion.trim() ? "pointer" : "default" }}>
+                    🙏 {lang === "es" ? "Compartir intención" : "Share intention"}
+                  </button>
+                </div>
+
+                {/* Intentions list */}
+                {circleLoading ? (
+                  <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
+                    <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando intenciones..." : "Loading intentions..."}</div>
+                  </div>
+                ) : circleIntenciones.length === 0 ? (
+                  <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
+                    <div style={{ fontSize: 36, marginBottom: 10 }}>🙏</div>
+                    <div style={{ fontSize: 14 }}>{lang === "es" ? "Sé el primero en compartir una intención" : "Be the first to share an intention"}</div>
+                  </div>
+                ) : circleIntenciones.map(intent => {
+                  const isOrando = intent.orando?.includes(user.uid);
+                  const orandoCount = intent.orando?.length || 0;
+                  const canDelete = intent.autorId === user.uid || selectedCircle?.creadorId === user.uid;
+                  return (
+                    <div key={intent.id} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
+                      <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginBottom: 6 }}>{intent.autorNombre}</div>
+                      <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.65, fontFamily: "'Crimson Text', serif", marginBottom: 10 }}>{intent.texto}</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <button onClick={() => toggleOrando(intent)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isOrando ? `${GOLD}22` : CREAM, border: `1px solid ${isOrando ? GOLD : CREAM_DARK}`, borderRadius: 20, fontSize: 13, cursor: "pointer", color: isOrando ? "#8B6A1A" : MUTED }}>
+                          🙏 {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
+                        </button>
+                        {canDelete && (
+                          <button onClick={() => deleteIntencion(intent)} style={{ background: "none", border: "none", color: MUTED, fontSize: 18, cursor: "pointer", padding: "4px 8px" }}>
+                            🗑
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Leave circle */}
+                {selectedCircle && selectedCircle.creadorId !== user.uid && (
+                  <div style={{ marginTop: 20, textAlign: "center" }}>
+                    <button onClick={leaveCircle} style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>
+                      {lang === "es" ? "Abandonar este círculo" : "Leave this circle"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           /* Pestaña: Mi Libro de Oraciones (Firestore) */
