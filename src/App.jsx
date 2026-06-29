@@ -301,6 +301,7 @@ export default function App() {
   const [publicCircles, setPublicCircles] = useState([]);
   const [newIntencion, setNewIntencion] = useState("");
   const [circleError, setCircleError] = useState("");
+  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1314,6 +1315,33 @@ export default function App() {
                   </div>
                   <div style={{ fontSize: 12, color: MUTED, flexShrink: 0 }}>👥 {selectedCircle?.miembros?.length || 1}/10</div>
                 </div>
+
+                {/* Access code — visible only to the creator of a private circle */}
+                {selectedCircle?.tipo === "privado" && selectedCircle?.creadorId === user.uid && (
+                  <div style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}66`, borderRadius: 12, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 15 }}>🔑</span>
+                      <div>
+                        <div style={{ fontSize: 10, color: "#8B6A1A", fontWeight: "bold", letterSpacing: 0.5 }}>
+                          {lang === "es" ? "CÓDIGO DE ACCESO" : "ACCESS CODE"}
+                        </div>
+                        <div style={{ fontSize: 18, fontWeight: "bold", color: NAVY, fontFamily: "monospace", letterSpacing: 4 }}>
+                          {selectedCircle.codigo}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedCircle.codigo).catch(() => {});
+                        setCodeCopied(true);
+                        setTimeout(() => setCodeCopied(false), 2000);
+                      }}
+                      style={{ padding: "6px 14px", background: codeCopied ? "#1a6b3a" : NAVY, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}
+                    >
+                      {codeCopied ? (lang === "es" ? "¡Copiado!" : "Copied!") : (lang === "es" ? "Copiar" : "Copy")}
+                    </button>
+                  </div>
+                )}
 
                 {/* Add intention */}
                 <div style={{ background: WHITE, borderRadius: 12, padding: 14, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
