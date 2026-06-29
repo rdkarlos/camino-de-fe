@@ -1372,6 +1372,24 @@ export default function App() {
       {authMode && renderAuthModal()}
       {showCart && renderCartModal()}
 
+      {/* Botón Inicio fijo */}
+      {tab !== 0 && (
+        <button
+          onClick={() => setTab(0)}
+          title={lang === "es" ? "Inicio" : "Home"}
+          style={{
+            position: "fixed", bottom: 20, right: 20, zIndex: 60,
+            width: 44, height: 44, borderRadius: "50%",
+            background: NAVY_DARK, border: `1.5px solid ${GOLD}44`,
+            color: GOLD, fontSize: 20, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 14px rgba(15,28,50,0.4)",
+          }}
+        >
+          🏠
+        </button>
+      )}
+
       {/* ── HEADER ── */}
       <div style={{ background: `linear-gradient(180deg, ${NAVY_DARK} 0%, ${NAVY} 100%)`, color: WHITE, position: "sticky", top: 0, zIndex: 40, borderRadius: 24, margin: 8 }}>
 
