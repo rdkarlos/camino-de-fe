@@ -864,7 +864,7 @@ export default function App() {
         {menuOpen && (
           <div style={{ background: NAVY_DARK, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
             {t.nav.map((n, i) => (
-              <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif", textAlign: "left" }}>
+              <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 13, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "left" }}>
                 <span style={{ fontSize: 18 }}>{navIcons[i]}</span>
                 <span>{n}</span>
               </button>
