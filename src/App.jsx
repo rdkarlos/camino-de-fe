@@ -28,8 +28,8 @@ if ('serviceWorker' in navigator) {
 
 const translations = {
   es: {
-    appName: "Camino de Fe",
-    tagline: "Cada día, un paso más cerca de Dios",
+    appName: "Lumora",
+    tagline: "Luz que guía, amor que une",
     nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Reflexiones", "Tienda", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
@@ -71,8 +71,8 @@ const translations = {
     },
   },
   en: {
-    appName: "Path of Faith",
-    tagline: "Every day, one step closer to God",
+    appName: "Lumora",
+    tagline: "Light that guides, love that unites",
     nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Reflections", "Shop", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
@@ -302,6 +302,16 @@ export default function App() {
   const [newIntencion, setNewIntencion] = useState("");
   const [circleError, setCircleError] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashIn, setSplashIn] = useState(false);
+  const [splashOut, setSplashOut] = useState(false);
+
+  useEffect(() => {
+    const t0 = setTimeout(() => setSplashIn(true), 60);
+    const t1 = setTimeout(() => setSplashOut(true), 2300);
+    const t2 = setTimeout(() => setShowSplash(false), 3000);
+    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1917,6 +1927,70 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(15,28,50,0.12)" }}>
+
+      {/* Splash screen */}
+      {showSplash && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: CREAM,
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          opacity: splashIn && !splashOut ? 1 : 0,
+          transition: splashOut ? "opacity 0.7s ease" : "opacity 0.6s ease",
+          pointerEvents: "none",
+        }}>
+          {/* Logo SVG — road converging to a glowing cross */}
+          <svg viewBox="0 0 160 160" width="150" height="150" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="lumoraGlow" cx="50%" cy="43%" r="38%">
+                <stop offset="0%"   stopColor="#E8C76A" stopOpacity="1"/>
+                <stop offset="45%"  stopColor="#C9A84C" stopOpacity="0.55"/>
+                <stop offset="100%" stopColor="#C9A84C" stopOpacity="0"/>
+              </radialGradient>
+            </defs>
+            {/* Golden glow disc behind cross */}
+            <circle cx="80" cy="65" r="58" fill="url(#lumoraGlow)"/>
+            {/* Road perspective — outer edges */}
+            <line x1="80" y1="65" x2="5"   y2="158" stroke="#C9A84C" strokeWidth="2"   strokeLinecap="round" opacity="0.5"/>
+            <line x1="80" y1="65" x2="155" y2="158" stroke="#C9A84C" strokeWidth="2"   strokeLinecap="round" opacity="0.5"/>
+            {/* Road perspective — inner lane marks */}
+            <line x1="80" y1="65" x2="40"  y2="158" stroke="#C9A84C" strokeWidth="1.2" strokeLinecap="round" opacity="0.28"/>
+            <line x1="80" y1="65" x2="120" y2="158" stroke="#C9A84C" strokeWidth="1.2" strokeLinecap="round" opacity="0.28"/>
+            {/* Center dashed lane */}
+            <line x1="80" y1="68" x2="80"  y2="158" stroke="#C9A84C" strokeWidth="1.5" strokeDasharray="11,11" strokeLinecap="round" opacity="0.35"/>
+            {/* Horizontal depth lines */}
+            <line x1="27" y1="108" x2="133" y2="108" stroke="#C9A84C" strokeWidth="1" opacity="0.18"/>
+            <line x1="14" y1="133" x2="146" y2="133" stroke="#C9A84C" strokeWidth="1" opacity="0.13"/>
+            {/* Cross — centered at (80, 62) */}
+            <rect x="74" y="30" width="12" height="64" rx="6" fill="#C9A84C"/>
+            <rect x="52" y="52" width="56" height="12" rx="6" fill="#C9A84C"/>
+          </svg>
+
+          {/* App name */}
+          <div style={{
+            fontFamily: "'Cinzel', serif",
+            fontSize: 42,
+            fontWeight: 700,
+            color: NAVY,
+            letterSpacing: 12,
+            marginTop: 18,
+            textTransform: "uppercase",
+          }}>LUMORA</div>
+
+          {/* Tagline */}
+          <div style={{
+            fontFamily: "'Crimson Text', serif",
+            fontSize: 16,
+            fontStyle: "italic",
+            color: GOLD,
+            marginTop: 10,
+            letterSpacing: 0.5,
+          }}>
+            {lang === "es" ? "Luz que guía, amor que une" : "Light that guides, love that unites"}
+          </div>
+        </div>
+      )}
+
       {paymentSuccess && renderPaymentSuccess()}
       {authMode && renderAuthModal()}
       {showCart && renderCartModal()}

@@ -1,7 +1,7 @@
 {
-  "name": "Camino de Fe",
-  "short_name": "Camino de Fe",
-  "description": "Tu compañero espiritual diario",
+  "name": "Lumora",
+  "short_name": "Lumora",
+  "description": "Luz que guía, amor que une",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF7F2",

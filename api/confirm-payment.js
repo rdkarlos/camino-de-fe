@@ -36,7 +36,7 @@ function buildEmailHtml({ customerName, items, total, reference }) {
 
   <div style="background:linear-gradient(135deg,#4A0F28,#6B1F3E);border-radius:16px 16px 0 0;padding:32px 28px;text-align:center;">
     <div style="font-size:42px;margin-bottom:10px;">✝️</div>
-    <div style="font-size:22px;font-weight:bold;letter-spacing:2px;color:#C9A84C;margin-bottom:4px;">Camino de Fe</div>
+    <div style="font-size:22px;font-weight:bold;letter-spacing:2px;color:#C9A84C;margin-bottom:4px;">Lumora</div>
     <div style="font-size:13px;color:rgba(255,255,255,0.65);font-style:italic;">Cada día, un paso más cerca de Dios</div>
   </div>
 
@@ -80,7 +80,7 @@ function buildEmailHtml({ customerName, items, total, reference }) {
   <div style="background:#F0E6D3;border-radius:0 0 16px 16px;padding:20px 28px;text-align:center;border:1px solid #E0D0B0;border-top:none;">
     <div style="font-size:22px;margin-bottom:8px;">✝</div>
     <div style="font-size:13px;color:#8B6E5A;">Que Dios te bendiga siempre</div>
-    <div style="font-size:11px;color:#B0946E;margin-top:8px;">Camino de Fe</div>
+    <div style="font-size:11px;color:#B0946E;margin-top:8px;">Lumora</div>
   </div>
 
 </div>
@@ -143,9 +143,9 @@ export default async function handler(req, res) {
     console.log('[confirm-payment] enviando email a:', customerEmail, '| from:', from);
 
     const emailRes = await resend.emails.send({
-      from: `Camino de Fe <${from}>`,
+      from: `Lumora <${from}>`,
       to: customerEmail,
-      subject: `✝️ Tu pedido ${reference} está confirmado — Camino de Fe`,
+      subject: `✝️ Tu pedido ${reference} está confirmado — Lumora`,
       html: buildEmailHtml({ customerName, customerEmail, items, total, reference }),
     });
 
