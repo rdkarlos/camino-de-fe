@@ -27,7 +27,7 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Lecturas del Día", "Rosario", "Oraciones", "Reflexiones", "Oración Personal", "Tienda", "Configuración"],
+    nav: ["Inicio", "Evangelio", "Lecturas del Día", "Rosario", "Devocional", "Reflexiones", "Oración Personal", "Tienda", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -68,7 +68,7 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Daily Readings", "Rosary", "Prayers", "Reflections", "Personal Prayer", "Shop", "Settings"],
+    nav: ["Home", "Gospel", "Daily Readings", "Rosary", "Devotional", "Reflections", "Personal Prayer", "Shop", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -814,43 +814,45 @@ export default function App() {
       {/* ── HEADER ── */}
       <div style={{ background: `linear-gradient(180deg, ${NAVY_DARK} 0%, ${NAVY} 100%)`, color: WHITE, position: "sticky", top: 0, zIndex: 40 }}>
 
-        {/* Barra superior: hamburguesa | logo | acciones */}
-        <div style={{ display: "flex", alignItems: "center", padding: "14px 16px 10px", position: "relative" }}>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 38, height: 38, borderRadius: 10, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {/* Barra superior: hamburguesa + logo izquierda | acciones derecha */}
+        <div style={{ display: "flex", alignItems: "center", padding: "12px 14px 10px", gap: 10 }}>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 36, height: 36, borderRadius: 10, fontSize: 17, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             {menuOpen ? "✕" : "☰"}
           </button>
 
-          <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", textAlign: "center", pointerEvents: "none" }}>
-            <div style={{ fontSize: 17, fontWeight: "bold", letterSpacing: 2, color: GOLD, fontFamily: "'Cinzel', serif", whiteSpace: "nowrap" }}>✝ {t.appName}</div>
-            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontStyle: "italic", letterSpacing: 0.5, marginTop: 1 }}>{t.tagline}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: "bold", letterSpacing: 1.5, color: GOLD, fontFamily: "'Cinzel', serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>✝ {t.appName}</div>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", fontStyle: "italic", letterSpacing: 0.4, marginTop: 1 }}>{t.tagline}</div>
           </div>
 
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center" }}>
-            <button onClick={() => setLang(lang === 'es' ? 'en' : 'es')} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: GOLD, width: 34, height: 34, borderRadius: 10, fontSize: 10, cursor: "pointer", fontWeight: "bold", fontFamily: "'Cinzel', serif", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: 5, alignItems: "center", flexShrink: 0 }}>
+            <button onClick={() => setLang(lang === 'es' ? 'en' : 'es')} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: GOLD, width: 30, height: 30, borderRadius: 8, fontSize: 9, cursor: "pointer", fontWeight: "bold", fontFamily: "'Cinzel', serif", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {lang === 'es' ? 'EN' : 'ES'}
             </button>
             {!user ? (
-              <button onClick={() => setAuthMode('login')} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 34, height: 34, borderRadius: 10, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>👤</button>
+              <button onClick={() => setAuthMode('login')} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 30, height: 30, borderRadius: 8, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>👤</button>
             ) : (
-              <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 34, height: 34, borderRadius: 10, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title={lang === 'es' ? 'Salir' : 'Sign out'}>👤</button>
+              <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 30, height: 30, borderRadius: 8, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title={lang === 'es' ? 'Salir' : 'Sign out'}>👤</button>
             )}
-            <button onClick={() => setShowCart(true)} style={{ background: cartCount > 0 ? GOLD : "rgba(255,255,255,0.1)", border: "none", color: cartCount > 0 ? NAVY_DARK : WHITE, width: 34, height: 34, borderRadius: 10, fontSize: cartCount > 0 ? 10 : 16, cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <button onClick={() => setShowCart(true)} style={{ background: cartCount > 0 ? GOLD : "rgba(255,255,255,0.1)", border: "none", color: cartCount > 0 ? NAVY_DARK : WHITE, width: 30, height: 30, borderRadius: 8, fontSize: cartCount > 0 ? 9 : 14, cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center" }}>
               {cartCount > 0 ? `🛒${cartCount}` : "🛒"}
             </button>
           </div>
         </div>
 
-        {/* Accesos rápidos */}
-        <div style={{ display: "flex", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        {/* Accesos rápidos — scroll horizontal, chips con recuadro */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 6, padding: "8px 12px 10px", overflowX: "auto", scrollbarWidth: "none" }}>
           {[
-            { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",   idx: 1 },
-            { icon: "📿", label: lang === 'es' ? "Rosario"  : "Rosary",    idx: 3 },
-            { icon: "🙏", label: lang === 'es' ? "Oraciones": "Prayers",   idx: 4 },
-            { icon: "🛒", label: lang === 'es' ? "Tienda"   : "Shop",      idx: 7 },
+            { icon: "📖", label: lang === 'es' ? "Evangelio"  : "Gospel",      idx: 1 },
+            { icon: "📜", label: lang === 'es' ? "Lecturas"   : "Readings",     idx: 2 },
+            { icon: "📿", label: lang === 'es' ? "Rosario"    : "Rosary",       idx: 3 },
+            { icon: "🙏", label: lang === 'es' ? "Devocional" : "Devotional",   idx: 4 },
+            { icon: "🕊️", label: lang === 'es' ? "Personal"  : "Personal",     idx: 6 },
+            { icon: "🛒", label: lang === 'es' ? "Tienda"     : "Shop",         idx: 7 },
           ].map(({ icon, label, idx }) => (
-            <button key={idx} onClick={() => setTab(idx)} style={{ flex: 1, padding: "10px 4px 12px", background: "none", border: "none", borderBottom: tab === idx ? `2px solid ${GOLD}` : "2px solid transparent", color: tab === idx ? GOLD : "rgba(255,255,255,0.55)", cursor: "pointer", textAlign: "center" }}>
-              <div style={{ fontSize: 22, marginBottom: 3 }}>{icon}</div>
-              <div style={{ fontSize: 9, fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.5, textTransform: "uppercase" }}>{label}</div>
+            <button key={idx} onClick={() => setTab(idx)} style={{ flexShrink: 0, padding: "7px 10px 6px", background: tab === idx ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.08)", border: `1px solid ${tab === idx ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.12)"}`, borderRadius: 10, color: tab === idx ? GOLD : "rgba(255,255,255,0.7)", cursor: "pointer", textAlign: "center", minWidth: 52 }}>
+              <div style={{ fontSize: 17, marginBottom: 2 }}>{icon}</div>
+              <div style={{ fontSize: 9, fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.3, whiteSpace: "nowrap" }}>{label}</div>
             </button>
           ))}
         </div>
