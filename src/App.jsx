@@ -2107,26 +2107,9 @@ export default function App() {
             {menuOpen ? "✕" : "☰"}
           </button>
 
-          <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
-            {/* Lumora logo — road + cross */}
-            <svg viewBox="0 0 160 160" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-              <defs>
-                <radialGradient id="hdrGlow" cx="50%" cy="43%" r="38%">
-                  <stop offset="0%"   stopColor="#E8C76A" stopOpacity="0.9"/>
-                  <stop offset="50%"  stopColor="#C9A84C" stopOpacity="0.4"/>
-                  <stop offset="100%" stopColor="#C9A84C" stopOpacity="0"/>
-                </radialGradient>
-              </defs>
-              <circle cx="80" cy="65" r="58" fill="url(#hdrGlow)"/>
-              <line x1="80" y1="65" x2="5"   y2="158" stroke="#FAF5ED" strokeWidth="2"   strokeLinecap="round" opacity="0.55"/>
-              <line x1="80" y1="65" x2="155" y2="158" stroke="#FAF5ED" strokeWidth="2"   strokeLinecap="round" opacity="0.55"/>
-              <line x1="80" y1="65" x2="40"  y2="158" stroke="#FAF5ED" strokeWidth="1.2" strokeLinecap="round" opacity="0.3"/>
-              <line x1="80" y1="65" x2="120" y2="158" stroke="#FAF5ED" strokeWidth="1.2" strokeLinecap="round" opacity="0.3"/>
-              <line x1="80" y1="68" x2="80"  y2="158" stroke="#FAF5ED" strokeWidth="1.5" strokeDasharray="11,11" strokeLinecap="round" opacity="0.28"/>
-              <rect x="74" y="30" width="12" height="64" rx="6" fill="#C9A84C"/>
-              <rect x="52" y="52" width="56" height="12" rx="6" fill="#C9A84C"/>
-            </svg>
-            <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: 3, color: GOLD, fontFamily: "'Cinzel', serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>LUMORA</div>
+          <div style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+            <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 5, color: GOLD, fontFamily: "'Cinzel', serif" }}>LUMORA</div>
+            <div style={{ width: 64, height: 1.5, background: GOLD, margin: "4px auto 0", borderRadius: 1, opacity: 0.75 }}/>
           </div>
 
           <div style={{ display: "flex", gap: 5, alignItems: "center", flexShrink: 0 }}>
