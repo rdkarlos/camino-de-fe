@@ -623,7 +623,7 @@ export default function App() {
         {/* Tab switcher */}
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           {[["builder", "✝️", lang === "es" ? "Crear Oración" : "Create Prayer"], ["journal", "📔", lang === "es" ? "Diario de gracias" : "Gratitude journal"]].map(([key, icon, label]) => (
-            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
               {icon} {label}
             </button>
           ))}
@@ -878,7 +878,7 @@ export default function App() {
       {/* ── CONTENIDO ── */}
       <div style={{ padding: "20px 20px 52px" }}>
         {tab !== 0 && (
-          <div style={{ fontSize: 19, fontWeight: "bold", color: NAVY, marginBottom: 18, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Cinzel', serif" }}>
+          <div style={{ fontSize: 19, fontWeight: "bold", color: NAVY, marginBottom: 18, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Crimson Text', serif" }}>
             {t.nav[tab]}
           </div>
         )}
