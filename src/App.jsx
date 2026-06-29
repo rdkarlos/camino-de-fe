@@ -394,20 +394,25 @@ export default function App() {
   const handleLogout = async () => { await signOut(auth); };
 
   const handleLambClick = async () => {
-    console.log('[lamb] Iniciando. gospelRef:', gospelData?.reference);
     setLambLoading(true);
     setLambOpen(true);
     setLambText('');
+
+    const today = new Date().toISOString().split('T')[0];
+
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const refDoc = doc(db, 'reflexiones', today);
-      const snap = await getDoc(refDoc);
-      if (snap.exists() && snap.data().texto) {
-        console.log('[lamb] Encontrado en Firestore para', today);
-        setLambText(snap.data().texto);
+      const docRef = doc(db, 'reflexiones', today);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().texto) {
+        setLambText(docSnap.data().texto);
+        setLambLoading(false);
         return;
       }
-      console.log('[lamb] No hay caché. Llamando /api/spiritual-guide');
+    } catch (firestoreError) {
+      console.log('[lamb] Firestore no disponible, llamando API:', firestoreError.message);
+    }
+
+    try {
       const response = await fetch('/api/spiritual-guide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -417,18 +422,19 @@ export default function App() {
           lang,
         }),
       });
-      console.log('[lamb] Status:', response.status);
       const data = await response.json();
-      console.log('[lamb] Data:', data);
-      const texto = data.text || 'No se pudo obtener la reflexión.';
-      setLambText(texto);
-      if (data.text) {
-        await setDoc(refDoc, { texto, fecha: today, evangelio: gospelData?.reference || '' });
-        console.log('[lamb] Guardado en Firestore para', today);
+      const texto = data.text || '';
+      setLambText(texto || 'No se pudo obtener la reflexión.');
+      if (texto) {
+        try {
+          const docRef = doc(db, 'reflexiones', today);
+          await setDoc(docRef, { texto, fecha: today, evangelio: gospelData?.reference || '' });
+        } catch (e) {
+          console.log('[lamb] No se pudo guardar en Firestore:', e.message);
+        }
       }
     } catch (error) {
-      console.error('[lamb] Error:', error);
-      setLambText('Error de conexión.');
+      setLambText('No se pudo obtener la reflexión.');
     } finally {
       setLambLoading(false);
     }
