@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 
 const firebaseConfig = {
@@ -398,18 +398,27 @@ export default function App() {
     if (lambText) return;
     setLambLoading(true);
     try {
+      const today = new Date().toISOString().slice(0, 10);
+      const refDoc = doc(db, 'reflexiones', today);
+      const snap = await getDoc(refDoc);
+      if (snap.exists()) {
+        setLambText(snap.data().texto);
+        setLambLoading(false);
+        return;
+      }
+      const gospelReference = gospelData?.reference || '';
+      const gospelText = gospelData?.text?.substring(0, 1500) || '';
       const res = await fetch('/api/spiritual-guide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gospelRef: gospelData?.reference,
-          gospelText: gospelData?.text?.substring(0, 1500),
-          lang,
-        }),
+        body: JSON.stringify({ gospelRef: gospelReference, gospelText, lang }),
       });
       const data = await res.json();
-      setLambText(data.text || (lang === 'es' ? 'No se pudo obtener la reflexión.' : 'Could not load reflection.'));
-    } catch {
+      const texto = data.text || (lang === 'es' ? 'No se pudo obtener la reflexión.' : 'Could not load reflection.');
+      setLambText(texto);
+      await setDoc(refDoc, { texto, evangelio: gospelReference, fecha: serverTimestamp(), idioma: lang });
+    } catch (e) {
+      console.error('[lamb]', e);
       setLambText(lang === 'es' ? 'Error al consultar la guía espiritual.' : 'Error loading spiritual guide.');
     } finally {
       setLambLoading(false);
@@ -1477,11 +1486,11 @@ export default function App() {
       {/* Modal Guía Espiritual */}
       {lambOpen && (
         <div
-          style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(15,28,50,0.72)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(15,28,50,0.72)" }}
           onClick={() => setLambOpen(false)}
         >
           <div
-            style={{ background: CREAM, border: `2px solid ${GOLD}`, borderRadius: "20px 20px 0 0", padding: "24px 20px 32px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto" }}
+            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: CREAM, border: `2px solid ${GOLD}`, borderRadius: 20, padding: "24px 20px 28px", width: "90vw", maxWidth: 480, maxHeight: "80vh", overflowY: "auto", zIndex: 101 }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ fontSize: 18, fontWeight: "bold", color: NAVY, marginBottom: 3, fontFamily: "'Cinzel', serif" }}>
