@@ -44,7 +44,9 @@ export default async function handler(req, res) {
 
   const parseRef = (rawRef) => {
     if (!rawRef) return null;
-    const ref = normalizeRef(rawRef);
+    let ref = normalizeRef(rawRef);
+    // Psalm 33(34):2-9 → Psalm 34:2-9  (usa el número entre paréntesis)
+    ref = ref.replace(/^(Psalms?)\s+\d+\((\d+)\)/, '$1 $2');
     const bookMatch = ref.match(/^(\d?\s?[A-Za-z]+(?:\s[A-Za-z]+)?)\s+(\d+):(\d+)/);
     if (!bookMatch) return null;
     const bookName = bookMatch[1].trim();
