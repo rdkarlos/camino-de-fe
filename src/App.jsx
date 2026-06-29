@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
@@ -1536,8 +1537,18 @@ export default function App() {
                 </div>
               </div>
             ) : lambText ? (
-              <div style={{ fontSize: 15, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
-                {formatRef(lambText)}
+              <div style={{ fontSize: 15, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif" }}>
+                <ReactMarkdown
+                  components={{
+                    h2: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 15, color: NAVY, marginTop: 14, marginBottom: 3 }}>{children}</div>,
+                    h3: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 14, color: NAVY, marginTop: 12, marginBottom: 3 }}>{children}</div>,
+                    strong: ({ children }) => <strong style={{ color: NAVY_DARK }}>{children}</strong>,
+                    p: ({ children }) => <p style={{ margin: "0 0 8px" }}>{children}</p>,
+                    hr: () => <hr style={{ border: "none", borderTop: `1px solid ${GOLD}44`, margin: "12px 0" }} />,
+                  }}
+                >
+                  {formatRef(lambText)}
+                </ReactMarkdown>
               </div>
             ) : null}
             <button
