@@ -1513,25 +1513,35 @@ export default function App() {
       {/* Modal Guía Espiritual */}
       {lambOpen && (
         <div
-          style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(15,28,50,0.72)" }}
+          style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(10,18,35,0.78)" }}
           onClick={() => setLambOpen(false)}
         >
           <div
-            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: CREAM, border: `2px solid ${GOLD}`, borderRadius: 20, padding: "24px 20px 28px", width: "90vw", maxWidth: 480, maxHeight: "80vh", overflowY: "auto", zIndex: 101 }}
+            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "linear-gradient(145deg, #FAF5ED 0%, #F5EDD8 100%)", border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "90vw", maxWidth: 440, maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: 18, fontWeight: "bold", color: NAVY, marginBottom: 3, fontFamily: "'Cinzel', serif" }}>
-              🐑 {lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
+            {/* Título centrado */}
+            <div style={{ textAlign: "center", marginBottom: 4 }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>🐑</div>
+              <div style={{ fontSize: 20, fontWeight: "bold", color: NAVY, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>
+                {lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
+              </div>
+              <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>
+                {lang === 'es' ? 'Reflexión del Evangelio de hoy' : 'Reflection on today\'s Gospel'}
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: MUTED, marginBottom: 4 }}>
-              {lang === 'es' ? 'Reflexión basada en el Evangelio de hoy' : 'Reflection based on today\'s Gospel'}
+            {/* Separador dorado decorativo */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "12px 0 14px" }}>
+              <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, transparent, ${GOLD})` }} />
+              <span style={{ color: GOLD, fontSize: 12 }}>✦</span>
+              <div style={{ flex: 1, height: 1, background: `linear-gradient(to left, transparent, ${GOLD})` }} />
             </div>
             {gospelData?.reference && (
-              <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginBottom: 16 }}>{formatRef(gospelData.reference)}</div>
+              <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", textAlign: "center", marginBottom: 14 }}>{formatRef(gospelData.reference)}</div>
             )}
             {lambLoading ? (
-              <div style={{ textAlign: "center", padding: "30px 0", color: NAVY }}>
-                <div style={{ fontSize: 32, marginBottom: 10 }}>✨</div>
+              <div style={{ textAlign: "center", padding: "28px 0" }}>
+                <div style={{ fontSize: 30, marginBottom: 10 }}>✨</div>
                 <div style={{ fontSize: 14, fontStyle: "italic", color: MUTED }}>
                   {lang === 'es' ? 'Preparando tu reflexión…' : 'Preparing your reflection…'}
                 </div>
@@ -1542,9 +1552,9 @@ export default function App() {
                   components={{
                     h2: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 15, color: NAVY, marginTop: 14, marginBottom: 3 }}>{children}</div>,
                     h3: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 14, color: NAVY, marginTop: 12, marginBottom: 3 }}>{children}</div>,
-                    strong: ({ children }) => <strong style={{ color: NAVY_DARK }}>{children}</strong>,
-                    p: ({ children }) => <p style={{ margin: "0 0 8px" }}>{children}</p>,
-                    hr: () => <hr style={{ border: "none", borderTop: `1px solid ${GOLD}44`, margin: "12px 0" }} />,
+                    strong: ({ children }) => <strong style={{ color: NAVY }}>{children}</strong>,
+                    p: ({ children }) => <p style={{ margin: "0 0 10px" }}>{children}</p>,
+                    hr: () => <hr style={{ border: "none", borderTop: `1px solid ${GOLD}55`, margin: "12px 0" }} />,
                   }}
                 >
                   {formatRef(lambText)}
@@ -1553,7 +1563,7 @@ export default function App() {
             ) : null}
             <button
               onClick={() => setLambOpen(false)}
-              style={{ marginTop: 22, width: "100%", padding: "12px", background: NAVY_DARK, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer" }}
+              style={{ marginTop: 18, width: "100%", padding: "11px", background: NAVY_DARK, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5 }}
             >
               {lang === 'es' ? 'Cerrar' : 'Close'}
             </button>
