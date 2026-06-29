@@ -194,6 +194,7 @@ export default function App() {
   const [savedPrayers, setSavedPrayers] = useState([]);
   const [prayerBook, setPrayerBook] = useState([]);
   const [prayerBookLoading, setPrayerBookLoading] = useState(false);
+  const [expandedPrayerId, setExpandedPrayerId] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -838,43 +839,67 @@ export default function App() {
                 <div style={{ fontSize: 14, marginBottom: 6 }}>{lang === "es" ? "Aún no tienes oraciones guardadas." : "No prayers saved yet."}</div>
                 <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea tu primera oración ↑" : "Create your first prayer ↑"}</div>
               </div>
-            ) : prayerBook.map(p => (
-              <div key={p.id} style={{ background: WHITE, borderRadius: 16, marginBottom: 14, overflow: "hidden", border: `1px solid ${p.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: p.respondida ? `0 4px 20px ${GOLD}28` : "0 2px 10px rgba(15,28,50,0.06)" }}>
-                {/* Header de la tarjeta */}
-                <div style={{ background: p.respondida ? `linear-gradient(135deg, ${NAVY_DARK}, #3a2800)` : `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 24 }}>{getMoodIcon(p.estado)}</span>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: "bold", color: WHITE, fontFamily: "'Crimson Text', serif" }}>{p.estado}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>{formatFirestoreDate(p.fecha)}</div>
+            ) : prayerBook.map(p => {
+              const isOpen = expandedPrayerId === p.id;
+              const previewText = p.intencion
+                ? p.intencion
+                : p.oracion.split('\n').filter(l => l.trim()).slice(0, 2).join(' ');
+              return (
+                <div key={p.id} style={{ background: WHITE, borderRadius: 16, marginBottom: 14, overflow: "hidden", border: `1px solid ${p.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: p.respondida ? `0 4px 20px ${GOLD}28` : "0 2px 10px rgba(15,28,50,0.06)" }}>
+                  {/* Header — clic para expandir/colapsar */}
+                  <div onClick={() => setExpandedPrayerId(isOpen ? null : p.id)} style={{ background: p.respondida ? `linear-gradient(135deg, ${NAVY_DARK}, #3a2800)` : `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                      <span style={{ fontSize: 24, flexShrink: 0 }}>{getMoodIcon(p.estado)}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: "bold", color: WHITE, fontFamily: "'Crimson Text', serif" }}>{p.estado}</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>{formatFirestoreDate(p.fecha)}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      {p.respondida && (
+                        <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, fontSize: 11, fontWeight: "bold", padding: "4px 10px", borderRadius: 20 }}>
+                          ✨ {lang === "es" ? "Respondida" : "Answered"}
+                        </span>
+                      )}
+                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{isOpen ? "▲" : "▼"}</span>
                     </div>
                   </div>
-                  {p.respondida && (
-                    <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, fontSize: 11, fontWeight: "bold", padding: "4px 12px", borderRadius: 20, flexShrink: 0 }}>
-                      ✨ {lang === "es" ? "Respondida" : "Answered"}
-                    </span>
-                  )}
-                </div>
 
-                {/* Cuerpo */}
-                <div style={{ padding: "14px 16px" }}>
-                  {p.intencion ? (
-                    <div style={{ fontSize: 13, color: "#5A3A2E", lineHeight: 1.65, marginBottom: 12, fontStyle: "italic", borderLeft: `3px solid ${GOLD}88`, paddingLeft: 10 }}>
-                      {p.intencion}
+                  {/* Vista colapsada: intención o primeras 2 líneas */}
+                  {!isOpen && (
+                    <div style={{ padding: "12px 16px", borderTop: `1px solid ${CREAM_DARK}` }}>
+                      <div style={{ fontSize: 13, color: p.intencion ? "#5A3A2E" : MUTED, lineHeight: 1.6, fontStyle: p.intencion ? "italic" : "normal" }}>
+                        {previewText.length > 120 ? previewText.substring(0, 120) + "…" : previewText}
+                      </div>
                     </div>
-                  ) : null}
-                  <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
-                    {p.oracion}
-                  </div>
+                  )}
 
-                  {!p.respondida && (
-                    <button onClick={() => markAnswered(p.id)} style={{ marginTop: 14, width: "100%", padding: "10px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
-                      🙏 {lang === "es" ? "¡Respondida!" : "Answered!"}
-                    </button>
+                  {/* Vista expandida: intención resaltada + oración completa */}
+                  {isOpen && (
+                    <div style={{ padding: "16px 16px 14px" }}>
+                      {p.intencion && (
+                        <div style={{ background: `${GOLD}18`, borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 14 }}>
+                          <div style={{ fontSize: 11, color: "#8B6A1A", fontWeight: "bold", marginBottom: 4, letterSpacing: 0.5 }}>
+                            {lang === "es" ? "TU INTENCIÓN" : "YOUR INTENTION"}
+                          </div>
+                          <div style={{ fontSize: 14, color: "#5A3A2E", fontStyle: "italic", lineHeight: 1.65, fontFamily: "'Crimson Text', serif" }}>
+                            {p.intencion}
+                          </div>
+                        </div>
+                      )}
+                      <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
+                        {p.oracion}
+                      </div>
+                      {!p.respondida && (
+                        <button onClick={() => markAnswered(p.id)} style={{ marginTop: 14, width: "100%", padding: "10px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                          🙏 {lang === "es" ? "¡Respondida!" : "Answered!"}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
