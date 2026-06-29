@@ -622,7 +622,7 @@ export default function App() {
       <div>
         {/* Tab switcher */}
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-          {[["builder", "🕊️", lang === "es" ? "Crear Oración" : "Create Prayer"], ["journal", "📔", lang === "es" ? "Diario de gracias" : "Gratitude journal"]].map(([key, icon, label]) => (
+          {[["builder", "✝️", lang === "es" ? "Crear Oración" : "Create Prayer"], ["journal", "📔", lang === "es" ? "Diario de gracias" : "Gratitude journal"]].map(([key, icon, label]) => (
             <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
               {icon} {label}
             </button>
