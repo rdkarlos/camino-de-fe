@@ -113,8 +113,8 @@ const parseRef = (rawRef) => {
     return { reference, text };
   };
 
-  const fetchHtml = async (url) => {
-    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(url)}&render=true`;
+  const fetchHtml = async (url, render = false) => {
+    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(url)}&render=${render}`;
     const res = await fetch(scraperUrl);
     return res.text();
   };
@@ -125,11 +125,17 @@ const parseRef = (rawRef) => {
     const yy = String(year).slice(-2);
     const baseUrl = `https://bible.usccb.org/bible/readings/${mm}${dd}${yy}`;
 
-    let html = await fetchHtml(baseUrl);
+    // Intento rápido sin renderizado JS
+    let html = await fetchHtml(baseUrl, false);
 
-    // Si no tiene Evangelio (solemnidad con múltiples Misas), usar "Mass during the Day"
+    // Si no encontró el Evangelio, reintenta con render completo (solemnidades/fiestas)
     if (findH3Index(html, 'Gospel') === -1) {
-      html = await fetchHtml(`${baseUrl}-Day`);
+      html = await fetchHtml(baseUrl, true);
+    }
+
+    // Si aún no hay Evangelio, prueba la variante "-Day" con render completo
+    if (findH3Index(html, 'Gospel') === -1) {
+      html = await fetchHtml(`${baseUrl}-Day`, true);
     }
 
     const reading1En = extractSection(html, 'Reading');
