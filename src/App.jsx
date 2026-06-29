@@ -29,16 +29,16 @@ const translations = {
   es: {
     appName: "Camino de Fe",
     tagline: "Cada día, un paso más cerca de Dios",
-    nav: ["Inicio", "Evangelio", "Lecturas del día", "La Biblia", "Rosario", "Devocional", "Reflexiones", "Oración personal", "Tienda", "Configuración"],
+    nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Reflexiones", "Tienda", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 1 },
-        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 2 },
+        { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
+        { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
+        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 3 },
         { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", img: "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=600", tab: 4 },
         { icon: "🙏", title: "Devocional", desc: "Oraciones y reflexiones para tu fe", btn: "Rezar", img: "https://images.unsplash.com/photo-1492176273113-2d51f47b23b0?w=600", tab: 5 },
-        { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 7 },
         { icon: "🛒", title: "Tienda", desc: "Artículos de fe para tu hogar y devoción", btn: "Ver tienda", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 8 },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
@@ -72,16 +72,16 @@ const translations = {
   en: {
     appName: "Path of Faith",
     tagline: "Every day, one step closer to God",
-    nav: ["Home", "Gospel", "Daily readings", "Bible", "Rosary", "Devotional", "Reflections", "Personal prayer", "Shop", "Settings"],
+    nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Reflections", "Shop", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 1 },
-        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 2 },
+        { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
+        { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
+        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 3 },
         { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", img: "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=600", tab: 4 },
         { icon: "🙏", title: "Devotional", desc: "Prayers and reflections for your faith", btn: "Pray", img: "https://images.unsplash.com/photo-1492176273113-2d51f47b23b0?w=600", tab: 5 },
-        { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 7 },
         { icon: "🛒", title: "Shop", desc: "Faith items for your home and devotion", btn: "View shop", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 8 },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
@@ -584,17 +584,17 @@ export default function App() {
         {t.home.cards.map((c, i) => (
           <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
             <div style={{ position: "absolute", inset: 0, background:
-              c.tab === 1 ? "linear-gradient(to bottom, rgba(27,42,74,0.45) 0%, rgba(27,42,74,0.9) 100%)" :
-              c.tab === 2 || c.tab === 7 ? "linear-gradient(to bottom, rgba(139,105,20,0.45) 0%, rgba(139,105,20,0.9) 100%)" :
-              "linear-gradient(to bottom, rgba(10,20,40,0.4) 0%, rgba(10,20,40,0.82) 100%)"
+              i % 2 === 0
+                ? "linear-gradient(to bottom, rgba(139,105,20,0.45) 0%, rgba(139,105,20,0.9) 100%)"
+                : "linear-gradient(to bottom, rgba(27,42,74,0.45) 0%, rgba(27,42,74,0.9) 100%)"
             }} />
             <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
               <div>
                 <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
                 <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>
-                  {i === 0 && gospelData ? (
+                  {i === 1 && gospelData ? (
                     <><span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{lang === 'en' ? gospelData?.reference : reference}</span>{body.substring(0, 90) + "…"}</>
-                  ) : i === 1 && gospelData?.reading1 ? (
+                  ) : i === 2 && gospelData?.reading1 ? (
                     <><span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{gospelData.reading1.reference}</span>{gospelData.reading1.text.substring(0, 90) + "…"}</>
                   ) : c.desc}
                 </div>
@@ -1413,8 +1413,8 @@ export default function App() {
     return null;
   };
 
-  const navIcons = ["🏠","📖","📜","✝","📿","🙏","💭","🕊️","🛒","⚙️"];
-  const sections = [renderHome, renderGospel, renderReadings, renderBible, renderRosary, renderPrayers, renderReflections, renderPersonalPrayer, renderShop, renderSettings];
+  const navIcons = ["🏠","🕊️","📖","📜","📿","🙏","✝","💭","🛒","⚙️"];
+  const sections = [renderHome, renderPersonalPrayer, renderGospel, renderReadings, renderRosary, renderPrayers, renderBible, renderReflections, renderShop, renderSettings];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(15,28,50,0.12)" }}>
@@ -1472,13 +1472,13 @@ export default function App() {
         {/* Accesos rápidos — 5 ítems que llenan el ancho */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 5, padding: "7px 10px 9px" }}>
           {[
-            { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 1 },
-            { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 2 },
-            { icon: "✝", label: lang === 'es' ? "La Biblia" : "Bible",    idx: 3 },
-            { icon: "✝️", label: lang === 'es' ? "Oración"  : "Prayer",   idx: 7 },
+            { icon: "🕊️", label: lang === 'es' ? "Oración"   : "Prayer",   idx: 1 },
+            { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 2 },
+            { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
+            { icon: "✝", label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
             { icon: "🛒", label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
           ].map(({ icon, label, idx }) => {
-            const isBible = idx === 3;
+            const isBible = idx === 6;
             const isActive = tab === idx;
             const isHovered = hoveredQuickBtn === idx;
             const isPressed = pressedQuickBtn === idx;
