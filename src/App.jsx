@@ -882,6 +882,9 @@ export default function App() {
       localStorage.setItem("personal_prayers", JSON.stringify(updated));
     };
 
+    // Shared style for the gold cross in the brand name
+    const cx = {color: '#C9A84C', fontSize: '1.2em'};
+
     // Circles helpers
     const generateCode = () => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -1034,7 +1037,7 @@ export default function App() {
             ["builder", "✝", lang === "es" ? "Crear Oración" : "Crear"],
             ["journal", "📔", lang === "es" ? "Diario" : "Journal"],
             ["book",    "📖", lang === "es" ? "Mis Oraciones" : "Mis Orac."],
-            ["circles", "🔵", lang === "es" ? "Círculos" : "Circles"],
+            ["circles", "🔵", lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>],
           ].map(([key, icon, label]) => (
             <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3 }}>
               <div style={{ fontSize: 16 }}>{icon}</div>
@@ -1169,7 +1172,7 @@ export default function App() {
               <div style={{ textAlign: "center", padding: "48px 20px" }}>
                 <div style={{ fontSize: 44, marginBottom: 12 }}>🔵</div>
                 <div style={{ fontSize: 14, color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
-                  {lang === "es" ? "Inicia sesión para unirte a Círculos de Oración" : "Sign in to join Prayer Circles"}
+                  {lang === "es" ? <>Inicia sesión para unirte a Conec<span style={cx}>✝</span>2 de Oración</> : <>Sign in to join Pray<span style={cx}>✝</span>2gether</>}
                 </div>
                 <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
                   👤 {lang === "es" ? "Iniciar sesión" : "Sign in"}
@@ -1179,7 +1182,7 @@ export default function App() {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                   <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>
-                    {lang === "es" ? "Mis Círculos" : "My Circles"}
+                    <>{lang === "es" ? "Mis" : "My"} {lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>}</>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => { setCircleError(""); setNewCircleName(""); setNewCircleDesc(""); setNewCircleType("publico"); setCircleView("create"); }} style={{ padding: "8px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
@@ -1193,13 +1196,13 @@ export default function App() {
                 {circleLoading ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
                     <div style={{ fontSize: 32, marginBottom: 12 }}>🔵</div>
-                    <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando círculos..." : "Loading circles..."}</div>
+                    <div style={{ fontSize: 14 }}>{lang === "es" ? <>Cargando Conec<span style={cx}>✝</span>2...</> : <>Loading Pray<span style={cx}>✝</span>2gether...</>}</div>
                   </div>
                 ) : myCircles.length === 0 ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
                     <div style={{ fontSize: 44, marginBottom: 12 }}>🙏</div>
                     <div style={{ fontSize: 15, color: NAVY_DARK, marginBottom: 8, fontFamily: "'Crimson Text', serif" }}>
-                      {lang === "es" ? "Aún no perteneces a ningún círculo" : "You're not in any circles yet"}
+                      {lang === "es" ? <>Aún no perteneces a ningún Conec<span style={cx}>✝</span>2</> : <>You're not in any Pray<span style={cx}>✝</span>2gether yet</>}
                     </div>
                     <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea uno o únete a uno para orar juntos" : "Create or join one to pray together"}</div>
                   </div>
@@ -1226,7 +1229,7 @@ export default function App() {
                   ← {lang === "es" ? "Volver" : "Back"}
                 </button>
                 <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
-                  {lang === "es" ? "Crear Círculo de Oración" : "Create Prayer Circle"}
+                  {lang === "es" ? <>Crear Conec<span style={cx}>✝</span>2</> : <>Create Pray<span style={cx}>✝</span>2gether</>}
                 </div>
                 <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                   <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Nombre del círculo*" : "Circle name*"}</div>
@@ -1258,7 +1261,7 @@ export default function App() {
                 </div>
                 {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
                 <button onClick={createCircle} disabled={circleLoading || !newCircleName.trim()} style={{ width: "100%", padding: 13, background: !newCircleName.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newCircleName.trim() ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: newCircleName.trim() ? "pointer" : "default", fontFamily: "'Crimson Text', serif" }}>
-                  🙏 {circleLoading ? (lang === "es" ? "Creando..." : "Creating...") : (lang === "es" ? "Crear Círculo" : "Create Circle")}
+                  🙏 {circleLoading ? (lang === "es" ? "Creando..." : "Creating...") : (lang === "es" ? <>Crear Conec<span style={cx}>✝</span>2</> : <>Create Pray<span style={cx}>✝</span>2gether</>)}
                 </button>
               </div>
             ) : circleView === "join" ? (
@@ -1267,10 +1270,10 @@ export default function App() {
                   ← {lang === "es" ? "Volver" : "Back"}
                 </button>
                 <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
-                  {lang === "es" ? "Unirse a un Círculo" : "Join a Circle"}
+                  {lang === "es" ? <>Unirse a un Conec<span style={cx}>✝</span>2</> : <>Join a Pray<span style={cx}>✝</span>2gether</>}
                 </div>
                 <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-                  {[["private", "🔒", lang === "es" ? "Código privado" : "Private code"], ["public", "🌍", lang === "es" ? "Círculos públicos" : "Public circles"]].map(([mode, icon, label]) => (
+                  {[["private", "🔒", lang === "es" ? "Código privado" : "Private code"], ["public", "🌍", lang === "es" ? <>Conec<span style={cx}>✝</span>2 públicos</> : <>Public Pray<span style={cx}>✝</span>2gether</>]].map(([mode, icon, label]) => (
                     <button key={mode} onClick={() => { setJoinMode(mode); if (mode === "public") loadPublicCircles(); }} style={{ flex: 1, padding: "9px 8px", borderRadius: 12, background: joinMode === mode ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: joinMode === mode ? WHITE : MUTED, border: `1px solid ${joinMode === mode ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
                       {icon} {label}
                     </button>
@@ -1284,19 +1287,19 @@ export default function App() {
                     </div>
                     {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
                     <button onClick={joinCircleByCode} disabled={circleLoading || joinCode.length < 6} style={{ width: "100%", padding: 13, background: joinCode.length < 6 ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: joinCode.length < 6 ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: joinCode.length >= 6 ? "pointer" : "default", fontFamily: "'Crimson Text', serif" }}>
-                      {circleLoading ? (lang === "es" ? "Buscando..." : "Searching...") : (lang === "es" ? "Unirse al Círculo" : "Join Circle")}
+                      {circleLoading ? (lang === "es" ? "Buscando..." : "Searching...") : (lang === "es" ? <>Unirse al Conec<span style={cx}>✝</span>2</> : <>Join Pray<span style={cx}>✝</span>2gether</>)}
                     </button>
                   </div>
                 ) : (
                   <div>
                     {circleLoading ? (
                       <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
-                        <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando círculos..." : "Loading circles..."}</div>
+                        <div style={{ fontSize: 14 }}>{lang === "es" ? <>Cargando Conec<span style={cx}>✝</span>2...</> : <>Loading Pray<span style={cx}>✝</span>2gether...</>}</div>
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).length === 0 ? (
                       <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
                         <div style={{ fontSize: 36, marginBottom: 10 }}>🌍</div>
-                        <div style={{ fontSize: 14 }}>{lang === "es" ? "No hay círculos públicos disponibles" : "No public circles available"}</div>
+                        <div style={{ fontSize: 14 }}>{lang === "es" ? <>No hay Conec<span style={cx}>✝</span>2 públicos disponibles</> : <>No public Pray<span style={cx}>✝</span>2gether available</>}</div>
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).map(c => (
                       <div key={c.id} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}` }}>
@@ -1398,7 +1401,7 @@ export default function App() {
                 {selectedCircle && selectedCircle.creadorId !== user.uid && (
                   <div style={{ marginTop: 20, textAlign: "center" }}>
                     <button onClick={leaveCircle} style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>
-                      {lang === "es" ? "Abandonar este círculo" : "Leave this circle"}
+                      {lang === "es" ? <>Abandonar este Conec<span style={cx}>✝</span>2</> : <>Leave this Pray<span style={cx}>✝</span>2gether</>}
                     </button>
                   </div>
                 )}
