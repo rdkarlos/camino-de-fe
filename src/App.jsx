@@ -34,7 +34,7 @@ const translations = {
       cards: [
         { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 1 },
         { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 2 },
-        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", img: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600", tab: 3 },
+        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", img: "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=600", tab: 3 },
         { icon: "🙏", title: "Devocional", desc: "Oraciones y reflexiones para tu fe", btn: "Rezar", img: "https://images.unsplash.com/photo-1492176273113-2d51f47b23b0?w=600", tab: 4 },
         { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 6 },
         { icon: "🛒", title: "Tienda", desc: "Artículos de fe para tu hogar y devoción", btn: "Ver tienda", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 7 },
@@ -77,7 +77,7 @@ const translations = {
       cards: [
         { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 1 },
         { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 2 },
-        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", img: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600", tab: 3 },
+        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", img: "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=600", tab: 3 },
         { icon: "🙏", title: "Devotional", desc: "Prayers and reflections for your faith", btn: "Pray", img: "https://images.unsplash.com/photo-1492176273113-2d51f47b23b0?w=600", tab: 4 },
         { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 6 },
         { icon: "🛒", title: "Shop", desc: "Faith items for your home and devotion", btn: "View shop", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 7 },
