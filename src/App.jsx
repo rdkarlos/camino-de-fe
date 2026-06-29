@@ -1037,7 +1037,20 @@ export default function App() {
             ["builder", "✝", lang === "es" ? "Crear Oración" : "Crear"],
             ["journal", "📔", lang === "es" ? "Diario" : "Journal"],
             ["book",    "📖", lang === "es" ? "Mis Oraciones" : "Mis Orac."],
-            ["circles", "🔵", lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>],
+            ["circles", <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* center person — behind cross */}
+                <circle cx="12" cy="5" r="2.3" fill="#FAF5ED"/>
+                <path d="M9 22 C9 11.5 15 11.5 15 22Z" fill="#FAF5ED"/>
+                {/* left person */}
+                <circle cx="4.5" cy="9" r="1.9" fill="#FAF5ED"/>
+                <path d="M2.2 22 C2.2 15 6.8 15 6.8 22Z" fill="#FAF5ED"/>
+                {/* right person */}
+                <circle cx="19.5" cy="9" r="1.9" fill="#FAF5ED"/>
+                <path d="M17.2 22 C17.2 15 21.8 15 21.8 22Z" fill="#FAF5ED"/>
+                {/* gold cross — in front */}
+                <rect x="11.2" y="1" width="1.6" height="16" rx="0.8" fill="#C9A84C"/>
+                <rect x="7.5" y="7" width="9" height="1.6" rx="0.8" fill="#C9A84C"/>
+              </svg>, lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>],
           ].map(([key, icon, label]) => (
             <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3 }}>
               <div style={{ fontSize: 16 }}>{icon}</div>
