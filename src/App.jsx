@@ -278,6 +278,8 @@ export default function App() {
   const [prayerBook, setPrayerBook] = useState([]);
   const [prayerBookLoading, setPrayerBookLoading] = useState(false);
   const [expandedPrayerId, setExpandedPrayerId] = useState(null);
+  const [hoveredQuickBtn, setHoveredQuickBtn] = useState(null);
+  const [pressedQuickBtn, setPressedQuickBtn] = useState(null);
   const [bibleView, setBibleView] = useState("books");
   const [bibleSelectedBook, setBibleSelectedBook] = useState(null);
   const [bibleChapters, setBibleChapters] = useState([]);
@@ -1404,22 +1406,43 @@ export default function App() {
           ].map(({ icon, label, idx }) => {
             const isBible = idx === 3;
             const isActive = tab === idx;
+            const isHovered = hoveredQuickBtn === idx;
+            const isPressed = pressedQuickBtn === idx;
             const bibleStyle = isBible
               ? {
-                  background: isActive
-                    ? "linear-gradient(135deg, #E8C76A, #C9A84C)"
-                    : "linear-gradient(135deg, #C9A84C, #E8C76A)",
+                  background: isHovered && !isPressed
+                    ? "linear-gradient(135deg, #D4B860, #F0D47A)"
+                    : isActive
+                      ? "linear-gradient(135deg, #E8C76A, #C9A84C)"
+                      : "linear-gradient(135deg, #C9A84C, #E8C76A)",
                   border: `1px solid ${isActive ? "#E8C76A" : "rgba(201,168,76,0.7)"}`,
                   color: NAVY_DARK,
-                  boxShadow: "0 2px 8px rgba(201,168,76,0.35)",
+                  boxShadow: isHovered && !isPressed
+                    ? "0 4px 12px rgba(201,168,76,0.5)"
+                    : "0 2px 8px rgba(201,168,76,0.35)",
                 }
               : {
-                  background: isActive ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.12)",
+                  background: isActive
+                    ? "rgba(201,168,76,0.28)"
+                    : isHovered
+                      ? "rgba(255,255,255,0.22)"
+                      : "rgba(255,255,255,0.12)",
                   border: `1px solid ${isActive ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.2)"}`,
                   color: isActive ? GOLD : "rgba(255,255,255,0.75)",
                 };
+            const transform = isPressed ? "scale(0.95)" : isHovered ? "translateY(-2px)" : "none";
+            const transition = `transform ${isPressed ? "0.1s" : "0.2s"} ease, background 0.2s ease, box-shadow 0.2s ease`;
             return (
-              <button key={idx} onClick={() => setTab(idx)} style={{ flex: 1, padding: "6px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center", ...bibleStyle }}>
+              <button
+                key={idx}
+                onClick={() => setTab(idx)}
+                onPointerEnter={() => setHoveredQuickBtn(idx)}
+                onPointerLeave={() => { setHoveredQuickBtn(null); setPressedQuickBtn(null); }}
+                onPointerDown={() => setPressedQuickBtn(idx)}
+                onPointerUp={() => setPressedQuickBtn(null)}
+                onPointerCancel={() => setPressedQuickBtn(null)}
+                style={{ flex: 1, padding: "6px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center", transform, transition, ...bibleStyle }}
+              >
                 <div style={{ fontSize: 18, marginBottom: 2, lineHeight: 1 }}>{icon}</div>
                 <div style={{ fontSize: 13, fontWeight: "600", fontFamily: "'Crimson Text', serif", letterSpacing: 0.2, whiteSpace: "nowrap" }}>{label}</div>
               </button>
