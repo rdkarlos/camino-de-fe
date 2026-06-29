@@ -191,6 +191,39 @@ const BIBLE_CATEGORIES = {
   },
 };
 
+const DAILY_VERSES = [
+  { es:{ text:"Todo lo puedo en Cristo que me fortalece.", ref:"Filipenses 4:13" }, en:{ text:"I can do all things through Christ who strengthens me.", ref:"Philippians 4:13" } },
+  { es:{ text:"De tal manera amó Dios al mundo, que dio a su Hijo unigénito.", ref:"Juan 3:16" }, en:{ text:"God so loved the world that he gave his only Son.", ref:"John 3:16" } },
+  { es:{ text:"El Señor es mi pastor; nada me falta.", ref:"Salmo 23:1" }, en:{ text:"The Lord is my shepherd; I shall not want.", ref:"Psalm 23:1" } },
+  { es:{ text:"Busca primero el Reino de Dios y su justicia.", ref:"Mateo 6:33" }, en:{ text:"Seek first the kingdom of God and his righteousness.", ref:"Matthew 6:33" } },
+  { es:{ text:"No se turbe vuestro corazón; creed en Dios, creed también en mí.", ref:"Juan 14:1" }, en:{ text:"Let not your hearts be troubled. Believe in God; believe also in me.", ref:"John 14:1" } },
+  { es:{ text:"Yo soy el camino, la verdad y la vida.", ref:"Juan 14:6" }, en:{ text:"I am the way, the truth, and the life.", ref:"John 14:6" } },
+  { es:{ text:"El amor es paciente, es bondadoso; el amor no tiene envidia.", ref:"1 Corintios 13:4" }, en:{ text:"Love is patient, love is kind; love does not envy.", ref:"1 Corinthians 13:4" } },
+  { es:{ text:"Dad gracias en todo; esta es la voluntad de Dios en Cristo Jesús.", ref:"1 Tesalonicenses 5:18" }, en:{ text:"Give thanks in all circumstances; this is God's will for you.", ref:"1 Thessalonians 5:18" } },
+  { es:{ text:"Con amor eterno te amé; por eso te mantuve con fidelidad.", ref:"Jeremías 31:3" }, en:{ text:"I have loved you with an everlasting love; I have drawn you with loving kindness.", ref:"Jeremiah 31:3" } },
+  { es:{ text:"Venid a mí todos los que estáis fatigados y sobrecargados, y yo os daré descanso.", ref:"Mateo 11:28" }, en:{ text:"Come to me, all who are weary and burdened, and I will give you rest.", ref:"Matthew 11:28" } },
+  { es:{ text:"Confía en el Señor con todo tu corazón y no te apoyes en tu propia prudencia.", ref:"Proverbios 3:5" }, en:{ text:"Trust in the Lord with all your heart and lean not on your own understanding.", ref:"Proverbs 3:5" } },
+  { es:{ text:"El Señor tu Dios está en medio de ti como un guerrero victorioso.", ref:"Sofonías 3:17" }, en:{ text:"The Lord your God is in your midst, a mighty one who will save.", ref:"Zephaniah 3:17" } },
+  { es:{ text:"Bienaventurados los limpios de corazón, porque ellos verán a Dios.", ref:"Mateo 5:8" }, en:{ text:"Blessed are the pure in heart, for they shall see God.", ref:"Matthew 5:8" } },
+  { es:{ text:"La verdad os hará libres.", ref:"Juan 8:32" }, en:{ text:"The truth will set you free.", ref:"John 8:32" } },
+  { es:{ text:"Yo soy la resurrección y la vida; el que cree en mí, aunque muera, vivirá.", ref:"Juan 11:25" }, en:{ text:"I am the resurrection and the life. Whoever believes in me, though he die, yet shall he live.", ref:"John 11:25" } },
+  { es:{ text:"Mi gracia te basta; mi fuerza se manifiesta en la flaqueza.", ref:"2 Corintios 12:9" }, en:{ text:"My grace is sufficient for you, for my power is made perfect in weakness.", ref:"2 Corinthians 12:9" } },
+  { es:{ text:"No temas, porque yo te he redimido; te he llamado por tu nombre, tú eres mío.", ref:"Isaías 43:1" }, en:{ text:"Fear not, for I have redeemed you; I have called you by name, you are mine.", ref:"Isaiah 43:1" } },
+  { es:{ text:"Bienaventurados los que lloran, porque ellos serán consolados.", ref:"Mateo 5:4" }, en:{ text:"Blessed are those who mourn, for they shall be comforted.", ref:"Matthew 5:4" } },
+  { es:{ text:"Yo soy la vid, vosotros los sarmientos; el que permanece en mí da mucho fruto.", ref:"Juan 15:5" }, en:{ text:"I am the vine; you are the branches. Whoever abides in me bears much fruit.", ref:"John 15:5" } },
+  { es:{ text:"Sed buenos y compasivos unos con otros, perdonándoos como Dios os perdonó.", ref:"Efesios 4:32" }, en:{ text:"Be kind and compassionate, forgiving each other, just as in Christ God forgave you.", ref:"Ephesians 4:32" } },
+  { es:{ text:"Dios es nuestro refugio y fortaleza, nuestro pronto auxilio en las tribulaciones.", ref:"Salmo 46:1" }, en:{ text:"God is our refuge and strength, an ever-present help in trouble.", ref:"Psalm 46:1" } },
+  { es:{ text:"A los que aman a Dios, todo les ayuda para bien.", ref:"Romanos 8:28" }, en:{ text:"For those who love God all things work together for good.", ref:"Romans 8:28" } },
+  { es:{ text:"Bienaventurados los que tienen hambre y sed de justicia, porque serán saciados.", ref:"Mateo 5:6" }, en:{ text:"Blessed are those who hunger and thirst for righteousness, for they shall be satisfied.", ref:"Matthew 5:6" } },
+  { es:{ text:"No os inquietéis por nada; en todo, mediante oración y súplica, presentad vuestras peticiones a Dios.", ref:"Filipenses 4:6" }, en:{ text:"Do not be anxious about anything, but in every situation, by prayer and petition, present your requests to God.", ref:"Philippians 4:6" } },
+  { es:{ text:"Orad sin cesar.", ref:"1 Tesalonicenses 5:17" }, en:{ text:"Pray without ceasing.", ref:"1 Thessalonians 5:17" } },
+  { es:{ text:"Amarás al Señor tu Dios con todo tu corazón, con toda tu alma y con toda tu mente.", ref:"Mateo 22:37" }, en:{ text:"You shall love the Lord your God with all your heart, soul, and mind.", ref:"Matthew 22:37" } },
+  { es:{ text:"Nada podrá separarnos del amor de Dios manifestado en Cristo Jesús.", ref:"Romanos 8:39" }, en:{ text:"Nothing will be able to separate us from the love of God in Christ Jesus.", ref:"Romans 8:39" } },
+  { es:{ text:"Gustad y ved cuán bueno es el Señor; dichoso el que se refugia en él.", ref:"Salmo 34:8" }, en:{ text:"Taste and see that the Lord is good; blessed is the one who takes refuge in him.", ref:"Psalm 34:8" } },
+  { es:{ text:"Los que esperan en el Señor renuevan sus fuerzas; vuelan como águilas.", ref:"Isaías 40:31" }, en:{ text:"Those who hope in the Lord will renew their strength; they will soar on wings like eagles.", ref:"Isaiah 40:31" } },
+  { es:{ text:"Bienaventurados los pobres de espíritu, porque de ellos es el reino de los cielos.", ref:"Mateo 5:3" }, en:{ text:"Blessed are the poor in spirit, for theirs is the kingdom of heaven.", ref:"Matthew 5:3" } },
+];
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -517,27 +550,44 @@ export default function App() {
 
   const renderHome = () => {
     const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
+    const _today = new Date();
+    const _dayOfYear = Math.floor((_today - new Date(_today.getFullYear(), 0, 0)) / 86400000);
+    const dailyVerse = DAILY_VERSES[_dayOfYear % DAILY_VERSES.length][lang] || DAILY_VERSES[_dayOfYear % DAILY_VERSES.length].es;
     return (
       <div>
-        <div style={{ background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "14px 18px", marginBottom: 16, border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08, color: GOLD }}>✝</div>
-          <div style={{ fontSize: 11, color: NAVY, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
-          <div style={{ fontSize: 15, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif" }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
-          {user ? (
-            <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 12, color: NAVY_DARK }}>👤 {user.displayName || user.email}</span>
-              <span style={{ fontSize: 12, color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
+        <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "stretch", flexDirection: window.innerWidth > 600 ? "row" : "column" }}>
+          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "14px 12px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
+            <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08, color: GOLD }}>✝</div>
+            <div style={{ fontSize: 10, color: NAVY, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
+            <div style={{ fontSize: 13, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif" }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
+            {user ? (
+              <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, color: NAVY_DARK }}>👤 {user.displayName || user.email}</span>
+                <span style={{ fontSize: 11, color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
+              </div>
+            ) : (
+              <div onClick={() => setAuthMode('login')} style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 5, background: NAVY_DARK, padding: "4px 10px", borderRadius: 20, cursor: "pointer" }}>
+                <span style={{ fontSize: 11, color: WHITE }}>👤 {lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span>
+                <span style={{ color: GOLD, fontSize: 12 }}>→</span>
+              </div>
+            )}
+          </div>
+          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "14px 12px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
+            <div>
+              <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+              <div style={{ fontSize: 12, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.5 }}>"{dailyVerse.text}"</div>
             </div>
-          ) : (
-            <div onClick={() => setAuthMode('login')} style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, background: NAVY_DARK, padding: "5px 12px", borderRadius: 20, cursor: "pointer" }}>
-              <span style={{ fontSize: 12, color: WHITE }}>👤 {lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span>
-              <span style={{ color: GOLD, fontSize: 13 }}>→</span>
-            </div>
-          )}
+            <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {dailyVerse.ref}</div>
+          </div>
         </div>
         {t.home.cards.map((c, i) => (
           <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,20,40,0.4) 0%, rgba(10,20,40,0.82) 100%)" }} />
+            <div style={{ position: "absolute", inset: 0, background:
+              c.tab === 1 ? "linear-gradient(to bottom, rgba(27,42,74,0.45) 0%, rgba(27,42,74,0.9) 100%)" :
+              c.tab === 2 || c.tab === 7 ? "linear-gradient(to bottom, rgba(139,105,20,0.45) 0%, rgba(139,105,20,0.9) 100%)" :
+              "linear-gradient(to bottom, rgba(10,20,40,0.4) 0%, rgba(10,20,40,0.82) 100%)"
+            }} />
             <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
               <div>
                 <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
