@@ -1040,21 +1040,21 @@ export default function App() {
             ["circles", (() => {
                 const sel = personalTab === "circles";
                 const fg = sel ? "#FAF5ED" : "#9CA3AF";
-                const cross = sel ? "#C9A84C" : "#9CA3AF";
+                const cr = sel ? "#C9A84C" : "#9CA3AF";
                 return (
-                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* center person — behind cross */}
-                    <circle cx="14" cy="5.5" r="3" fill={fg}/>
-                    <path d="M9.5 27 C9.5 12 18.5 12 18.5 27Z" fill={fg}/>
-                    {/* left person */}
-                    <circle cx="5" cy="10.5" r="2.5" fill={fg}/>
-                    <path d="M2 27 C2 17 8 17 8 27Z" fill={fg}/>
-                    {/* right person */}
-                    <circle cx="23" cy="10.5" r="2.5" fill={fg}/>
-                    <path d="M20 27 C20 17 26 17 26 27Z" fill={fg}/>
-                    {/* cross — in front */}
-                    <rect x="12.7" y="1" width="2.6" height="22" rx="1.3" fill={cross}/>
-                    <rect x="8" y="8.5" width="12" height="2.4" rx="1.2" fill={cross}/>
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* left person (behind) */}
+                    <circle cx="8" cy="19" r="3.5" fill={fg}/>
+                    <path d="M2 31 C2 21 14 21 14 31Z" fill={fg}/>
+                    {/* right person (behind) */}
+                    <circle cx="24" cy="19" r="3.5" fill={fg}/>
+                    <path d="M18 31 C18 21 30 21 30 31Z" fill={fg}/>
+                    {/* center person (front, larger) */}
+                    <circle cx="16" cy="15" r="4.5" fill={fg}/>
+                    <path d="M9 31 C9 19 23 19 23 31Z" fill={fg}/>
+                    {/* small cross — top center, above heads */}
+                    <rect x="14.8" y="1" width="2.4" height="8" rx="1.2" fill={cr}/>
+                    <rect x="11.5" y="3.8" width="9" height="2.4" rx="1.2" fill={cr}/>
                   </svg>
                 );
               })(), lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>],
