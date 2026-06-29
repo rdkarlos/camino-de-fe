@@ -394,6 +394,7 @@ export default function App() {
   const handleLogout = async () => { await signOut(auth); };
 
   const handleLambClick = async () => {
+    console.log('[lamb] Iniciando...');
     setLambLoading(true);
     setLambOpen(true);
     setLambText('');
@@ -403,6 +404,7 @@ export default function App() {
     try {
       const docRef = doc(db, 'reflexiones', today);
       const docSnap = await getDoc(docRef);
+      console.log('[lamb] Firestore result:', docSnap.exists(), docSnap.exists() ? docSnap.data() : 'no existe');
       if (docSnap.exists() && docSnap.data().texto) {
         setLambText(docSnap.data().texto);
         setLambLoading(false);
@@ -412,6 +414,7 @@ export default function App() {
       console.log('[lamb] Firestore no disponible, llamando API:', firestoreError.message);
     }
 
+    console.log('[lamb] Llamando API...');
     try {
       const response = await fetch('/api/spiritual-guide', {
         method: 'POST',
