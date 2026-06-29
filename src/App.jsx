@@ -575,7 +575,7 @@ export default function App() {
           <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "14px 12px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
             <div>
-              <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+              <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
               <div style={{ fontSize: 12, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.5 }}>"{dailyVerse.text}"</div>
             </div>
             <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {dailyVerse.ref}</div>
@@ -1474,8 +1474,8 @@ export default function App() {
           {[
             { icon: "🕊️", label: lang === 'es' ? "Oración"   : "Prayer",   idx: 1 },
             { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 2 },
-            { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
             { icon: "✝", label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
+            { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
             { icon: "🛒", label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
           ].map(({ icon, label, idx }) => {
             const isBible = idx === 6;
