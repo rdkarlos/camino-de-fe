@@ -394,6 +394,8 @@ export default function App() {
   const handleLogout = async () => { await signOut(auth); };
 
   const handleLambClick = async () => {
+    const gospelText = gospelData?.text?.substring(0, 1500) || '';
+    console.log('[lamb] Función ejecutada. gospelText:', gospelText, 'lambText:', lambText);
     setLambOpen(true);
     if (lambText) return;
     setLambLoading(true);
@@ -407,18 +409,22 @@ export default function App() {
         return;
       }
       const gospelReference = gospelData?.reference || '';
-      const gospelText = gospelData?.text?.substring(0, 1500) || '';
+      console.log('[lamb] Llamando /api/spiritual-guide con:', { gospelRef: gospelReference, lang, gospelTextLen: gospelText.length });
       const res = await fetch('/api/spiritual-guide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gospelRef: gospelReference, gospelText, lang }),
       });
-      const data = await res.json();
+      console.log('[lamb] HTTP status:', res.status, res.statusText);
+      const rawText = await res.text();
+      console.log('[lamb] Respuesta raw:', rawText);
+      const data = JSON.parse(rawText);
+      console.log('[lamb] data.text:', data.text);
       const texto = data.text || (lang === 'es' ? 'No se pudo obtener la reflexión.' : 'Could not load reflection.');
       setLambText(texto);
       await setDoc(refDoc, { texto, evangelio: gospelReference, fecha: serverTimestamp(), idioma: lang });
     } catch (e) {
-      console.error('[lamb]', e);
+      console.error('[lamb] excepción completa:', e);
       setLambText(lang === 'es' ? 'Error al consultar la guía espiritual.' : 'Error loading spiritual guide.');
     } finally {
       setLambLoading(false);
@@ -1467,7 +1473,7 @@ export default function App() {
       `}</style>
 
       {/* Botón Cordero de Dios */}
-      {gospelData && (
+      {tab === 2 && gospelData && (
         <button
           onClick={handleLambClick}
           title={lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
