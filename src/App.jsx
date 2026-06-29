@@ -133,6 +133,7 @@ const PRAYER_MOODS = {
     { id: "duelo",      icon: "🕯️", label: "Duelo",     verse: "«Bienaventurados los que lloran» — Mt 5:4",                    saint: "Nuestra Señora de los Dolores", template: "Señor, llevo en mi corazón la pérdida de..." },
     { id: "salud",      icon: "❤️", label: "Salud",      verse: "«Sana a los enfermos» — Lc 9:2",                              saint: "San Rafael Arcángel",         template: "Señor, te pido por la salud de..." },
     { id: "decisiones", icon: "⚖️", label: "Decisiones", verse: "«Fíate del Señor con todo tu corazón» — Prov 3:5",            saint: "Espíritu Santo",              template: "Señor, necesito sabiduría para decidir sobre..." },
+    { id: "otra",       icon: "🌿", label: "Otra",       verse: "«Todo lo que pidan en mi nombre, lo haré» — Jn 14:13",       saint: "Espíritu Santo",              template: "Señor, quiero hablarte de..." },
   ],
   en: [
     { id: "gratitud",   icon: "🙏", label: "Gratitude",  verse: "«Give thanks in all circumstances» — 1 Thes 5:18",            saint: "St. Francis of Assisi",       template: "Lord, I am grateful for..." },
@@ -142,6 +143,7 @@ const PRAYER_MOODS = {
     { id: "duelo",      icon: "🕯️", label: "Grief",     verse: "«Blessed are those who mourn» — Mt 5:4",                     saint: "Our Lady of Sorrows",         template: "Lord, I carry in my heart the loss of..." },
     { id: "salud",      icon: "❤️", label: "Health",     verse: "«Heal the sick» — Lk 9:2",                                   saint: "St. Raphael the Archangel",   template: "Lord, I pray for the health of..." },
     { id: "decisiones", icon: "⚖️", label: "Decisions",  verse: "«Trust in the Lord with all your heart» — Prov 3:5",         saint: "Holy Spirit",                 template: "Lord, I need wisdom to decide about..." },
+    { id: "otra",       icon: "🌿", label: "Other",      verse: "«Whatever you ask in my name, I will do it» — Jn 14:13",     saint: "Holy Spirit",                 template: "Lord, I want to talk to you about..." },
   ],
 };
 
@@ -620,8 +622,8 @@ export default function App() {
       <div>
         {/* Tab switcher */}
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-          {[["builder", "🕊️", lang === "es" ? "Constructor" : "Builder"], ["journal", "📔", lang === "es" ? "Diario de Gracias" : "Gratitude Journal"]].map(([key, icon, label]) => (
-            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
+          {[["builder", "🕊️", lang === "es" ? "Crear Oración" : "Create Prayer"], ["journal", "📔", lang === "es" ? "Diario de gracias" : "Gratitude journal"]].map(([key, icon, label]) => (
+            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
               {icon} {label}
             </button>
           ))}
@@ -629,7 +631,7 @@ export default function App() {
 
         {personalTab === "builder" ? (
           <div>
-            <div style={{ fontSize: 15, fontWeight: "bold", color: NAVY_DARK, marginBottom: 14, fontFamily: "'Cinzel', serif" }}>
+            <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 14, fontFamily: "'Crimson Text', serif" }}>
               {lang === "es" ? "¿Cómo está tu corazón hoy?" : "How is your heart today?"}
             </div>
 
@@ -638,7 +640,7 @@ export default function App() {
               {moods.map(m => (
                 <button key={m.id} onClick={() => setSelectedMood(selectedMood === m.id ? null : m.id)} style={{ padding: "10px 4px", borderRadius: 12, background: selectedMood === m.id ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: selectedMood === m.id ? WHITE : NAVY_DARK, border: `1.5px solid ${selectedMood === m.id ? NAVY : CREAM_DARK}`, cursor: "pointer", textAlign: "center" }}>
                   <div style={{ fontSize: 20, marginBottom: 4 }}>{m.icon}</div>
-                  <div style={{ fontSize: 9, fontWeight: "bold", fontFamily: "'Cinzel', serif", lineHeight: 1.2 }}>{m.label}</div>
+                  <div style={{ fontSize: 11, fontWeight: "600", fontFamily: "'Crimson Text', serif", lineHeight: 1.2 }}>{m.label}</div>
                 </button>
               ))}
             </div>
@@ -653,8 +655,8 @@ export default function App() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, background: WHITE, borderRadius: 12, padding: "12px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                   <span style={{ fontSize: 22 }}>🕯️</span>
                   <div>
-                    <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1 }}>{lang === "es" ? "Santo patrono sugerido" : "Suggested patron saint"}</div>
-                    <div style={{ fontSize: 14, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cinzel', serif" }}>{mood.saint}</div>
+                    <div style={{ fontSize: 10, color: MUTED, letterSpacing: 0.5 }}>{lang === "es" ? "Santo patrono sugerido" : "Suggested patron saint"}</div>
+                    <div style={{ fontSize: 14, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{mood.saint}</div>
                   </div>
                 </div>
 
@@ -668,7 +670,7 @@ export default function App() {
                   />
                 </div>
 
-                <button onClick={savePrayer} disabled={!prayerIntention.trim()} style={{ width: "100%", padding: "13px", background: prayerIntention.trim() ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : CREAM_DARK, color: prayerIntention.trim() ? WHITE : MUTED, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: prayerIntention.trim() ? "pointer" : "default", fontFamily: "'Cinzel', serif" }}>
+                <button onClick={savePrayer} disabled={!prayerIntention.trim()} style={{ width: "100%", padding: "13px", background: prayerIntention.trim() ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : CREAM_DARK, color: prayerIntention.trim() ? WHITE : MUTED, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: prayerIntention.trim() ? "pointer" : "default", fontFamily: "'Crimson Text', serif" }}>
                   🕊️ {lang === "es" ? "Guardar oración" : "Save prayer"}
                 </button>
               </div>
@@ -680,7 +682,7 @@ export default function App() {
               <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
                 <div style={{ fontSize: 44, marginBottom: 12 }}>📔</div>
                 <div style={{ fontSize: 14, marginBottom: 6 }}>{lang === "es" ? "Aún no tienes oraciones guardadas." : "No saved prayers yet."}</div>
-                <div style={{ fontSize: 13, color: MUTED }}>{lang === "es" ? "Usa el Constructor para crear tu primera oración ↑" : "Use the Builder to create your first prayer ↑"}</div>
+                <div style={{ fontSize: 13, color: MUTED }}>{lang === "es" ? "Usa Crear Oración para empezar ↑" : "Use Create Prayer to get started ↑"}</div>
               </div>
             ) : savedPrayers.map(p => (
               <div key={p.id} style={{ background: WHITE, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${p.received ? GOLD + "66" : CREAM_DARK}`, boxShadow: p.received ? `0 2px 16px ${GOLD}22` : "0 2px 8px rgba(15,28,50,0.05)" }}>
@@ -688,7 +690,7 @@ export default function App() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 22 }}>{p.moodIcon}</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cinzel', serif" }}>{p.moodLabel}</div>
+                      <div style={{ fontSize: 13, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{p.moodLabel}</div>
                       <div style={{ fontSize: 11, color: MUTED }}>{p.date}</div>
                     </div>
                   </div>
