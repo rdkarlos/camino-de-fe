@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
-import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 
 const firebaseConfig = {
@@ -192,6 +192,8 @@ export default function App() {
   const [prayerIntention, setPrayerIntention] = useState("");
   const [generatedPrayer, setGeneratedPrayer] = useState(null);
   const [savedPrayers, setSavedPrayers] = useState([]);
+  const [prayerBook, setPrayerBook] = useState([]);
+  const [prayerBookLoading, setPrayerBookLoading] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -262,6 +264,15 @@ export default function App() {
       if (stored) setSavedPrayers(JSON.parse(stored));
     } catch (_) {}
   }, []);
+
+  useEffect(() => {
+    if (personalTab !== "book" || !user) return;
+    setPrayerBookLoading(true);
+    getDocs(query(collection(db, "usuarios", user.uid, "oraciones"), orderBy("fecha", "desc")))
+      .then(snap => setPrayerBook(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
+      .catch(() => {})
+      .finally(() => setPrayerBookLoading(false));
+  }, [personalTab, user]);
 
   const handleGoogle = async () => {
     setAuthLoading(true); setAuthError("");
@@ -638,6 +649,30 @@ export default function App() {
       localStorage.setItem("personal_prayers", JSON.stringify(updated));
     };
 
+    const markAnswered = async (docId) => {
+      if (!user) return;
+      try {
+        await updateDoc(doc(db, "usuarios", user.uid, "oraciones", docId), {
+          respondida: true,
+          fechaRespuesta: serverTimestamp(),
+        });
+        setPrayerBook(prev => prev.map(p => p.id === docId ? { ...p, respondida: true } : p));
+      } catch (e) {
+        console.error("[firestore] error marcando respondida:", e.message);
+      }
+    };
+
+    const getMoodIcon = (label) => {
+      const all = [...PRAYER_MOODS.es, ...PRAYER_MOODS.en];
+      return all.find(m => m.label === label)?.icon || "🙏";
+    };
+
+    const formatFirestoreDate = (fecha) => {
+      if (!fecha) return "";
+      const d = fecha.toDate ? fecha.toDate() : new Date(fecha);
+      return d.toLocaleDateString(lang === "es" ? "es-ES" : "en-US", { day: "numeric", month: "long", year: "numeric" });
+    };
+
     const deletePrayer = (id) => {
       const updated = savedPrayers.filter(p => p.id !== id);
       setSavedPrayers(updated);
@@ -647,10 +682,15 @@ export default function App() {
     return (
       <div>
         {/* Tab switcher */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-          {[["builder", "✝️", lang === "es" ? "Crear Oración" : "Create Prayer"], ["journal", "📔", lang === "es" ? "Diario de gracias" : "Gratitude journal"]].map(([key, icon, label]) => (
-            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "10px 8px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
-              {icon} {label}
+        <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+          {[
+            ["builder", "✝️", lang === "es" ? "Crear Oración" : "Create Prayer"],
+            ["journal", "📔", lang === "es" ? "Diario" : "Journal"],
+            ["book",    "📖", lang === "es" ? "Mis Oraciones" : "My Prayers"],
+          ].map(([key, icon, label]) => (
+            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3 }}>
+              <div style={{ fontSize: 16 }}>{icon}</div>
+              <div>{label}</div>
             </button>
           ))}
         </div>
@@ -734,7 +774,7 @@ export default function App() {
               </div>
             )}
           </div>
-        ) : (
+        ) : personalTab === "journal" ? (
           <div>
             {savedPrayers.length === 0 ? (
               <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
@@ -770,6 +810,68 @@ export default function App() {
                   <button onClick={() => deletePrayer(p.id)} style={{ padding: "7px 12px", borderRadius: 20, border: `1px solid ${CREAM_DARK}`, background: WHITE, color: MUTED, fontSize: 12, cursor: "pointer" }}>
                     ✕
                   </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Pestaña: Mi Libro de Oraciones (Firestore) */
+          <div>
+            {!user ? (
+              <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
+                <div style={{ fontSize: 14, color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                  {lang === "es" ? "Inicia sesión para ver tu libro de oraciones" : "Sign in to see your prayer book"}
+                </div>
+                <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                  👤 {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                </button>
+              </div>
+            ) : prayerBookLoading ? (
+              <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
+                <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tus oraciones..." : "Loading your prayers..."}</div>
+              </div>
+            ) : prayerBook.length === 0 ? (
+              <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
+                <div style={{ fontSize: 14, marginBottom: 6 }}>{lang === "es" ? "Aún no tienes oraciones guardadas." : "No prayers saved yet."}</div>
+                <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea tu primera oración ↑" : "Create your first prayer ↑"}</div>
+              </div>
+            ) : prayerBook.map(p => (
+              <div key={p.id} style={{ background: WHITE, borderRadius: 16, marginBottom: 14, overflow: "hidden", border: `1px solid ${p.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: p.respondida ? `0 4px 20px ${GOLD}28` : "0 2px 10px rgba(15,28,50,0.06)" }}>
+                {/* Header de la tarjeta */}
+                <div style={{ background: p.respondida ? `linear-gradient(135deg, ${NAVY_DARK}, #3a2800)` : `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 24 }}>{getMoodIcon(p.estado)}</span>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: "bold", color: WHITE, fontFamily: "'Crimson Text', serif" }}>{p.estado}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>{formatFirestoreDate(p.fecha)}</div>
+                    </div>
+                  </div>
+                  {p.respondida && (
+                    <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, fontSize: 11, fontWeight: "bold", padding: "4px 12px", borderRadius: 20, flexShrink: 0 }}>
+                      ✨ {lang === "es" ? "Respondida" : "Answered"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Cuerpo */}
+                <div style={{ padding: "14px 16px" }}>
+                  {p.intencion ? (
+                    <div style={{ fontSize: 13, color: "#5A3A2E", lineHeight: 1.65, marginBottom: 12, fontStyle: "italic", borderLeft: `3px solid ${GOLD}88`, paddingLeft: 10 }}>
+                      {p.intencion}
+                    </div>
+                  ) : null}
+                  <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
+                    {p.oracion}
+                  </div>
+
+                  {!p.respondida && (
+                    <button onClick={() => markAnswered(p.id)} style={{ marginTop: 14, width: "100%", padding: "10px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                      🙏 {lang === "es" ? "¡Respondida!" : "Answered!"}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
