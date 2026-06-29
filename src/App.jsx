@@ -151,84 +151,43 @@ const PRAYER_MOODS = {
 
 const BIBLE_BOOKS = {
   es: {
-    ot: [
-      { id: "GEN", name: "Génesis" },    { id: "EXO", name: "Éxodo" },
-      { id: "LEV", name: "Levítico" },   { id: "NUM", name: "Números" },
-      { id: "DEU", name: "Deuteronomio" }, { id: "JOS", name: "Josué" },
-      { id: "JDG", name: "Jueces" },     { id: "RUT", name: "Rut" },
-      { id: "1SA", name: "1 Samuel" },   { id: "2SA", name: "2 Samuel" },
-      { id: "1KI", name: "1 Reyes" },    { id: "2KI", name: "2 Reyes" },
-      { id: "1CH", name: "1 Crónicas" }, { id: "2CH", name: "2 Crónicas" },
-      { id: "EZR", name: "Esdras" },     { id: "NEH", name: "Nehemías" },
-      { id: "EST", name: "Ester" },      { id: "JOB", name: "Job" },
-      { id: "PSA", name: "Salmos" },     { id: "PRO", name: "Proverbios" },
-      { id: "ECC", name: "Eclesiastés" }, { id: "SNG", name: "Cantares" },
-      { id: "ISA", name: "Isaías" },     { id: "JER", name: "Jeremías" },
-      { id: "LAM", name: "Lamentaciones" }, { id: "EZK", name: "Ezequiel" },
-      { id: "DAN", name: "Daniel" },     { id: "HOS", name: "Oseas" },
-      { id: "JOL", name: "Joel" },       { id: "AMO", name: "Amós" },
-      { id: "OBA", name: "Abdías" },     { id: "JON", name: "Jonás" },
-      { id: "MIC", name: "Miqueas" },    { id: "NAM", name: "Nahúm" },
-      { id: "HAB", name: "Habacuc" },    { id: "ZEP", name: "Sofonías" },
-      { id: "HAG", name: "Hageo" },      { id: "ZEC", name: "Zacarías" },
-      { id: "MAL", name: "Malaquías" },
-    ],
-    nt: [
-      { id: "MAT", name: "Mateo" },      { id: "MRK", name: "Marcos" },
-      { id: "LUK", name: "Lucas" },      { id: "JHN", name: "Juan" },
-      { id: "ACT", name: "Hechos" },     { id: "ROM", name: "Romanos" },
-      { id: "1CO", name: "1 Corintios" }, { id: "2CO", name: "2 Corintios" },
-      { id: "GAL", name: "Gálatas" },    { id: "EPH", name: "Efesios" },
-      { id: "PHP", name: "Filipenses" }, { id: "COL", name: "Colosenses" },
-      { id: "1TH", name: "1 Tesalonicenses" }, { id: "2TH", name: "2 Tesalonicenses" },
-      { id: "1TI", name: "1 Timoteo" },  { id: "2TI", name: "2 Timoteo" },
-      { id: "TIT", name: "Tito" },       { id: "PHM", name: "Filemón" },
-      { id: "HEB", name: "Hebreos" },    { id: "JAS", name: "Santiago" },
-      { id: "1PE", name: "1 Pedro" },    { id: "2PE", name: "2 Pedro" },
-      { id: "1JN", name: "1 Juan" },     { id: "2JN", name: "2 Juan" },
-      { id: "3JN", name: "3 Juan" },     { id: "JUD", name: "Judas" },
-      { id: "REV", name: "Apocalipsis" },
-    ],
+    ot: {
+      pentateuco:   [ { id:"GEN",name:"Génesis" },{ id:"EXO",name:"Éxodo" },{ id:"LEV",name:"Levítico" },{ id:"NUM",name:"Números" },{ id:"DEU",name:"Deuteronomio" } ],
+      historicos:   [ { id:"JOS",name:"Josué" },{ id:"JDG",name:"Jueces" },{ id:"RUT",name:"Rut" },{ id:"1SA",name:"1 Samuel" },{ id:"2SA",name:"2 Samuel" },{ id:"1KI",name:"1 Reyes" },{ id:"2KI",name:"2 Reyes" },{ id:"1CH",name:"1 Crónicas" },{ id:"2CH",name:"2 Crónicas" },{ id:"EZR",name:"Esdras" },{ id:"NEH",name:"Nehemías" },{ id:"TOB",name:"Tobías" },{ id:"JDT",name:"Judit" },{ id:"EST",name:"Ester" },{ id:"1MA",name:"1 Macabeos" },{ id:"2MA",name:"2 Macabeos" } ],
+      sapienciales: [ { id:"JOB",name:"Job" },{ id:"PSA",name:"Salmos" },{ id:"PRO",name:"Proverbios" },{ id:"ECC",name:"Eclesiastés" },{ id:"SNG",name:"Cantares" },{ id:"WIS",name:"Sabiduría" },{ id:"SIR",name:"Sirácide" } ],
+      profeticos:   [ { id:"ISA",name:"Isaías" },{ id:"JER",name:"Jeremías" },{ id:"LAM",name:"Lamentaciones" },{ id:"BAR",name:"Baruc" },{ id:"EZK",name:"Ezequiel" },{ id:"DAN",name:"Daniel" },{ id:"HOS",name:"Oseas" },{ id:"JOL",name:"Joel" },{ id:"AMO",name:"Amós" },{ id:"OBA",name:"Abdías" },{ id:"JON",name:"Jonás" },{ id:"MIC",name:"Miqueas" },{ id:"NAM",name:"Nahúm" },{ id:"HAB",name:"Habacuc" },{ id:"ZEP",name:"Sofonías" },{ id:"HAG",name:"Ageo" },{ id:"ZEC",name:"Zacarías" },{ id:"MAL",name:"Malaquías" } ],
+    },
+    nt: {
+      evangelios:  [ { id:"MAT",name:"Mateo" },{ id:"MRK",name:"Marcos" },{ id:"LUK",name:"Lucas" },{ id:"JHN",name:"Juan" } ],
+      hechos:      [ { id:"ACT",name:"Hechos de los Apóstoles" } ],
+      cartas:      [ { id:"ROM",name:"Romanos" },{ id:"1CO",name:"1 Corintios" },{ id:"2CO",name:"2 Corintios" },{ id:"GAL",name:"Gálatas" },{ id:"EPH",name:"Efesios" },{ id:"PHP",name:"Filipenses" },{ id:"COL",name:"Colosenses" },{ id:"1TH",name:"1 Tesalonicenses" },{ id:"2TH",name:"2 Tesalonicenses" },{ id:"1TI",name:"1 Timoteo" },{ id:"2TI",name:"2 Timoteo" },{ id:"TIT",name:"Tito" },{ id:"PHM",name:"Filemón" },{ id:"HEB",name:"Hebreos" },{ id:"JAS",name:"Santiago" },{ id:"1PE",name:"1 Pedro" },{ id:"2PE",name:"2 Pedro" },{ id:"1JN",name:"1 Juan" },{ id:"2JN",name:"2 Juan" },{ id:"3JN",name:"3 Juan" },{ id:"JUD",name:"Judas" } ],
+      apocalipsis: [ { id:"REV",name:"Apocalipsis" } ],
+    },
   },
   en: {
-    ot: [
-      { id: "GEN", name: "Genesis" },    { id: "EXO", name: "Exodus" },
-      { id: "LEV", name: "Leviticus" },  { id: "NUM", name: "Numbers" },
-      { id: "DEU", name: "Deuteronomy" }, { id: "JOS", name: "Joshua" },
-      { id: "JDG", name: "Judges" },     { id: "RUT", name: "Ruth" },
-      { id: "1SA", name: "1 Samuel" },   { id: "2SA", name: "2 Samuel" },
-      { id: "1KI", name: "1 Kings" },    { id: "2KI", name: "2 Kings" },
-      { id: "1CH", name: "1 Chronicles" }, { id: "2CH", name: "2 Chronicles" },
-      { id: "EZR", name: "Ezra" },       { id: "NEH", name: "Nehemiah" },
-      { id: "EST", name: "Esther" },     { id: "JOB", name: "Job" },
-      { id: "PSA", name: "Psalms" },     { id: "PRO", name: "Proverbs" },
-      { id: "ECC", name: "Ecclesiastes" }, { id: "SNG", name: "Song of Songs" },
-      { id: "ISA", name: "Isaiah" },     { id: "JER", name: "Jeremiah" },
-      { id: "LAM", name: "Lamentations" }, { id: "EZK", name: "Ezekiel" },
-      { id: "DAN", name: "Daniel" },     { id: "HOS", name: "Hosea" },
-      { id: "JOL", name: "Joel" },       { id: "AMO", name: "Amos" },
-      { id: "OBA", name: "Obadiah" },    { id: "JON", name: "Jonah" },
-      { id: "MIC", name: "Micah" },      { id: "NAM", name: "Nahum" },
-      { id: "HAB", name: "Habakkuk" },   { id: "ZEP", name: "Zephaniah" },
-      { id: "HAG", name: "Haggai" },     { id: "ZEC", name: "Zechariah" },
-      { id: "MAL", name: "Malachi" },
-    ],
-    nt: [
-      { id: "MAT", name: "Matthew" },    { id: "MRK", name: "Mark" },
-      { id: "LUK", name: "Luke" },       { id: "JHN", name: "John" },
-      { id: "ACT", name: "Acts" },       { id: "ROM", name: "Romans" },
-      { id: "1CO", name: "1 Corinthians" }, { id: "2CO", name: "2 Corinthians" },
-      { id: "GAL", name: "Galatians" },  { id: "EPH", name: "Ephesians" },
-      { id: "PHP", name: "Philippians" }, { id: "COL", name: "Colossians" },
-      { id: "1TH", name: "1 Thessalonians" }, { id: "2TH", name: "2 Thessalonians" },
-      { id: "1TI", name: "1 Timothy" },  { id: "2TI", name: "2 Timothy" },
-      { id: "TIT", name: "Titus" },      { id: "PHM", name: "Philemon" },
-      { id: "HEB", name: "Hebrews" },    { id: "JAS", name: "James" },
-      { id: "1PE", name: "1 Peter" },    { id: "2PE", name: "2 Peter" },
-      { id: "1JN", name: "1 John" },     { id: "2JN", name: "2 John" },
-      { id: "3JN", name: "3 John" },     { id: "JUD", name: "Jude" },
-      { id: "REV", name: "Revelation" },
-    ],
+    ot: {
+      pentateuco:   [ { id:"GEN",name:"Genesis" },{ id:"EXO",name:"Exodus" },{ id:"LEV",name:"Leviticus" },{ id:"NUM",name:"Numbers" },{ id:"DEU",name:"Deuteronomy" } ],
+      historicos:   [ { id:"JOS",name:"Joshua" },{ id:"JDG",name:"Judges" },{ id:"RUT",name:"Ruth" },{ id:"1SA",name:"1 Samuel" },{ id:"2SA",name:"2 Samuel" },{ id:"1KI",name:"1 Kings" },{ id:"2KI",name:"2 Kings" },{ id:"1CH",name:"1 Chronicles" },{ id:"2CH",name:"2 Chronicles" },{ id:"EZR",name:"Ezra" },{ id:"NEH",name:"Nehemiah" },{ id:"TOB",name:"Tobit" },{ id:"JDT",name:"Judith" },{ id:"EST",name:"Esther" },{ id:"1MA",name:"1 Maccabees" },{ id:"2MA",name:"2 Maccabees" } ],
+      sapienciales: [ { id:"JOB",name:"Job" },{ id:"PSA",name:"Psalms" },{ id:"PRO",name:"Proverbs" },{ id:"ECC",name:"Ecclesiastes" },{ id:"SNG",name:"Song of Songs" },{ id:"WIS",name:"Wisdom" },{ id:"SIR",name:"Sirach" } ],
+      profeticos:   [ { id:"ISA",name:"Isaiah" },{ id:"JER",name:"Jeremiah" },{ id:"LAM",name:"Lamentations" },{ id:"BAR",name:"Baruch" },{ id:"EZK",name:"Ezekiel" },{ id:"DAN",name:"Daniel" },{ id:"HOS",name:"Hosea" },{ id:"JOL",name:"Joel" },{ id:"AMO",name:"Amos" },{ id:"OBA",name:"Obadiah" },{ id:"JON",name:"Jonah" },{ id:"MIC",name:"Micah" },{ id:"NAM",name:"Nahum" },{ id:"HAB",name:"Habakkuk" },{ id:"ZEP",name:"Zephaniah" },{ id:"HAG",name:"Haggai" },{ id:"ZEC",name:"Zechariah" },{ id:"MAL",name:"Malachi" } ],
+    },
+    nt: {
+      evangelios:  [ { id:"MAT",name:"Matthew" },{ id:"MRK",name:"Mark" },{ id:"LUK",name:"Luke" },{ id:"JHN",name:"John" } ],
+      hechos:      [ { id:"ACT",name:"Acts of the Apostles" } ],
+      cartas:      [ { id:"ROM",name:"Romans" },{ id:"1CO",name:"1 Corinthians" },{ id:"2CO",name:"2 Corinthians" },{ id:"GAL",name:"Galatians" },{ id:"EPH",name:"Ephesians" },{ id:"PHP",name:"Philippians" },{ id:"COL",name:"Colossians" },{ id:"1TH",name:"1 Thessalonians" },{ id:"2TH",name:"2 Thessalonians" },{ id:"1TI",name:"1 Timothy" },{ id:"2TI",name:"2 Timothy" },{ id:"TIT",name:"Titus" },{ id:"PHM",name:"Philemon" },{ id:"HEB",name:"Hebrews" },{ id:"JAS",name:"James" },{ id:"1PE",name:"1 Peter" },{ id:"2PE",name:"2 Peter" },{ id:"1JN",name:"1 John" },{ id:"2JN",name:"2 John" },{ id:"3JN",name:"3 John" },{ id:"JUD",name:"Jude" } ],
+      apocalipsis: [ { id:"REV",name:"Revelation" } ],
+    },
+  },
+};
+
+const BIBLE_CATEGORIES = {
+  ot: {
+    es: [ { key:"pentateuco",label:"Pentateuco" },{ key:"historicos",label:"Históricos" },{ key:"sapienciales",label:"Sapienciales" },{ key:"profeticos",label:"Proféticos" } ],
+    en: [ { key:"pentateuco",label:"Pentateuch" },{ key:"historicos",label:"Historical" },{ key:"sapienciales",label:"Wisdom" },{ key:"profeticos",label:"Prophetic" } ],
+  },
+  nt: {
+    es: [ { key:"evangelios",label:"Evangelios" },{ key:"hechos",label:"Hechos" },{ key:"cartas",label:"Cartas" },{ key:"apocalipsis",label:"Apocalipsis" } ],
+    en: [ { key:"evangelios",label:"Gospels" },{ key:"hechos",label:"Acts" },{ key:"cartas",label:"Letters" },{ key:"apocalipsis",label:"Revelation" } ],
   },
 };
 
@@ -281,6 +240,8 @@ export default function App() {
   const [hoveredQuickBtn, setHoveredQuickBtn] = useState(null);
   const [pressedQuickBtn, setPressedQuickBtn] = useState(null);
   const [bibleView, setBibleView] = useState("books");
+  const [bibleTestament, setBibleTestament] = useState("ot");
+  const [bibleCategory, setBibleCategory] = useState("pentateuco");
   const [bibleSelectedBook, setBibleSelectedBook] = useState(null);
   const [bibleChapters, setBibleChapters] = useState([]);
   const [bibleSelectedChapter, setBibleSelectedChapter] = useState(null);
@@ -1119,8 +1080,6 @@ export default function App() {
   const renderBible = () => {
     const BIBLE_ID = "e3f420b9665abaeb-01";
     const API_KEY = "8z-olVvbUPzjg2OtXjSks";
-    const books = BIBLE_BOOKS[lang];
-
     const loadChapters = async (book) => {
       setBibleSelectedBook(book);
       setBibleView("chapters");
@@ -1218,32 +1177,79 @@ export default function App() {
     );
 
     if (bibleView === "books") {
+      const categories = BIBLE_CATEGORIES[bibleTestament][lang];
+      const currentBooks = BIBLE_BOOKS[lang][bibleTestament][bibleCategory] || [];
       return (
         <div>
           {searchBarJsx(false)}
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 10, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "'Cinzel', serif" }}>
-              {lang === "es" ? "Antiguo Testamento" : "Old Testament"}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-              {books.ot.map(b => (
-                <button key={b.id} onClick={() => loadChapters(b)} style={{ padding: "9px 6px", borderRadius: 10, background: WHITE, border: `1px solid ${CREAM_DARK}`, color: NAVY_DARK, fontSize: 12, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", fontWeight: "600", lineHeight: 1.3 }}>
-                  {b.name}
-                </button>
-              ))}
-            </div>
+
+          {/* Botones Antiguo / Nuevo Testamento */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+            {[
+              { key: "ot", label: lang === "es" ? "Antiguo Testamento" : "Old Testament" },
+              { key: "nt", label: lang === "es" ? "Nuevo Testamento" : "New Testament" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setBibleTestament(key);
+                  setBibleCategory(key === "ot" ? "pentateuco" : "evangelios");
+                }}
+                style={{
+                  flex: 1, padding: "12px 8px", borderRadius: 12,
+                  background: bibleTestament === key
+                    ? `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`
+                    : WHITE,
+                  border: bibleTestament === key
+                    ? `2px solid ${GOLD}`
+                    : `1px solid ${CREAM_DARK}`,
+                  color: bibleTestament === key ? WHITE : NAVY_DARK,
+                  fontSize: 13, fontWeight: "bold", cursor: "pointer",
+                  fontFamily: "'Cinzel', serif", lineHeight: 1.3,
+                }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 10, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: "'Cinzel', serif" }}>
-              {lang === "es" ? "Nuevo Testamento" : "New Testament"}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-              {books.nt.map(b => (
-                <button key={b.id} onClick={() => loadChapters(b)} style={{ padding: "9px 6px", borderRadius: 10, background: WHITE, border: `1px solid ${CREAM_DARK}`, color: NAVY_DARK, fontSize: 12, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", fontWeight: "600", lineHeight: 1.3 }}>
-                  {b.name}
-                </button>
-              ))}
-            </div>
+
+          {/* Pestañas de categoría — scroll horizontal */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
+            {categories.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setBibleCategory(key)}
+                style={{
+                  flexShrink: 0, padding: "6px 14px", borderRadius: 20,
+                  background: bibleCategory === key ? GOLD : "transparent",
+                  border: `1px solid ${bibleCategory === key ? GOLD : CREAM_DARK}`,
+                  color: bibleCategory === key ? NAVY_DARK : MUTED,
+                  fontSize: 12, fontWeight: "bold", cursor: "pointer",
+                  fontFamily: "'Crimson Text', serif", whiteSpace: "nowrap",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Grilla de libros */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+            {currentBooks.map(b => (
+              <button
+                key={b.id}
+                onClick={() => loadChapters(b)}
+                style={{
+                  padding: "9px 6px", borderRadius: 10,
+                  background: WHITE, border: `1px solid ${CREAM_DARK}`,
+                  color: NAVY_DARK, fontSize: 12, cursor: "pointer",
+                  fontFamily: "'Crimson Text', serif", textAlign: "center",
+                  fontWeight: "600", lineHeight: 1.3,
+                }}
+              >
+                {b.name}
+              </button>
+            ))}
           </div>
         </div>
       );
