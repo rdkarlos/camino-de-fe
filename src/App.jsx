@@ -32,10 +32,12 @@ const translations = {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Evangelio del Día", desc: "Cargando el Evangelio de hoy...", btn: "Leer más", gradient: "linear-gradient(135deg, #1B2A4A, #2C4270)", tab: 1 },
-        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 2 },
-        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 3 },
-        { icon: "🕯️", title: "Oración de la Mañana", desc: "Comienza el día con gratitud y entrega a Dios.", btn: "Rezar", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 4 },
+        { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 1 },
+        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 2 },
+        { icon: "📿", title: "Santo Rosario", desc: "Misterios Gloriosos · Miércoles y Domingos", btn: "Comenzar", img: "https://images.unsplash.com/photo-1545703549-7bdb1d01b734?w=600", tab: 3 },
+        { icon: "🙏", title: "Devocional", desc: "Oraciones y reflexiones para tu fe", btn: "Rezar", img: "https://images.unsplash.com/photo-1492176273113-2d51f47b23b0?w=600", tab: 4 },
+        { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 6 },
+        { icon: "🛒", title: "Tienda", desc: "Artículos de fe para tu hogar y devoción", btn: "Ver tienda", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 7 },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
@@ -73,10 +75,12 @@ const translations = {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
-        { icon: "📖", title: "Gospel of the Day", desc: "Loading today's Gospel...", btn: "Read more", gradient: "linear-gradient(135deg, #1B2A4A, #2C4270)", tab: 1 },
-        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", gradient: "linear-gradient(135deg, #1A3A5C, #2C5F8A)", tab: 2 },
-        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", gradient: "linear-gradient(135deg, #4A1259, #7B2D8B)", tab: 3 },
-        { icon: "🕯️", title: "Morning Prayer", desc: "Start your day with gratitude and surrender to God.", btn: "Pray", gradient: "linear-gradient(135deg, #7C4A1E, #C17A3A)", tab: 4 },
+        { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 1 },
+        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 2 },
+        { icon: "📿", title: "Holy Rosary", desc: "Glorious Mysteries · Wednesday & Sunday", btn: "Begin", img: "https://images.unsplash.com/photo-1545703549-7bdb1d01b734?w=600", tab: 3 },
+        { icon: "🙏", title: "Devotional", desc: "Prayers and reflections for your faith", btn: "Pray", img: "https://images.unsplash.com/photo-1492176273113-2d51f47b23b0?w=600", tab: 4 },
+        { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 6 },
+        { icon: "🛒", title: "Shop", desc: "Faith items for your home and devotion", btn: "View shop", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 7 },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
@@ -461,21 +465,23 @@ export default function App() {
           )}
         </div>
         {t.home.cards.map((c, i) => (
-          <div key={i} style={{ background: c.gradient, borderRadius: 22, padding: "26px 24px", marginBottom: 18, color: WHITE, position: "relative", overflow: "hidden", boxShadow: "0 8px 28px rgba(15,28,50,0.18)", minHeight: 152, display: "flex", flexDirection: "column", justifyContent: "space-between", cursor: "pointer" }} onClick={() => setTab(c.tab)}>
-            <div style={{ position: "absolute", bottom: -24, right: -12, fontSize: 120, opacity: 0.09, lineHeight: 1 }}>{c.icon}</div>
-            <div>
-              <div style={{ fontSize: 42, marginBottom: 14, lineHeight: 1 }}>{c.icon}</div>
-              <div style={{ fontWeight: "bold", fontSize: 19, marginBottom: 8, fontFamily: "'Cinzel', serif", lineHeight: 1.2 }}>{c.title}</div>
-              <div style={{ fontSize: 13, lineHeight: 1.75, color: "rgba(255,255,255,0.88)" }}>
-                {i === 0 && gospelData ? (
-                  <><span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{lang === 'en' ? gospelData?.reference : reference}</span>{body.substring(0, 90) + "…"}</>
-                ) : i === 1 && gospelData?.reading1 ? (
-                  <><span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{gospelData.reading1.reference}</span>{gospelData.reading1.text.substring(0, 90) + "…"}</>
-                ) : c.desc}
+          <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,20,40,0.4) 0%, rgba(10,20,40,0.82) 100%)" }} />
+            <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
+              <div>
+                <div style={{ fontSize: 32, marginBottom: 8, lineHeight: 1 }}>{c.icon}</div>
+                <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
+                <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>
+                  {i === 0 && gospelData ? (
+                    <><span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{lang === 'en' ? gospelData?.reference : reference}</span>{body.substring(0, 90) + "…"}</>
+                  ) : i === 1 && gospelData?.reading1 ? (
+                    <><span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{gospelData.reading1.reference}</span>{gospelData.reading1.text.substring(0, 90) + "…"}</>
+                  ) : c.desc}
+                </div>
               </div>
-            </div>
-            <div style={{ marginTop: 20 }}>
-              <span style={{ background: "rgba(255,255,255,0.16)", border: "1px solid rgba(255,255,255,0.32)", padding: "8px 20px", borderRadius: 20, fontSize: 12, fontWeight: "bold" }}>{c.btn} →</span>
+              <div style={{ marginTop: 14 }}>
+                <span style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.38)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: "bold" }}>{c.btn} →</span>
+              </div>
             </div>
           </div>
         ))}
