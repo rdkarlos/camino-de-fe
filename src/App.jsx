@@ -629,7 +629,16 @@ export default function App() {
               </div>
               <span style={{ color: BLUE, fontSize: 20, fontWeight: "bold" }}>{openReading === s.key ? "−" : "+"}</span>
             </div>
-            {openReading === s.key && <div style={{ padding: "0 18px 18px", fontSize: 14, color: "#1A2A3A", lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>{s.text}</div>}
+            {openReading === s.key && (
+              <div style={{ padding: "0 18px 18px", fontSize: 14, color: "#1A2A3A", lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>
+                {s.text}
+                {(s.key === 'r1' || s.key === 'r2') && (
+                  <div style={{ fontStyle: "italic", color: GOLD, marginTop: 10, whiteSpace: "normal" }}>
+                    {lang === 'es' ? '— Palabra de Dios.' : '— The Word of the Lord.'}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
