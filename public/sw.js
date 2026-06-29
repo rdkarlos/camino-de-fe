@@ -1,4 +1,4 @@
-const CACHE_NAME = 'camino-de-fe-v6';
+const CACHE_NAME = 'camino-de-fe-v7';
 const urlsToCache = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
@@ -10,17 +10,18 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => caches.delete(cache))
+      );
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
   // Para HTML y JS siempre va a la red primero
-  if (event.request.mode === 'navigate' || 
-      event.request.url.includes('.js') || 
+  if (event.request.mode === 'navigate' ||
+      event.request.url.includes('.js') ||
       event.request.url.includes('.jsx')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
