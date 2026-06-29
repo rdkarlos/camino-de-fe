@@ -95,8 +95,15 @@ const parseRef = (rawRef) => {
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
-  const extractSection = (html, sectionName) => {
-    const idx = html.indexOf(`<h3 class="name">${sectionName}`);
+  // Finds the first <h3> whose text content contains `keyword` (case-insensitive)
+  const findH3Index = (html, keyword) => {
+    const re = new RegExp(`<h3[^>]*>[^<]*${keyword}[^<]*<\/h3>`, 'i');
+    const m = re.exec(html);
+    return m ? m.index : -1;
+  };
+
+  const extractSection = (html, keyword) => {
+    const idx = findH3Index(html, keyword);
     if (idx === -1) return null;
     const section = html.substring(idx, idx + 3000);
     const refMatch = section.match(/class="address"[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
@@ -107,17 +114,32 @@ const parseRef = (rawRef) => {
   };
 
   try {
-    const usccbUrl = 'https://bible.usccb.org/bible/readings';
-    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(usccbUrl)}&render=false`;
-    
+    const usccbUrl = 'https://bible.usccb.org/daily-bible-reading';
+    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(usccbUrl)}&render=true`;
+
     const usccbResponse = await fetch(scraperUrl);
     const html = await usccbResponse.text();
 
-    const reading1En = extractSection(html, 'Reading 1') || extractSection(html, 'Reading I');
-    const reading2En = extractSection(html, 'Reading 2') || extractSection(html, 'Reading II');
-    const psalmEn = extractSection(html, 'Responsorial Psalm') || extractSection(html, 'Psalm');
+    const reading1En = extractSection(html, 'Reading');
+    const reading2En = (() => {
+      // Find the second <h3> containing "Reading" by searching after the first match
+      const re = new RegExp(`<h3[^>]*>[^<]*Reading[^<]*<\/h3>`, 'gi');
+      let first = true;
+      let m;
+      while ((m = re.exec(html)) !== null) {
+        if (first) { first = false; continue; }
+        const section = html.substring(m.index, m.index + 3000);
+        const refMatch = section.match(/class="address"[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
+        const reference = refMatch ? refMatch[1].replace(/<[^>]*>/g, '').trim() : '';
+        const bodyMatch = section.match(/<div[^>]*class="content-body"[^>]*>([\s\S]*?)<\/div>/i);
+        const text = bodyMatch ? cleanText(bodyMatch[1]) : '';
+        return { reference, text };
+      }
+      return null;
+    })();
+    const psalmEn = extractSection(html, 'Psalm') || extractSection(html, 'Responsorial');
 
-    const gospelIdx = html.indexOf('<h3 class="name">Gospel');
+    const gospelIdx = findH3Index(html, 'Gospel');
     if (gospelIdx === -1) throw new Error('Gospel section not found');
     const htmlAfterGospel = html.substring(gospelIdx, gospelIdx + 3000);
     const refMatch = htmlAfterGospel.match(/class="address"[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
