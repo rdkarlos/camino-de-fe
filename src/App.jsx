@@ -265,6 +265,9 @@ export default function App() {
   const [personalTab, setPersonalTab] = useState("builder");
   const [selectedMood, setSelectedMood] = useState(null);
   const [prayerIntention, setPrayerIntention] = useState("");
+  const [lambOpen, setLambOpen] = useState(false);
+  const [lambLoading, setLambLoading] = useState(false);
+  const [lambText, setLambText] = useState("");
   const [generatedPrayer, setGeneratedPrayer] = useState(null);
   const [savedPrayers, setSavedPrayers] = useState([]);
   const [prayerBook, setPrayerBook] = useState([]);
@@ -387,6 +390,29 @@ export default function App() {
   };
 
   const handleLogout = async () => { await signOut(auth); };
+
+  const handleLambClick = async () => {
+    setLambOpen(true);
+    if (lambText) return;
+    setLambLoading(true);
+    try {
+      const res = await fetch('/api/spiritual-guide', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gospelRef: gospelData?.reference,
+          gospelText: gospelData?.text?.substring(0, 1500),
+          lang,
+        }),
+      });
+      const data = await res.json();
+      setLambText(data.text || (lang === 'es' ? 'No se pudo obtener la reflexión.' : 'Could not load reflection.'));
+    } catch {
+      setLambText(lang === 'es' ? 'Error al consultar la guía espiritual.' : 'Error loading spiritual guide.');
+    } finally {
+      setLambLoading(false);
+    }
+  };
 
   const addToCart = (product) => {
     setCart(prev => {
@@ -1421,6 +1447,70 @@ export default function App() {
       {paymentSuccess && renderPaymentSuccess()}
       {authMode && renderAuthModal()}
       {showCart && renderCartModal()}
+
+      <style>{`
+        @keyframes lambPulse {
+          0%, 100% { box-shadow: 0 4px 14px rgba(201,168,76,0.5), 0 0 0 0 rgba(201,168,76,0.35); }
+          50%       { box-shadow: 0 4px 18px rgba(201,168,76,0.7), 0 0 0 9px rgba(201,168,76,0); }
+        }
+      `}</style>
+
+      {/* Botón Cordero de Dios */}
+      {gospelData && (
+        <button
+          onClick={handleLambClick}
+          title={lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
+          style={{
+            position: "fixed", bottom: 80, left: 20, zIndex: 60,
+            width: 50, height: 50, borderRadius: "50%",
+            background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+            border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 24, animation: "lambPulse 2.5s ease-in-out infinite",
+          }}
+        >🐑</button>
+      )}
+
+      {/* Modal Guía Espiritual */}
+      {lambOpen && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(15,28,50,0.72)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          onClick={() => setLambOpen(false)}
+        >
+          <div
+            style={{ background: CREAM, border: `2px solid ${GOLD}`, borderRadius: "20px 20px 0 0", padding: "24px 20px 32px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 18, fontWeight: "bold", color: NAVY, marginBottom: 3, fontFamily: "'Cinzel', serif" }}>
+              🐑 {lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
+            </div>
+            <div style={{ fontSize: 12, color: MUTED, marginBottom: 4 }}>
+              {lang === 'es' ? 'Reflexión basada en el Evangelio de hoy' : 'Reflection based on today\'s Gospel'}
+            </div>
+            {gospelData?.reference && (
+              <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginBottom: 16 }}>{gospelData.reference}</div>
+            )}
+            {lambLoading ? (
+              <div style={{ textAlign: "center", padding: "30px 0", color: NAVY }}>
+                <div style={{ fontSize: 32, marginBottom: 10 }}>✨</div>
+                <div style={{ fontSize: 14, fontStyle: "italic", color: MUTED }}>
+                  {lang === 'es' ? 'Preparando tu reflexión…' : 'Preparing your reflection…'}
+                </div>
+              </div>
+            ) : lambText ? (
+              <div style={{ fontSize: 15, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
+                {lambText}
+              </div>
+            ) : null}
+            <button
+              onClick={() => setLambOpen(false)}
+              style={{ marginTop: 22, width: "100%", padding: "12px", background: NAVY_DARK, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer" }}
+            >
+              {lang === 'es' ? 'Cerrar' : 'Close'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Botón Inicio fijo */}
       {tab !== 0 && (
