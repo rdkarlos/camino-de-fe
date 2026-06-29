@@ -664,7 +664,7 @@ export default function App() {
             {/* Mood grid */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
               {moods.map(m => (
-                <button key={m.id} onClick={() => setSelectedMood(selectedMood === m.id ? null : m.id)} style={{ padding: "10px 4px", borderRadius: 12, background: selectedMood === m.id ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: selectedMood === m.id ? WHITE : NAVY_DARK, border: `1.5px solid ${selectedMood === m.id ? NAVY : CREAM_DARK}`, cursor: "pointer", textAlign: "center" }}>
+                <button key={m.id} onClick={() => { const next = selectedMood === m.id ? null : m.id; setSelectedMood(next); setGeneratedPrayer(null); setPrayerIntention(""); }} style={{ padding: "10px 4px", borderRadius: 12, background: selectedMood === m.id ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: selectedMood === m.id ? WHITE : NAVY_DARK, border: `1.5px solid ${selectedMood === m.id ? NAVY : CREAM_DARK}`, cursor: "pointer", textAlign: "center" }}>
                   <div style={{ fontSize: 20, marginBottom: 4 }}>{m.icon}</div>
                   <div style={{ fontSize: 11, fontWeight: "600", fontFamily: "'Crimson Text', serif", lineHeight: 1.2 }}>{m.label}</div>
                 </button>
