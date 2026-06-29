@@ -887,9 +887,29 @@ export default function App() {
                           </div>
                         </div>
                       )}
-                      <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
-                        {p.oracion}
-                      </div>
+                      {(() => {
+                        const marker = lang === "es" ? "Te lo pido especialmente por" : "I especially pray for";
+                        const idx = p.oracion.indexOf(marker);
+                        if (idx === -1) {
+                          return (
+                            <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
+                              {p.oracion}
+                            </div>
+                          );
+                        }
+                        const before = p.oracion.substring(0, idx).trimEnd();
+                        const line = p.oracion.substring(idx).trim();
+                        return (
+                          <>
+                            <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap", marginBottom: 12 }}>
+                              {before}
+                            </div>
+                            <div style={{ background: "#FDF3DC", borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 12, fontStyle: "italic", color: NAVY, fontSize: 14, fontFamily: "'Crimson Text', serif", lineHeight: 1.7 }}>
+                              {line}
+                            </div>
+                          </>
+                        );
+                      })()}
                       {!p.respondida && (
                         <button onClick={() => markAnswered(p.id)} style={{ marginTop: 14, width: "100%", padding: "10px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
                           🙏 {lang === "es" ? "¡Respondida!" : "Answered!"}
