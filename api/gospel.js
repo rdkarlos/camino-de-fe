@@ -113,12 +113,24 @@ const parseRef = (rawRef) => {
     return { reference, text };
   };
 
-  try {
-    const usccbUrl = 'https://bible.usccb.org/daily-bible-reading';
-    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(usccbUrl)}&render=true`;
+  const fetchHtml = async (url) => {
+    const scraperUrl = `https://api.scraperapi.com/?api_key=${SCRAPER_KEY}&url=${encodeURIComponent(url)}&render=true`;
+    const res = await fetch(scraperUrl);
+    return res.text();
+  };
 
-    const usccbResponse = await fetch(scraperUrl);
-    const html = await usccbResponse.text();
+  try {
+    const mm = String(month).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    const yy = String(year).slice(-2);
+    const baseUrl = `https://bible.usccb.org/bible/readings/${mm}${dd}${yy}`;
+
+    let html = await fetchHtml(baseUrl);
+
+    // Si no tiene Evangelio (solemnidad con múltiples Misas), usar "Mass during the Day"
+    if (findH3Index(html, 'Gospel') === -1) {
+      html = await fetchHtml(`${baseUrl}-Day`);
+    }
 
     const reading1En = extractSection(html, 'Reading');
     const reading2En = (() => {
