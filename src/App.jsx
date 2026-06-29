@@ -394,11 +394,20 @@ export default function App() {
   const handleLogout = async () => { await signOut(auth); };
 
   const handleLambClick = async () => {
-    console.log('[lamb] Iniciando llamada directa a spiritual-guide');
+    console.log('[lamb] Iniciando. gospelRef:', gospelData?.reference);
     setLambLoading(true);
     setLambOpen(true);
     setLambText('');
     try {
+      const today = new Date().toISOString().slice(0, 10);
+      const refDoc = doc(db, 'reflexiones', today);
+      const snap = await getDoc(refDoc);
+      if (snap.exists() && snap.data().texto) {
+        console.log('[lamb] Encontrado en Firestore para', today);
+        setLambText(snap.data().texto);
+        return;
+      }
+      console.log('[lamb] No hay caché. Llamando /api/spiritual-guide');
       const response = await fetch('/api/spiritual-guide', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -411,7 +420,12 @@ export default function App() {
       console.log('[lamb] Status:', response.status);
       const data = await response.json();
       console.log('[lamb] Data:', data);
-      setLambText(data.text || 'No se pudo obtener la reflexión.');
+      const texto = data.text || 'No se pudo obtener la reflexión.';
+      setLambText(texto);
+      if (data.text) {
+        await setDoc(refDoc, { texto, fecha: today, evangelio: gospelData?.reference || '' });
+        console.log('[lamb] Guardado en Firestore para', today);
+      }
     } catch (error) {
       console.error('[lamb] Error:', error);
       setLambText('Error de conexión.');
