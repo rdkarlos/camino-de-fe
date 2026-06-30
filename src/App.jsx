@@ -302,6 +302,7 @@ export default function App() {
   const [newIntencion, setNewIntencion] = useState("");
   const [circleError, setCircleError] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
+  const [verseExpanded, setVerseExpanded] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [splashIn, setSplashIn] = useState(false);
   const [splashOut, setSplashOut] = useState(false);
@@ -670,13 +671,48 @@ export default function App() {
               </div>
             )}
           </div>
-          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div
+            onClick={() => setVerseExpanded(v => !v)}
+            style={{
+              flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)",
+              borderRadius: 16,
+              padding: verseExpanded ? "16px 14px" : "12px 10px",
+              border: `1.5px solid ${verseExpanded ? GOLD : GOLD}`,
+              position: "relative", overflow: "hidden", minWidth: 0,
+              display: "flex", flexDirection: "column", justifyContent: "space-between",
+              cursor: "pointer",
+              transition: "padding 0.3s ease, box-shadow 0.3s ease",
+              boxShadow: verseExpanded ? `0 4px 18px ${GOLD}44` : "none",
+            }}
+          >
             <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
+            {/* Expand/collapse icon */}
+            <div style={{ position: "absolute", top: 7, right: 8 }}>
+              {verseExpanded ? (
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <polyline points="4,3 7,6 10,3" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="4,11 7,8 10,11" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <polyline points="4,5 7,2 10,5" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  <polyline points="4,9 7,12 10,9" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
             <div>
               <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: 11, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.5 }}>"{dailyVerse.text}"</div>
+              <div style={{
+                fontSize: verseExpanded ? 13 : 11,
+                fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.6,
+                transition: "font-size 0.3s ease",
+              }}>"{dailyVerse.text}"</div>
             </div>
-            <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", marginTop: 6 }}>— {formatRef(dailyVerse.ref)}</div>
+            <div style={{
+              fontSize: verseExpanded ? 12 : 10,
+              color: GOLD, fontWeight: "bold", marginTop: 6,
+              transition: "font-size 0.3s ease",
+            }}>— {formatRef(dailyVerse.ref)}</div>
           </div>
         </div>
         {t.home.cards.map((c, i) => (
