@@ -2281,14 +2281,14 @@ export default function App() {
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 5, padding: "7px 10px 9px" }}>
           {[
             { icon: (c) => (
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
                   <circle cx="14" cy="5" r="2.5" fill={c}/>
                   <rect x="12.5" y="4" width="3" height="20" rx="1.5" fill={c}/>
                   <rect x="5" y="11" width="18" height="3" rx="1.5" fill={c}/>
                 </svg>
               ), label: lang === 'es' ? "Oración"   : "Prayer",   idx: 1 },
             { icon: (c) => (
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
                   <rect x="6" y="4" width="16" height="21" rx="2" stroke={c} strokeWidth="1.5"/>
                   <line x1="9" y1="4" x2="9" y2="25" stroke={c} strokeWidth="1"/>
                   <line x1="11" y1="10" x2="21" y2="10" stroke={c} strokeWidth="1.2"/>
@@ -2297,7 +2297,7 @@ export default function App() {
                 </svg>
               ), label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 2 },
             { icon: (c) => (
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
                   <path d="M14 7 C11 6 7 7 5 9 L5 22 C7 20 11 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
                   <path d="M14 7 C17 6 21 7 23 9 L23 22 C21 20 17 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
                   <line x1="14" y1="7" x2="14" y2="21" stroke={c} strokeWidth="1.5"/>
@@ -2308,7 +2308,7 @@ export default function App() {
                 </svg>
               ), label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
             { icon: (c) => (
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
                   <rect x="5" y="3" width="18" height="5" rx="2.5" stroke={c} strokeWidth="1.5"/>
                   <rect x="7" y="7" width="14" height="15" stroke={c} strokeWidth="1.5"/>
                   <rect x="5" y="21" width="18" height="5" rx="2.5" stroke={c} strokeWidth="1.5"/>
@@ -2318,7 +2318,7 @@ export default function App() {
                 </svg>
               ), label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
             { icon: (c) => (
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
                   <path d="M5 9 H23 L21 24 H7 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
                   <path d="M10 9 C10 5 18 5 18 9" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
                   <line x1="14" y1="14" x2="14" y2="19" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
