@@ -2130,16 +2130,58 @@ export default function App() {
         {/* Accesos rápidos — 5 ítems que llenan el ancho */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 5, padding: "7px 10px 9px" }}>
           {[
-            { icon: "🕊️", label: lang === 'es' ? "Oración"   : "Prayer",   idx: 1 },
-            { icon: "📖", label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 2 },
-            { icon: "✝", label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
-            { icon: "📜", label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
-            { icon: "🛒", label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
+            { icon: (c) => (
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <circle cx="14" cy="5" r="2.5" fill={c}/>
+                  <rect x="12.5" y="4" width="3" height="20" rx="1.5" fill={c}/>
+                  <rect x="5" y="11" width="18" height="3" rx="1.5" fill={c}/>
+                </svg>
+              ), label: lang === 'es' ? "Oración"   : "Prayer",   idx: 1 },
+            { icon: (c) => (
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <rect x="6" y="4" width="16" height="21" rx="2" stroke={c} strokeWidth="1.5"/>
+                  <line x1="9" y1="4" x2="9" y2="25" stroke={c} strokeWidth="1"/>
+                  <line x1="11" y1="10" x2="21" y2="10" stroke={c} strokeWidth="1.2"/>
+                  <line x1="11" y1="14" x2="21" y2="14" stroke={c} strokeWidth="1.2"/>
+                  <line x1="11" y1="18" x2="21" y2="18" stroke={c} strokeWidth="1.2"/>
+                </svg>
+              ), label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 2 },
+            { icon: (c) => (
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <path d="M14 7 C11 6 7 7 5 9 L5 22 C7 20 11 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
+                  <path d="M14 7 C17 6 21 7 23 9 L23 22 C21 20 17 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
+                  <line x1="14" y1="7" x2="14" y2="21" stroke={c} strokeWidth="1.5"/>
+                  <line x1="7" y1="12" x2="12.5" y2="11" stroke={c} strokeWidth="1"/>
+                  <line x1="7" y1="15" x2="12.5" y2="14" stroke={c} strokeWidth="1"/>
+                  <line x1="15.5" y1="11" x2="21" y2="12" stroke={c} strokeWidth="1"/>
+                  <line x1="15.5" y1="14" x2="21" y2="15" stroke={c} strokeWidth="1"/>
+                </svg>
+              ), label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
+            { icon: (c) => (
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <rect x="5" y="3" width="18" height="5" rx="2.5" stroke={c} strokeWidth="1.5"/>
+                  <rect x="7" y="7" width="14" height="15" stroke={c} strokeWidth="1.5"/>
+                  <rect x="5" y="21" width="18" height="5" rx="2.5" stroke={c} strokeWidth="1.5"/>
+                  <line x1="10" y1="11" x2="18" y2="11" stroke={c} strokeWidth="1"/>
+                  <line x1="10" y1="14.5" x2="18" y2="14.5" stroke={c} strokeWidth="1"/>
+                  <line x1="10" y1="18" x2="18" y2="18" stroke={c} strokeWidth="1"/>
+                </svg>
+              ), label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
+            { icon: (c) => (
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <line x1="3" y1="6" x2="8" y2="6" stroke={c} strokeWidth="1.8" strokeLinecap="round"/>
+                  <line x1="8" y1="6" x2="10" y2="11" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M10 11 H22 L20 19 H10 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
+                  <circle cx="13" cy="23.5" r="2" stroke={c} strokeWidth="1.5"/>
+                  <circle cx="20" cy="23.5" r="2" stroke={c} strokeWidth="1.5"/>
+                </svg>
+              ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
           ].map(({ icon, label, idx }) => {
             const isBible = idx === 6;
             const isActive = tab === idx;
             const isHovered = hoveredQuickBtn === idx;
             const isPressed = pressedQuickBtn === idx;
+            const iconColor = isBible ? NAVY_DARK : isActive ? GOLD : "#FAF5ED";
             const bibleStyle = isBible
               ? {
                   background: isHovered && !isPressed
@@ -2175,7 +2217,7 @@ export default function App() {
                 onPointerCancel={() => setPressedQuickBtn(null)}
                 style={{ flex: 1, padding: "6px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center", transform, transition, ...bibleStyle }}
               >
-                <div style={{ fontSize: 18, marginBottom: 2, lineHeight: 1 }}>{icon}</div>
+                <div style={{ marginBottom: 2, lineHeight: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>{icon(iconColor)}</div>
                 <div style={{ fontSize: 13, fontWeight: "600", fontFamily: "'Crimson Text', serif", letterSpacing: 0.2, whiteSpace: "nowrap" }}>{label}</div>
               </button>
             );
