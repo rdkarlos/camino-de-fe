@@ -718,14 +718,14 @@ export default function App() {
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}>
-              <div style={{ background: "rgba(250,245,237,0.65)", padding: "28px 24px 24px" }}>
+              <div style={{ background: "rgba(250,245,237,0.78)", padding: "28px 24px 24px" }}>
               <button
                 onClick={() => setVerseExpanded(false)}
                 style={{ position: "absolute", top: 12, right: 12, background: "none", border: "none", color: GOLD, fontSize: 18, cursor: "pointer", padding: 12, lineHeight: 1, fontWeight: "bold" }}
               >✕</button>
-              <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 14, textShadow: "0 1px 3px rgba(255,255,255,0.8)" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: "#0F1F36", lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18, textShadow: "0 1px 4px rgba(255,255,255,0.9), 0 0 8px rgba(255,255,255,0.7)" }}>"{dailyVerse.text}"</div>
-              <div style={{ fontSize: 14, color: GOLD, fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.5, textShadow: "0 1px 3px rgba(255,255,255,0.8)" }}>— {formatRef(dailyVerse.ref)}</div>
+              <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 14 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+              <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: "#1B2A4A", fontWeight: 600, lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18 }}>"{dailyVerse.text}"</div>
+              <div style={{ fontSize: 14, color: "#8B6914", fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>— {formatRef(dailyVerse.ref)}</div>
               </div>
             </div>
           </>
