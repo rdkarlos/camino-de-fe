@@ -225,7 +225,7 @@ const DAILY_VERSES = [
   { es:{ text:"Bienaventurados los pobres de espíritu, porque de ellos es el reino de los cielos.", ref:"Mateo 5:3" }, en:{ text:"Blessed are the poor in spirit, for theirs is the kingdom of heaven.", ref:"Matthew 5:3" } },
 ];
 
-const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1,$2') : r;
+const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1, $2') : r;
 
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
@@ -725,9 +725,40 @@ export default function App() {
 
   const renderReadings = () => {
     const sections = [];
-    if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera Lectura' : 'First Reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, icon: '📜' });
-    if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda Lectura' : 'Second Reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, icon: '📋' });
-    if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo Responsorial' : 'Responsorial Psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, icon: '🎵' });
+    const iconScroll = (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+        <rect x="3" y="1" width="14" height="4" rx="2" stroke="#1A3A5C" strokeWidth="1.3"/>
+        <rect x="5" y="4" width="10" height="12" stroke="#1A3A5C" strokeWidth="1.3"/>
+        <rect x="3" y="15" width="14" height="4" rx="2" stroke="#1A3A5C" strokeWidth="1.3"/>
+        <line x1="7.5" y1="7.5" x2="12.5" y2="7.5" stroke="#C9A84C" strokeWidth="1"/>
+        <line x1="7.5" y1="10" x2="12.5" y2="10" stroke="#C9A84C" strokeWidth="1"/>
+        <line x1="7.5" y1="12.5" x2="12.5" y2="12.5" stroke="#C9A84C" strokeWidth="1"/>
+      </svg>
+    );
+    const iconBook = (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+        <rect x="3" y="2" width="13" height="16" rx="1.5" stroke="#1A3A5C" strokeWidth="1.3"/>
+        <line x1="6" y1="2" x2="6" y2="18" stroke="#1A3A5C" strokeWidth="0.8"/>
+        <path d="M11 0.5 L14.5 0.5 L14.5 7 L12.75 5.5 L11 7 Z" fill="#C9A84C"/>
+        <line x1="8" y1="9" x2="15" y2="9" stroke="#1A3A5C" strokeWidth="0.8"/>
+        <line x1="8" y1="12" x2="15" y2="12" stroke="#1A3A5C" strokeWidth="0.8"/>
+        <line x1="8" y1="15" x2="15" y2="15" stroke="#1A3A5C" strokeWidth="0.8"/>
+      </svg>
+    );
+    const iconLyre = (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+        <path d="M5 10 C5 14 7 18 10 18 C13 18 15 14 15 10" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
+        <line x1="5" y1="10" x2="5" y2="3" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
+        <line x1="15" y1="10" x2="15" y2="3" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
+        <line x1="5" y1="3" x2="15" y2="3" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
+        <line x1="8" y1="3.5" x2="8.5" y2="16.5" stroke="#C9A84C" strokeWidth="0.9"/>
+        <line x1="10" y1="3.5" x2="10" y2="17.5" stroke="#C9A84C" strokeWidth="0.9"/>
+        <line x1="12" y1="3.5" x2="11.5" y2="16.5" stroke="#C9A84C" strokeWidth="0.9"/>
+      </svg>
+    );
+    if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera Lectura' : 'First Reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, icon: iconScroll });
+    if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda Lectura' : 'Second Reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, icon: iconBook });
+    if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo Responsorial' : 'Responsorial Psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, icon: iconLyre });
     if (!gospelData) return <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>{lang === 'es' ? 'Cargando lecturas...' : 'Loading readings...'}</div>;
     return (
       <div>
@@ -735,7 +766,7 @@ export default function App() {
           <div key={s.key} style={{ background: WHITE, borderRadius: 16, marginBottom: 12, overflow: "hidden", boxShadow: "0 4px 16px rgba(26,58,92,0.08)", border: `1px solid ${CREAM_DARK}` }}>
             <div onClick={() => setOpenReading(openReading === s.key ? null : s.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer" }}>
               <div>
-                <div style={{ fontWeight: "bold", color: BLUE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif" }}>{s.icon} {s.title}</div>
+                <div style={{ fontWeight: "bold", color: BLUE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif", display: "flex", alignItems: "center", gap: 8 }}>{s.icon}{s.title}</div>
                 <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{formatRef(s.ref)}</div>
               </div>
               <span style={{ color: BLUE, fontSize: 20, fontWeight: "bold" }}>{openReading === s.key ? "−" : "+"}</span>
@@ -1045,8 +1076,36 @@ export default function App() {
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
           {[
             ["builder", "✝", lang === "es" ? "Crear Oración" : "Crear"],
-            ["journal", "📔", lang === "es" ? "Diario" : "Journal"],
-            ["book",    "📖", lang === "es" ? "Mis Oraciones" : "Mis Orac."],
+            ["journal", (() => {
+                const sel = personalTab === "journal";
+                const c = sel ? "#FAF5ED" : "#9CA3AF";
+                const cr = sel ? "#C9A84C" : "#9CA3AF";
+                return (
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <rect x="3" y="2" width="14" height="18" rx="2" stroke={c} strokeWidth="1.3"/>
+                    <line x1="6.5" y1="2" x2="6.5" y2="20" stroke={c} strokeWidth="0.9"/>
+                    <line x1="8.5" y1="6"    x2="16" y2="6"    stroke={c} strokeWidth="0.8"/>
+                    <line x1="8.5" y1="8.5"  x2="16" y2="8.5"  stroke={c} strokeWidth="0.8"/>
+                    <line x1="8.5" y1="11"   x2="16" y2="11"   stroke={c} strokeWidth="0.8"/>
+                    <line x1="8.5" y1="13.5" x2="16" y2="13.5" stroke={c} strokeWidth="0.8"/>
+                    <line x1="11" y1="16" x2="11" y2="19.5" stroke={cr} strokeWidth="1.3" strokeLinecap="round"/>
+                    <line x1="9.2" y1="17.8" x2="12.8" y2="17.8" stroke={cr} strokeWidth="1.3" strokeLinecap="round"/>
+                  </svg>
+                );
+              })(), lang === "es" ? "Diario" : "Journal"],
+            ["book", (() => {
+                const sel = personalTab === "book";
+                const c = sel ? "#FAF5ED" : "#9CA3AF";
+                const cr = sel ? "#C9A84C" : "#9CA3AF";
+                return (
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <rect x="3" y="2" width="16" height="18" rx="2" stroke={c} strokeWidth="1.3"/>
+                    <line x1="7" y1="2" x2="7" y2="20" stroke={c} strokeWidth="0.9"/>
+                    <rect x="11.8" y="7" width="2.4" height="9" rx="1.2" fill={cr}/>
+                    <rect x="9.8" y="10.2" width="6.4" height="2.4" rx="1.2" fill={cr}/>
+                  </svg>
+                );
+              })(), lang === "es" ? "Mis Oraciones" : "Mis Orac."],
             ["circles", (() => {
                 const sel = personalTab === "circles";
                 const fg = sel ? "#FAF5ED" : "#9CA3AF";
