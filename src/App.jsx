@@ -1922,7 +1922,98 @@ export default function App() {
     return null;
   };
 
-  const navIcons = ["🏠","🕊️","📖","📜","📿","🙏","✝","💭","🛒","⚙️"];
+  const navIcons = [
+    /* 0 Inicio */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M2 11 L12 3 L22 11" stroke={c} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+        <rect x="4" y="11" width="16" height="10" rx="1" stroke={c} strokeWidth="1.5"/>
+        <rect x="9.5" y="15" width="5" height="6" fill="#C9A84C" rx="0.5"/>
+      </svg>
+    ),
+    /* 1 Oración */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="4.5" r="2.2" fill={c}/>
+        <rect x="10.8" y="3.5" width="2.4" height="18" rx="1.2" fill={c}/>
+        <rect x="4.5" y="9.5" width="15" height="2.4" rx="1.2" fill={c}/>
+      </svg>
+    ),
+    /* 2 Evangelio */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="3" width="14" height="18" rx="2" stroke={c} strokeWidth="1.5"/>
+        <line x1="8" y1="3" x2="8" y2="21" stroke={c} strokeWidth="1"/>
+        <line x1="10" y1="8.5" x2="18" y2="8.5" stroke={c} strokeWidth="1.2"/>
+        <line x1="10" y1="12" x2="18" y2="12" stroke={c} strokeWidth="1.2"/>
+        <line x1="10" y1="15.5" x2="18" y2="15.5" stroke={c} strokeWidth="1.2"/>
+      </svg>
+    ),
+    /* 3 Lecturas */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="2" width="16" height="4.5" rx="2.2" stroke={c} strokeWidth="1.5"/>
+        <rect x="6" y="6" width="12" height="13" stroke={c} strokeWidth="1.5"/>
+        <rect x="4" y="18.5" width="16" height="4.5" rx="2.2" stroke={c} strokeWidth="1.5"/>
+        <line x1="9" y1="9.5" x2="15" y2="9.5" stroke={c} strokeWidth="1"/>
+        <line x1="9" y1="12.5" x2="15" y2="12.5" stroke={c} strokeWidth="1"/>
+        <line x1="9" y1="15.5" x2="15" y2="15.5" stroke={c} strokeWidth="1"/>
+      </svg>
+    ),
+    /* 4 Rosario */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="10" r="7" stroke={c} strokeWidth="1.2" strokeDasharray="2.5 2.5"/>
+        <circle cx="12" cy="3" r="1.8" fill="#C9A84C"/>
+        <circle cx="5.3" cy="12.5" r="1.8" fill="#C9A84C"/>
+        <circle cx="18.7" cy="12.5" r="1.8" fill="#C9A84C"/>
+        <line x1="12" y1="17" x2="12" y2="23" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="9.5" y1="20.5" x2="14.5" y2="20.5" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+    /* 5 Devocional */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <line x1="12" y1="0.5" x2="12" y2="4.5" stroke="#C9A84C" strokeWidth="1.8" strokeLinecap="round"/>
+        <line x1="10" y1="2.5" x2="14" y2="2.5" stroke="#C9A84C" strokeWidth="1.8" strokeLinecap="round"/>
+        <path d="M3 11 L12 4.5 L21 11" stroke={c} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+        <rect x="5" y="11" width="14" height="10" rx="1" stroke={c} strokeWidth="1.5"/>
+        <rect x="9.5" y="15" width="5" height="6" rx="0.5" stroke={c} strokeWidth="1"/>
+      </svg>
+    ),
+    /* 6 La Biblia */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 6 C9 5 5 6 3 8 L3 20 C5 18 9 17 12 19 Z" stroke={c} strokeWidth="1.5"/>
+        <path d="M12 6 C15 5 19 6 21 8 L21 20 C19 18 15 17 12 19 Z" stroke={c} strokeWidth="1.5"/>
+        <line x1="12" y1="6" x2="12" y2="19" stroke={c} strokeWidth="1.5"/>
+        <line x1="5" y1="11" x2="10.5" y2="10" stroke={c} strokeWidth="1"/>
+        <line x1="5" y1="14" x2="10.5" y2="13" stroke={c} strokeWidth="1"/>
+        <line x1="13.5" y1="10" x2="19" y2="11" stroke={c} strokeWidth="1"/>
+        <line x1="13.5" y1="13" x2="19" y2="14" stroke={c} strokeWidth="1"/>
+      </svg>
+    ),
+    /* 7 Reflexiones */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 6 C9 5 5 6 3 8 L3 20 C5 18 9 17 12 19 Z" stroke={c} strokeWidth="1.5"/>
+        <path d="M12 6 C15 5 19 6 21 8 L21 20 C19 18 15 17 12 19 Z" stroke={c} strokeWidth="1.5"/>
+        <line x1="12" y1="6" x2="12" y2="19" stroke={c} strokeWidth="1.5"/>
+        <line x1="5" y1="11" x2="10.5" y2="10" stroke="#C9A84C" strokeWidth="1"/>
+        <line x1="5" y1="14" x2="10.5" y2="13" stroke="#C9A84C" strokeWidth="1"/>
+        <line x1="5" y1="17" x2="10.5" y2="16" stroke="#C9A84C" strokeWidth="1"/>
+        <line x1="13.5" y1="10" x2="19" y2="11" stroke="#C9A84C" strokeWidth="1"/>
+        <line x1="13.5" y1="13" x2="19" y2="14" stroke="#C9A84C" strokeWidth="1"/>
+        <line x1="13.5" y1="16" x2="19" y2="17" stroke="#C9A84C" strokeWidth="1"/>
+      </svg>
+    ),
+    /* 8 Tienda */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M5 8 H19 L17.5 21 H6.5 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
+        <path d="M9 8 C9 4.5 15 4.5 15 8" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="12" y1="12.5" x2="12" y2="16.5" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
+        <line x1="10" y1="14.5" x2="14" y2="14.5" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+    /* 9 Configuración */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M18.2 10 L20.8 10.1 L20.8 13.9 L18.2 14 L16.8 16.4 L18 18.7 L14.8 20.6 L13.4 18.4 L10.6 18.4 L9.2 20.6 L6 18.7 L7.2 16.4 L5.8 14 L3.2 13.9 L3.2 10.1 L5.8 10 L7.2 7.6 L6 5.3 L9.2 3.4 L10.6 5.6 L13.4 5.6 L14.8 3.4 L18 5.3 L16.8 7.6 Z" stroke={c} strokeWidth="1.2"/>
+        <circle cx="12" cy="12" r="3" fill="#C9A84C"/>
+      </svg>
+    ),
+  ];
   const sections = [renderHome, renderPersonalPrayer, renderGospel, renderReadings, renderRosary, renderPrayers, renderBible, renderReflections, renderShop, renderSettings];
 
   return (
@@ -2094,7 +2185,7 @@ export default function App() {
             boxShadow: "0 4px 14px rgba(15,28,50,0.4)",
           }}
         >
-          🏠
+          {navIcons[0](GOLD)}
         </button>
       )}
 
@@ -2169,41 +2260,26 @@ export default function App() {
               ), label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
             { icon: (c) => (
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <line x1="3" y1="6" x2="8" y2="6" stroke={c} strokeWidth="1.8" strokeLinecap="round"/>
-                  <line x1="8" y1="6" x2="10" y2="11" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M10 11 H22 L20 19 H10 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
-                  <circle cx="13" cy="23.5" r="2" stroke={c} strokeWidth="1.5"/>
-                  <circle cx="20" cy="23.5" r="2" stroke={c} strokeWidth="1.5"/>
+                  <path d="M5 9 H23 L21 24 H7 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M10 9 C10 5 18 5 18 9" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="14" y1="14" x2="14" y2="19" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="11.5" y1="16.5" x2="16.5" y2="16.5" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
           ].map(({ icon, label, idx }) => {
-            const isBible = idx === 6;
             const isActive = tab === idx;
             const isHovered = hoveredQuickBtn === idx;
             const isPressed = pressedQuickBtn === idx;
-            const iconColor = isBible ? NAVY_DARK : isActive ? GOLD : "#FAF5ED";
-            const bibleStyle = isBible
-              ? {
-                  background: isHovered && !isPressed
-                    ? "linear-gradient(135deg, #D4B860, #F0D47A)"
-                    : isActive
-                      ? "linear-gradient(135deg, #E8C76A, #C9A84C)"
-                      : "linear-gradient(135deg, #C9A84C, #E8C76A)",
-                  border: `1px solid ${isActive ? "#E8C76A" : "rgba(201,168,76,0.7)"}`,
-                  color: NAVY_DARK,
-                  boxShadow: isHovered && !isPressed
-                    ? "0 4px 12px rgba(201,168,76,0.5)"
-                    : "0 2px 8px rgba(201,168,76,0.35)",
-                }
-              : {
-                  background: isActive
-                    ? "rgba(201,168,76,0.28)"
-                    : isHovered
-                      ? "rgba(255,255,255,0.22)"
-                      : "rgba(255,255,255,0.12)",
-                  border: `1px solid ${isActive ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.2)"}`,
-                  color: isActive ? GOLD : "rgba(255,255,255,0.75)",
-                };
+            const iconColor = isActive ? GOLD : "#FAF5ED";
+            const bibleStyle = {
+              background: isActive
+                ? "rgba(201,168,76,0.28)"
+                : isHovered
+                  ? "rgba(255,255,255,0.22)"
+                  : "rgba(255,255,255,0.12)",
+              border: `1px solid ${isActive ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.2)"}`,
+              color: isActive ? GOLD : "rgba(255,255,255,0.75)",
+            };
             const transform = isPressed ? "scale(0.95)" : isHovered ? "translateY(-2px)" : "none";
             const transition = `transform ${isPressed ? "0.1s" : "0.2s"} ease, background 0.2s ease, box-shadow 0.2s ease`;
             return (
@@ -2229,7 +2305,7 @@ export default function App() {
           <div style={{ background: NAVY_DARK, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
             {t.nav.map((n, i) => (
               <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "left" }}>
-                <span style={{ fontSize: 18 }}>{navIcons[i]}</span>
+                <span style={{ display: "flex", alignItems: "center" }}>{navIcons[i](tab === i ? GOLD : "rgba(255,255,255,0.75)")}</span>
                 <span>{n}</span>
               </button>
             ))}
