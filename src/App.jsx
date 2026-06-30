@@ -655,7 +655,8 @@ export default function App() {
     return (
       <div>
         <div style={{ display: "flex", flexDirection: "row", gap: 12, marginBottom: 16, alignItems: "stretch" }}>
-          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
+          {/* Tarjeta saludo — tamaño fijo, no se mueve */}
+          <div style={{ flex: 1, flexShrink: 0, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
             <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08, color: GOLD }}>✝</div>
             <div style={{ fontSize: 9, color: NAVY, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
             <div style={{ fontSize: 11, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif", lineHeight: 1.4 }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
@@ -671,50 +672,65 @@ export default function App() {
               </div>
             )}
           </div>
+          {/* Tarjeta versículo — clickeable, tamaño siempre fijo */}
           <div
-            onClick={() => setVerseExpanded(v => !v)}
+            onClick={() => setVerseExpanded(true)}
             style={{
-              flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)",
-              borderRadius: 16,
-              padding: verseExpanded ? "16px 14px" : "12px 10px",
-              border: `1.5px solid ${verseExpanded ? GOLD : GOLD}`,
+              flex: 1, flexShrink: 0, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)",
+              borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`,
               position: "relative", overflow: "hidden", minWidth: 0,
               display: "flex", flexDirection: "column", justifyContent: "space-between",
               cursor: "pointer",
-              transition: "padding 0.3s ease, box-shadow 0.3s ease",
-              boxShadow: verseExpanded ? `0 4px 18px ${GOLD}44` : "none",
             }}
           >
             <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
-            {/* Expand/collapse icon */}
             <div style={{ position: "absolute", top: 7, right: 8 }}>
-              {verseExpanded ? (
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                  <polyline points="4,3 7,6 10,3" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                  <polyline points="4,11 7,8 10,11" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              ) : (
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                  <polyline points="4,5 7,2 10,5" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                  <polyline points="4,9 7,12 10,9" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <polyline points="4,5 7,2 10,5" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="4,9 7,12 10,9" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
             <div>
               <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{
-                fontSize: verseExpanded ? 13 : 11,
-                fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.6,
-                transition: "font-size 0.3s ease",
-              }}>"{dailyVerse.text}"</div>
+              <div style={{ fontSize: 11, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
             </div>
-            <div style={{
-              fontSize: verseExpanded ? 12 : 10,
-              color: GOLD, fontWeight: "bold", marginTop: 6,
-              transition: "font-size 0.3s ease",
-            }}>— {formatRef(dailyVerse.ref)}</div>
+            <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", marginTop: 6 }}>— {formatRef(dailyVerse.ref)}</div>
           </div>
         </div>
+
+        {/* Overlay versículo expandido */}
+        {verseExpanded && (
+          <>
+            <style>{`
+              @keyframes verseCardIn {
+                from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+                to   { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+              }
+            `}</style>
+            <div
+              onClick={() => setVerseExpanded(false)}
+              style={{ position: "fixed", inset: 0, background: "rgba(15,28,50,0.72)", zIndex: 500 }}
+            />
+            <div style={{
+              position: "fixed", top: "50%", left: "50%",
+              animation: "verseCardIn 0.3s ease forwards",
+              width: "90%", maxWidth: 400,
+              background: CREAM, borderRadius: 22,
+              border: `2px solid ${GOLD}`,
+              padding: "28px 24px 24px",
+              zIndex: 501,
+              boxShadow: "0 24px 64px rgba(15,28,50,0.45)",
+            }}>
+              <button
+                onClick={() => setVerseExpanded(false)}
+                style={{ position: "absolute", top: 12, right: 12, width: 28, height: 28, borderRadius: "50%", background: NAVY_DARK, border: "none", color: WHITE, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}
+              >✕</button>
+              <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 14 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+              <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18 }}>"{dailyVerse.text}"</div>
+              <div style={{ fontSize: 14, color: GOLD, fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>— {formatRef(dailyVerse.ref)}</div>
+            </div>
+          </>
+        )}
         {t.home.cards.map((c, i) => (
           <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
             <div style={{ position: "absolute", inset: 0, background:
