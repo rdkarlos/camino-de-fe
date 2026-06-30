@@ -684,12 +684,6 @@ export default function App() {
             }}
           >
             <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
-            <div style={{ position: "absolute", top: 7, right: 8 }}>
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                <polyline points="4,5 7,2 10,5" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="4,9 7,12 10,9" stroke="#C9A84C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
             <div>
               <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
               <div style={{ fontSize: 11, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
@@ -715,12 +709,16 @@ export default function App() {
               position: "fixed", top: "50%", left: "50%",
               animation: "verseCardIn 0.3s ease forwards",
               width: "90%", maxWidth: 400,
-              background: CREAM, borderRadius: 22,
+              borderRadius: 22,
               border: `2px solid ${GOLD}`,
-              padding: "28px 24px 24px",
               zIndex: 501,
               boxShadow: "0 24px 64px rgba(15,28,50,0.45)",
+              overflow: "hidden",
+              backgroundImage: "url(https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}>
+              <div style={{ background: "rgba(250,245,237,0.88)", padding: "28px 24px 24px" }}>
               <button
                 onClick={() => setVerseExpanded(false)}
                 style={{ position: "absolute", top: 12, right: 12, width: 28, height: 28, borderRadius: "50%", background: NAVY_DARK, border: "none", color: WHITE, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}
@@ -728,6 +726,7 @@ export default function App() {
               <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 14 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
               <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18 }}>"{dailyVerse.text}"</div>
               <div style={{ fontSize: 14, color: GOLD, fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>— {formatRef(dailyVerse.ref)}</div>
+              </div>
             </div>
           </>
         )}
