@@ -436,7 +436,7 @@ export default function App() {
     const today = new Date().toISOString().split('T')[0];
 
     // 1. localStorage — instantáneo
-    const cached = localStorage.getItem(`reflexion_${today}`);
+    const cached = localStorage.getItem(`reflexion_${today}_${lang}`);
     if (cached) {
       setLambText(cached);
       setLambLoading(false);
@@ -445,12 +445,12 @@ export default function App() {
 
     // 2. Firestore — compartido entre usuarios, timeout 1.5s
     try {
-      const firestorePromise = getDoc(doc(db, 'reflexiones', today));
+      const firestorePromise = getDoc(doc(db, 'reflexiones', `${today}_${lang}`));
       const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500));
       const docSnap = await Promise.race([firestorePromise, timeout]);
       if (docSnap.exists() && docSnap.data().texto) {
         const texto = docSnap.data().texto;
-        localStorage.setItem(`reflexion_${today}`, texto);
+        localStorage.setItem(`reflexion_${today}_${lang}`, texto);
         setLambText(texto);
         setLambLoading(false);
         return;
@@ -474,8 +474,8 @@ export default function App() {
       const texto = data.text || '';
       setLambText(texto || 'No se pudo obtener la reflexión.');
       if (texto) {
-        localStorage.setItem(`reflexion_${today}`, texto);
-        setDoc(doc(db, 'reflexiones', today), {
+        localStorage.setItem(`reflexion_${today}_${lang}`, texto);
+        setDoc(doc(db, 'reflexiones', `${today}_${lang}`), {
           texto, fecha: today, evangelio: gospelData?.reference || '',
         }).catch(() => {});
       }
