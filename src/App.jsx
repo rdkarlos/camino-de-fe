@@ -718,10 +718,10 @@ export default function App() {
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}>
-              <div style={{ background: "rgba(250,245,237,0.88)", padding: "28px 24px 24px" }}>
+              <div style={{ background: "rgba(250,245,237,0.65)", padding: "28px 24px 24px" }}>
               <button
                 onClick={() => setVerseExpanded(false)}
-                style={{ position: "absolute", top: 12, right: 12, width: 28, height: 28, borderRadius: "50%", background: NAVY_DARK, border: "none", color: WHITE, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}
+                style={{ position: "absolute", top: 12, right: 12, width: 24, height: 24, borderRadius: "50%", background: "transparent", border: `1px solid ${GOLD}`, color: GOLD, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, fontWeight: "bold" }}
               >✕</button>
               <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 14 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
               <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18 }}>"{dailyVerse.text}"</div>
