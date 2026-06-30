@@ -121,11 +121,13 @@ const NAVY = "#1B2A4A";
 const NAVY_DARK = "#0F1C32";
 const NAVY_MID = "#2C4270";
 const CREAM = "#FAF5ED";
-const CREAM_DARK = "#F0E6D3";
-const MUTED = "#6B7A99";
+const CREAM_DARK = "#2A3A5A";
+const MUTED = "#8A9BB5";
 const WHITE = "#FFFFFF";
 const BLUE_DARK = "#1A3A5C";
 const BLUE = "#2C5F8A";
+const BG_MAIN = "#0A0F1E";
+const BG_CARD = "#111827";
 
 const PRAYER_MOODS = {
   es: [
@@ -547,15 +549,15 @@ export default function App() {
 
   const renderPaymentSuccess = () => (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,28,50,0.88)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: WHITE, borderRadius: 24, padding: 32, width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "0 20px 60px rgba(15,28,50,0.25)" }}>
+      <div style={{ background: BG_CARD, borderRadius: 24, padding: 32, width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.6)", border: `1px solid ${CREAM_DARK}` }}>
         <div style={{ fontSize: 60, marginBottom: 16 }}>🙏</div>
-        <div style={{ fontSize: 24, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cinzel', serif", marginBottom: 8 }}>
+        <div style={{ fontSize: 24, fontWeight: "bold", color: CREAM, fontFamily: "'Cinzel', serif", marginBottom: 8 }}>
           {lang === 'es' ? '¡Gracias por tu compra!' : 'Thank you for your purchase!'}
         </div>
         <div style={{ fontSize: 14, color: MUTED, lineHeight: 1.6, marginBottom: 8 }}>
           {lang === 'es' ? 'Tu pago fue aprobado. Recibirás un email de confirmación pronto.' : 'Your payment was approved. You will receive a confirmation email soon.'}
         </div>
-        <div style={{ fontSize: 13, color: NAVY, fontStyle: "italic", marginBottom: 24, fontFamily: "'Crimson Text', serif" }}>
+        <div style={{ fontSize: 13, color: GOLD, fontStyle: "italic", marginBottom: 24, fontFamily: "'Crimson Text', serif" }}>
           {lang === 'es' ? '«Gratis recibisteis, dad gratis» — Mateo 10:8' : '«Freely you have received, freely give» — Matthew 10:8'}
         </div>
         <button onClick={() => setPaymentSuccess(false)} style={{ background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", padding: "12px 28px", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
@@ -567,29 +569,29 @@ export default function App() {
 
   const renderAuthModal = () => (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,28,50,0.75)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setAuthMode(null)}>
-      <div style={{ background: WHITE, borderRadius: 24, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 20px 60px rgba(15,28,50,0.25)" }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: BG_CARD, borderRadius: 24, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 20px 60px rgba(0,0,0,0.6)", border: `1px solid ${CREAM_DARK}` }} onClick={e => e.stopPropagation()}>
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>✝️</div>
-          <div style={{ fontSize: 22, fontWeight: "bold", color: NAVY, fontFamily: "'Cinzel', serif" }}>
+          <div style={{ fontSize: 22, fontWeight: "bold", color: CREAM, fontFamily: "'Cinzel', serif" }}>
             {authMode === 'register' ? (lang === 'es' ? 'Crear cuenta' : 'Create account') : (lang === 'es' ? 'Iniciar sesión' : 'Sign in')}
           </div>
           <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>{lang === 'es' ? 'Únete a nuestra comunidad de fe' : 'Join our faith community'}</div>
         </div>
-        <button onClick={handleGoogle} style={{ width: "100%", padding: "12px", background: CREAM, color: NAVY_DARK, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Cinzel', serif" }}>
+        <button onClick={handleGoogle} style={{ width: "100%", padding: "12px", background: BG_CARD, color: CREAM, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, cursor: "pointer", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Cinzel', serif" }}>
           <span style={{ fontSize: 18 }}>G</span> {lang === 'es' ? 'Continuar con Google' : 'Continue with Google'}
         </button>
         <div style={{ textAlign: "center", color: MUTED, fontSize: 12, marginBottom: 16 }}>— {lang === 'es' ? 'o con email' : 'or with email'} —</div>
-        {authMode === 'register' && <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Tu nombre' : 'Your name'} value={authName} onChange={e => setAuthName(e.target.value)} />}
-        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
-        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Contraseña' : 'Password'} type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} />
-        {authError && <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#cc0000", marginBottom: 12 }}>{authError}</div>}
+        {authMode === 'register' && <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: NAVY, color: CREAM }} placeholder={lang === 'es' ? 'Tu nombre' : 'Your name'} value={authName} onChange={e => setAuthName(e.target.value)} />}
+        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: NAVY, color: CREAM }} placeholder="Email" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
+        <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: NAVY, color: CREAM }} placeholder={lang === 'es' ? 'Contraseña' : 'Password'} type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} />
+        {authError && <div style={{ background: "rgba(200,50,50,0.15)", border: "1px solid rgba(200,50,50,0.4)", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#FF8A8A", marginBottom: 12 }}>{authError}</div>}
         <button onClick={authMode === 'register' ? handleRegister : handleLogin} disabled={authLoading} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
           {authLoading ? '...' : authMode === 'register' ? (lang === 'es' ? 'Registrarme' : 'Register') : (lang === 'es' ? 'Entrar' : 'Sign in')}
         </button>
         <div style={{ textAlign: "center", fontSize: 13, color: MUTED }}>
           {authMode === 'register'
-            ? <>{lang === 'es' ? '¿Ya tienes cuenta? ' : 'Already have an account? '}<span style={{ color: NAVY, cursor: "pointer", fontWeight: "bold" }} onClick={() => setAuthMode('login')}>{lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span></>
-            : <>{lang === 'es' ? '¿No tienes cuenta? ' : "Don't have an account? "}<span style={{ color: NAVY, cursor: "pointer", fontWeight: "bold" }} onClick={() => setAuthMode('register')}>{lang === 'es' ? 'Regístrate' : 'Register'}</span></>
+            ? <>{lang === 'es' ? '¿Ya tienes cuenta? ' : 'Already have an account? '}<span style={{ color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={() => setAuthMode('login')}>{lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span></>
+            : <>{lang === 'es' ? '¿No tienes cuenta? ' : "Don't have an account? "}<span style={{ color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={() => setAuthMode('register')}>{lang === 'es' ? 'Regístrate' : 'Register'}</span></>
           }
         </div>
       </div>
@@ -598,9 +600,9 @@ export default function App() {
 
   const renderCartModal = () => (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,28,50,0.75)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => { setShowCart(false); setCheckoutStep(0); }}>
-      <div style={{ background: WHITE, borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 430, maxHeight: "80vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: BG_CARD, borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 430, maxHeight: "80vh", overflowY: "auto", border: `1px solid ${CREAM_DARK}`, borderBottom: "none" }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 18, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cinzel', serif" }}>🛒 {lang === 'es' ? 'Tu carrito' : 'Your cart'}</div>
+          <div style={{ fontSize: 18, fontWeight: "bold", color: CREAM, fontFamily: "'Cinzel', serif" }}>🛒 {lang === 'es' ? 'Tu carrito' : 'Your cart'}</div>
           <button onClick={() => { setShowCart(false); setCheckoutStep(0); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: MUTED }}>✕</button>
         </div>
         {cart.length === 0 ? (
@@ -612,19 +614,19 @@ export default function App() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 28 }}>{item.icon}</span>
                   <div>
-                    <div style={{ fontWeight: "bold", color: NAVY_DARK, fontSize: 13 }}>{lang === 'es' ? item.nameEs : item.nameEn}</div>
+                    <div style={{ fontWeight: "bold", color: CREAM, fontSize: 13 }}>{lang === 'es' ? item.nameEs : item.nameEn}</div>
                     <div style={{ fontSize: 12, color: MUTED }}>x{item.quantity} · {formatPrice(item.price)}</div>
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ fontWeight: "bold", color: NAVY, fontSize: 14 }}>{formatPrice(item.price * item.quantity)}</div>
+                  <div style={{ fontWeight: "bold", color: GOLD, fontSize: 14 }}>{formatPrice(item.price * item.quantity)}</div>
                   <button onClick={() => removeFromCart(item.id)} style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", fontSize: 16 }}>✕</button>
                 </div>
               </div>
             ))}
             <div style={{ display: "flex", justifyContent: "space-between", padding: "16px 0", fontWeight: "bold" }}>
-              <span style={{ color: NAVY_DARK, fontFamily: "'Cinzel', serif" }}>Total</span>
-              <span style={{ color: NAVY, fontSize: 18 }}>{formatPrice(cartTotal)}</span>
+              <span style={{ color: CREAM, fontFamily: "'Cinzel', serif" }}>Total</span>
+              <span style={{ color: GOLD, fontSize: 18 }}>{formatPrice(cartTotal)}</span>
             </div>
             {checkoutStep === 0 ? (
               <button onClick={() => setCheckoutStep(1)} style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>
@@ -632,13 +634,13 @@ export default function App() {
               </button>
             ) : (
               <div>
-                <div style={{ fontSize: 14, fontWeight: "bold", color: NAVY_DARK, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Datos de contacto' : 'Contact details'}</div>
-                <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder={lang === 'es' ? 'Nombre completo' : 'Full name'} value={checkoutName} onChange={e => setCheckoutName(e.target.value)} />
-                <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: CREAM }} placeholder="Email" type="email" value={checkoutEmail} onChange={e => setCheckoutEmail(e.target.value)} />
+                <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Datos de contacto' : 'Contact details'}</div>
+                <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: NAVY, color: CREAM }} placeholder={lang === 'es' ? 'Nombre completo' : 'Full name'} value={checkoutName} onChange={e => setCheckoutName(e.target.value)} />
+                <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cinzel', serif", boxSizing: "border-box", background: NAVY, color: CREAM }} placeholder="Email" type="email" value={checkoutEmail} onChange={e => setCheckoutEmail(e.target.value)} />
                 <button onClick={handleCheckout} disabled={checkoutLoading || !checkoutName || !checkoutEmail} style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg, #2E7D32, #1B5E20)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif", marginBottom: 8 }}>
                   {checkoutLoading ? '...' : `💳 ${lang === 'es' ? 'Pagar con Wompi' : 'Pay with Wompi'} · ${formatPrice(cartTotal)}`}
                 </button>
-                <button onClick={() => setCheckoutStep(0)} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: NAVY_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer" }}>← {lang === 'es' ? 'Volver' : 'Back'}</button>
+                <button onClick={() => setCheckoutStep(0)} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: CREAM, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer" }}>← {lang === 'es' ? 'Volver' : 'Back'}</button>
               </div>
             )}
           </>
@@ -656,13 +658,13 @@ export default function App() {
       <div>
         <div style={{ display: "flex", flexDirection: "row", gap: 12, marginBottom: 16, alignItems: "stretch" }}>
           {/* Tarjeta saludo — tamaño fijo, no se mueve */}
-          <div style={{ flex: 1, flexShrink: 0, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
+          <div style={{ flex: 1, flexShrink: 0, background: BG_CARD, borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
             <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08, color: GOLD }}>✝</div>
-            <div style={{ fontSize: 9, color: NAVY, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
+            <div style={{ fontSize: 9, color: MUTED, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
             <div style={{ fontSize: 11, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif", lineHeight: 1.4 }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
             {user ? (
               <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
-                <span style={{ fontSize: 10, color: NAVY_DARK }}>👤 {user.displayName || user.email}</span>
+                <span style={{ fontSize: 10, color: MUTED }}>👤 {user.displayName || user.email}</span>
                 <span style={{ fontSize: 10, color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
               </div>
             ) : (
@@ -676,7 +678,7 @@ export default function App() {
           <div
             onClick={() => setVerseExpanded(true)}
             style={{
-              flex: 1, flexShrink: 0, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)",
+              flex: 1, flexShrink: 0, background: BG_CARD,
               borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`,
               position: "relative", overflow: "hidden", minWidth: 0,
               display: "flex", flexDirection: "column", justifyContent: "space-between",
@@ -686,7 +688,7 @@ export default function App() {
             <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
             <div>
               <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: 11, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
+              <div style={{ fontSize: 11, fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
             </div>
             <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", marginTop: 6 }}>— {formatRef(dailyVerse.ref)}</div>
           </div>
@@ -718,13 +720,13 @@ export default function App() {
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}>
-              <div style={{ background: "rgba(250,245,237,0.78)", padding: "28px 24px 24px" }}>
+              <div style={{ background: "rgba(10,15,30,0.72)", padding: "28px 24px 24px" }}>
               <button
                 onClick={() => setVerseExpanded(false)}
                 style={{ position: "absolute", top: 12, right: 12, background: "none", border: "none", color: GOLD, fontSize: 18, cursor: "pointer", padding: 12, lineHeight: 1, fontWeight: "bold" }}
               >✕</button>
               <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 14 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: "#1B2A4A", fontWeight: 600, lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18 }}>"{dailyVerse.text}"</div>
+              <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: CREAM, fontWeight: 600, lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18 }}>"{dailyVerse.text}"</div>
               <div style={{ fontSize: 14, color: "#8B6914", fontWeight: "bold", fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>— {formatRef(dailyVerse.ref)}</div>
               </div>
             </div>
@@ -767,8 +769,8 @@ export default function App() {
           <div style={{ fontSize: 13, color: GOLD_LIGHT, fontStyle: "italic", marginBottom: 4 }}>{lang === 'es' ? 'Lectura del santo Evangelio' : 'Reading of the Holy Gospel'}</div>
           <div style={{ fontSize: 18, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{formatRef(lang === 'en' ? gospelData?.reference : (reference || t.gospel.reading))}</div>
         </div>
-        <div style={{ background: WHITE, borderRadius: 16, padding: 20, fontSize: 14, lineHeight: 1.9, color: "#3A2A1E", whiteSpace: "pre-wrap", boxShadow: "0 4px 16px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
-          {formatted}{"\n\n"}<span style={{ color: NAVY, fontWeight: "bold", fontStyle: "italic" }}>— {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}</span>
+        <div style={{ background: BG_CARD, borderRadius: 16, padding: 20, fontSize: 14, lineHeight: 1.9, color: CREAM, whiteSpace: "pre-wrap", boxShadow: "0 4px 16px rgba(0,0,0,0.3)", border: `1px solid ${CREAM_DARK}` }}>
+          {formatted}{"\n\n"}<span style={{ color: GOLD, fontWeight: "bold", fontStyle: "italic" }}>— {lang === 'es' ? 'Palabra del Señor.' : 'The Gospel of the Lord.'}</span>
         </div>
       </div>
     );
@@ -778,9 +780,9 @@ export default function App() {
     const sections = [];
     const iconScroll = (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
-        <rect x="3" y="1" width="14" height="4" rx="2" stroke="#1A3A5C" strokeWidth="1.3"/>
-        <rect x="5" y="4" width="10" height="12" stroke="#1A3A5C" strokeWidth="1.3"/>
-        <rect x="3" y="15" width="14" height="4" rx="2" stroke="#1A3A5C" strokeWidth="1.3"/>
+        <rect x="3" y="1" width="14" height="4" rx="2" stroke="#8A9BB5" strokeWidth="1.3"/>
+        <rect x="5" y="4" width="10" height="12" stroke="#8A9BB5" strokeWidth="1.3"/>
+        <rect x="3" y="15" width="14" height="4" rx="2" stroke="#8A9BB5" strokeWidth="1.3"/>
         <line x1="7.5" y1="7.5" x2="12.5" y2="7.5" stroke="#C9A84C" strokeWidth="1"/>
         <line x1="7.5" y1="10" x2="12.5" y2="10" stroke="#C9A84C" strokeWidth="1"/>
         <line x1="7.5" y1="12.5" x2="12.5" y2="12.5" stroke="#C9A84C" strokeWidth="1"/>
@@ -788,20 +790,20 @@ export default function App() {
     );
     const iconBook = (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
-        <rect x="3" y="2" width="13" height="16" rx="1.5" stroke="#1A3A5C" strokeWidth="1.3"/>
-        <line x1="6" y1="2" x2="6" y2="18" stroke="#1A3A5C" strokeWidth="0.8"/>
+        <rect x="3" y="2" width="13" height="16" rx="1.5" stroke="#8A9BB5" strokeWidth="1.3"/>
+        <line x1="6" y1="2" x2="6" y2="18" stroke="#8A9BB5" strokeWidth="0.8"/>
         <path d="M11 0.5 L14.5 0.5 L14.5 7 L12.75 5.5 L11 7 Z" fill="#C9A84C"/>
-        <line x1="8" y1="9" x2="15" y2="9" stroke="#1A3A5C" strokeWidth="0.8"/>
-        <line x1="8" y1="12" x2="15" y2="12" stroke="#1A3A5C" strokeWidth="0.8"/>
-        <line x1="8" y1="15" x2="15" y2="15" stroke="#1A3A5C" strokeWidth="0.8"/>
+        <line x1="8" y1="9" x2="15" y2="9" stroke="#8A9BB5" strokeWidth="0.8"/>
+        <line x1="8" y1="12" x2="15" y2="12" stroke="#8A9BB5" strokeWidth="0.8"/>
+        <line x1="8" y1="15" x2="15" y2="15" stroke="#8A9BB5" strokeWidth="0.8"/>
       </svg>
     );
     const iconLyre = (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
-        <path d="M5 10 C5 14 7 18 10 18 C13 18 15 14 15 10" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
-        <line x1="5" y1="10" x2="5" y2="3" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
-        <line x1="15" y1="10" x2="15" y2="3" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
-        <line x1="5" y1="3" x2="15" y2="3" stroke="#1A3A5C" strokeWidth="1.3" strokeLinecap="round"/>
+        <path d="M5 10 C5 14 7 18 10 18 C13 18 15 14 15 10" stroke="#8A9BB5" strokeWidth="1.3" strokeLinecap="round"/>
+        <line x1="5" y1="10" x2="5" y2="3" stroke="#8A9BB5" strokeWidth="1.3" strokeLinecap="round"/>
+        <line x1="15" y1="10" x2="15" y2="3" stroke="#8A9BB5" strokeWidth="1.3" strokeLinecap="round"/>
+        <line x1="5" y1="3" x2="15" y2="3" stroke="#8A9BB5" strokeWidth="1.3" strokeLinecap="round"/>
         <line x1="8" y1="3.5" x2="8.5" y2="16.5" stroke="#C9A84C" strokeWidth="0.9"/>
         <line x1="10" y1="3.5" x2="10" y2="17.5" stroke="#C9A84C" strokeWidth="0.9"/>
         <line x1="12" y1="3.5" x2="11.5" y2="16.5" stroke="#C9A84C" strokeWidth="0.9"/>
@@ -814,16 +816,16 @@ export default function App() {
     return (
       <div>
         {sections.map((s) => (
-          <div key={s.key} style={{ background: WHITE, borderRadius: 16, marginBottom: 12, overflow: "hidden", boxShadow: "0 4px 16px rgba(26,58,92,0.08)", border: `1px solid ${CREAM_DARK}` }}>
+          <div key={s.key} style={{ background: BG_CARD, borderRadius: 16, marginBottom: 12, overflow: "hidden", boxShadow: "0 4px 16px rgba(26,58,92,0.08)", border: `1px solid ${CREAM_DARK}` }}>
             <div onClick={() => setOpenReading(openReading === s.key ? null : s.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer" }}>
               <div>
-                <div style={{ fontWeight: "bold", color: BLUE_DARK, fontSize: 15, fontFamily: "'Cinzel', serif", display: "flex", alignItems: "center", gap: 8 }}>{s.icon}{s.title}</div>
+                <div style={{ fontWeight: "bold", color: CREAM, fontSize: 15, fontFamily: "'Cinzel', serif", display: "flex", alignItems: "center", gap: 8 }}>{s.icon}{s.title}</div>
                 <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{formatRef(s.ref)}</div>
               </div>
-              <span style={{ color: BLUE, fontSize: 20, fontWeight: "bold" }}>{openReading === s.key ? "−" : "+"}</span>
+              <span style={{ color: GOLD, fontSize: 20, fontWeight: "bold" }}>{openReading === s.key ? "−" : "+"}</span>
             </div>
             {openReading === s.key && (
-              <div style={{ padding: "0 18px 18px", fontSize: 14, color: "#1A2A3A", lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>
+              <div style={{ padding: "0 18px 18px", fontSize: 14, color: CREAM, lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>
                 {s.text}
                 {(s.key === 'r1' || s.key === 'r2') && (
                   <div style={{ fontStyle: "italic", color: GOLD, marginTop: 10, whiteSpace: "normal" }}>
@@ -846,19 +848,19 @@ export default function App() {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         {t.rosary.mysteries.map((m, i) => (
-          <button key={i} onClick={() => setSelectedMystery(i)} style={{ padding: "8px 14px", borderRadius: 20, border: `1px solid ${selectedMystery === i ? NAVY : CREAM_DARK}`, background: selectedMystery === i ? NAVY : WHITE, color: selectedMystery === i ? WHITE : MUTED, fontSize: 11, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{m}</button>
+          <button key={i} onClick={() => setSelectedMystery(i)} style={{ padding: "8px 14px", borderRadius: 20, border: `1px solid ${selectedMystery === i ? NAVY : CREAM_DARK}`, background: selectedMystery === i ? `${GOLD}22` : BG_CARD, color: selectedMystery === i ? GOLD : MUTED, fontSize: 11, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{m}</button>
         ))}
       </div>
       <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {t.rosary.steps.map((step, i) => (
-          <li key={i} onClick={() => setRosaryStep(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 12, marginBottom: 6, background: i < rosaryStep ? "#f5f0ff" : rosaryStep === i ? `${NAVY}11` : WHITE, border: `1px solid ${i < rosaryStep ? "#c4b5e8" : rosaryStep === i ? NAVY : CREAM_DARK}`, fontSize: 13, color: i < rosaryStep ? "#6B4F9E" : NAVY_DARK, cursor: "pointer" }}>
+          <li key={i} onClick={() => setRosaryStep(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 12, marginBottom: 6, background: i < rosaryStep ? "rgba(201,168,76,0.08)" : rosaryStep === i ? `${GOLD}18` : BG_CARD, border: `1px solid ${i < rosaryStep ? GOLD+"44" : rosaryStep === i ? GOLD : CREAM_DARK}`, fontSize: 13, color: i < rosaryStep ? GOLD : CREAM, cursor: "pointer" }}>
             <span style={{ fontSize: 16 }}>{i < rosaryStep ? "✅" : rosaryStep === i ? "👉" : "○"}</span>
             <span>{step}</span>
           </li>
         ))}
       </ul>
       <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <button onClick={() => setRosaryStep(Math.max(0, rosaryStep - 1))} style={{ flex: 1, padding: "10px", background: CREAM_DARK, color: NAVY_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>← {lang === 'es' ? 'Anterior' : 'Previous'}</button>
+        <button onClick={() => setRosaryStep(Math.max(0, rosaryStep - 1))} style={{ flex: 1, padding: "10px", background: CREAM_DARK, color: CREAM, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>← {lang === 'es' ? 'Anterior' : 'Previous'}</button>
         <button onClick={() => setRosaryStep(Math.min(t.rosary.steps.length - 1, rosaryStep + 1))} style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Siguiente' : 'Next'} →</button>
       </div>
     </div>
@@ -867,12 +869,12 @@ export default function App() {
   const renderPrayers = () => (
     <div>
       {t.prayers.list.map((p, i) => (
-        <div key={i} style={{ background: WHITE, borderRadius: 16, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
+        <div key={i} style={{ background: BG_CARD, borderRadius: 16, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
           <div onClick={() => setOpenPrayer(openPrayer === i ? null : i)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", cursor: "pointer" }}>
-            <span style={{ fontWeight: "bold", color: NAVY_DARK, fontSize: 15, fontFamily: "'Cinzel', serif" }}>🙏 {p.name}</span>
-            <span style={{ color: NAVY, fontSize: 20, fontWeight: "bold" }}>{openPrayer === i ? "−" : "+"}</span>
+            <span style={{ fontWeight: "bold", color: CREAM, fontSize: 15, fontFamily: "'Cinzel', serif" }}>🙏 {p.name}</span>
+            <span style={{ color: GOLD, fontSize: 20, fontWeight: "bold" }}>{openPrayer === i ? "−" : "+"}</span>
           </div>
-          {openPrayer === i && <div style={{ padding: "0 18px 16px", fontSize: 14, color: "#3A2A1E", lineHeight: 1.8, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14 }}>{p.text}</div>}
+          {openPrayer === i && <div style={{ padding: "0 18px 16px", fontSize: 14, color: CREAM, lineHeight: 1.8, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14 }}>{p.text}</div>}
         </div>
       ))}
     </div>
@@ -1179,7 +1181,7 @@ export default function App() {
                 );
               })(), lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>],
           ].map(([key, icon, label]) => (
-            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? NAVY : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3 }}>
+            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? GOLD+"66" : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3 }}>
               <div style={{ fontSize: 16 }}>{icon}</div>
               <div>{label}</div>
             </button>
@@ -1188,14 +1190,14 @@ export default function App() {
 
         {personalTab === "builder" ? (
           <div>
-            <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 14, fontFamily: "'Crimson Text', serif" }}>
+            <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, marginBottom: 14, fontFamily: "'Crimson Text', serif" }}>
               {lang === "es" ? "¿Cómo está tu corazón hoy?" : "How is your heart today?"}
             </div>
 
             {/* Mood grid */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
               {moods.map(m => (
-                <button key={m.id} onClick={() => { const next = selectedMood === m.id ? null : m.id; setSelectedMood(next); setGeneratedPrayer(null); setPrayerIntention(""); }} style={{ padding: "10px 4px", borderRadius: 12, background: selectedMood === m.id ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: selectedMood === m.id ? WHITE : NAVY_DARK, border: `1.5px solid ${selectedMood === m.id ? NAVY : CREAM_DARK}`, cursor: "pointer", textAlign: "center" }}>
+                <button key={m.id} onClick={() => { const next = selectedMood === m.id ? null : m.id; setSelectedMood(next); setGeneratedPrayer(null); setPrayerIntention(""); }} style={{ padding: "10px 4px", borderRadius: 12, background: selectedMood === m.id ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: selectedMood === m.id ? WHITE : CREAM, border: `1.5px solid ${selectedMood === m.id ? GOLD : CREAM_DARK}`, cursor: "pointer", textAlign: "center" }}>
                   <div style={{ fontSize: 20, marginBottom: 4 }}>{m.icon}</div>
                   <div style={{ fontSize: 11, fontWeight: "600", fontFamily: "'Crimson Text', serif", lineHeight: 1.2 }}>{m.label}</div>
                 </button>
@@ -1206,18 +1208,18 @@ export default function App() {
             {mood && !generatedPrayer && (
               <div>
                 <div style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}55`, borderRadius: 12, padding: "14px 16px", marginBottom: 12 }}>
-                  <div style={{ fontSize: 14, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.7, fontFamily: "'Crimson Text', serif" }}>{mood.verse}</div>
+                  <div style={{ fontSize: 14, fontStyle: "italic", color: CREAM, lineHeight: 1.7, fontFamily: "'Crimson Text', serif" }}>{mood.verse}</div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 10, background: WHITE, borderRadius: 12, padding: "12px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, background: BG_CARD, borderRadius: 12, padding: "12px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                   <span style={{ fontSize: 22 }}>🕯️</span>
                   <div>
                     <div style={{ fontSize: 10, color: MUTED, letterSpacing: 0.5 }}>{lang === "es" ? "Santo patrono sugerido" : "Suggested patron saint"}</div>
-                    <div style={{ fontSize: 14, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{mood.saint}</div>
+                    <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Crimson Text', serif" }}>{mood.saint}</div>
                   </div>
                 </div>
 
-                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                   <div style={{ fontSize: 13, color: MUTED, marginBottom: 8, fontFamily: "'Crimson Text', serif" }}>
                     {lang === "es" ? "¿Tienes una intención específica? (opcional)" : "Do you have a specific intention? (optional)"}
                   </div>
@@ -1225,7 +1227,7 @@ export default function App() {
                     value={prayerIntention}
                     onChange={e => setPrayerIntention(e.target.value)}
                     placeholder={lang === "es" ? "Ej: por mi mamá enferma, por mi trabajo..." : "E.g.: for my sick mother, for my job..."}
-                    style={{ width: "100%", minHeight: 80, padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, fontFamily: "'Georgia', serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6, outline: "none" }}
+                    style={{ width: "100%", minHeight: 80, padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: CREAM, background: NAVY, color: CREAM, fontFamily: "'Georgia', serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6, outline: "none" }}
                   />
                 </div>
 
@@ -1249,8 +1251,8 @@ export default function App() {
                     🙏 {lang === "es" ? "Guardar oración" : "Save prayer"}
                   </button>
                 ) : (
-                  <div style={{ background: CREAM, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "16px", marginBottom: 10, textAlign: "center" }}>
-                    <div style={{ fontSize: 14, color: NAVY_DARK, marginBottom: 10, fontFamily: "'Crimson Text', serif" }}>
+                  <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "16px", marginBottom: 10, textAlign: "center" }}>
+                    <div style={{ fontSize: 14, color: CREAM, marginBottom: 10, fontFamily: "'Crimson Text', serif" }}>
                       {lang === "es" ? "Inicia sesión para guardar tus oraciones" : "Sign in to save your prayers"}
                     </div>
                     <button onClick={() => setAuthMode("login")} style={{ padding: "9px 24px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
@@ -1259,7 +1261,7 @@ export default function App() {
                   </div>
                 )}
 
-                <button onClick={() => { setGeneratedPrayer(null); setSelectedMood(null); setPrayerIntention(""); }} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: NAVY_DARK, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+                <button onClick={() => { setGeneratedPrayer(null); setSelectedMood(null); setPrayerIntention(""); }} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: CREAM, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
                   ← {lang === "es" ? "Nueva oración" : "New prayer"}
                 </button>
               </div>
@@ -1274,12 +1276,12 @@ export default function App() {
                 <div style={{ fontSize: 13, color: MUTED }}>{lang === "es" ? "Usa Crear Oración para empezar ↑" : "Use Create Prayer to get started ↑"}</div>
               </div>
             ) : savedPrayers.map(p => (
-              <div key={p.id} style={{ background: WHITE, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${p.received ? GOLD + "66" : CREAM_DARK}`, boxShadow: p.received ? `0 2px 16px ${GOLD}22` : "0 2px 8px rgba(15,28,50,0.05)" }}>
+              <div key={p.id} style={{ background: BG_CARD, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${p.received ? GOLD + "66" : CREAM_DARK}`, boxShadow: p.received ? `0 2px 16px ${GOLD}22` : "0 2px 8px rgba(15,28,50,0.05)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 22 }}>{p.moodIcon}</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{p.moodLabel}</div>
+                      <div style={{ fontSize: 13, fontWeight: "bold", color: CREAM, fontFamily: "'Crimson Text', serif" }}>{p.moodLabel}</div>
                       <div style={{ fontSize: 11, color: MUTED }}>{p.date}</div>
                     </div>
                   </div>
@@ -1290,15 +1292,15 @@ export default function App() {
                   )}
                 </div>
 
-                <div style={{ fontSize: 13, color: "#5A3A2E", lineHeight: 1.65, marginBottom: 12, fontStyle: "italic", borderLeft: `3px solid ${CREAM_DARK}`, paddingLeft: 10 }}>
+                <div style={{ fontSize: 13, color: CREAM, lineHeight: 1.65, marginBottom: 12, fontStyle: "italic", borderLeft: `3px solid ${CREAM_DARK}`, paddingLeft: 10 }}>
                   {p.intention.length > 140 ? p.intention.substring(0, 140) + "…" : p.intention}
                 </div>
 
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => toggleReceived(p.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 20, border: `1px solid ${p.received ? GOLD : CREAM_DARK}`, background: p.received ? `${GOLD}18` : WHITE, color: p.received ? "#8B6A1A" : MUTED, fontSize: 12, cursor: "pointer", fontWeight: "bold" }}>
+                  <button onClick={() => toggleReceived(p.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 20, border: `1px solid ${p.received ? GOLD : CREAM_DARK}`, background: p.received ? `${GOLD}18` : BG_CARD, color: p.received ? GOLD : MUTED, fontSize: 12, cursor: "pointer", fontWeight: "bold" }}>
                     {p.received ? `✨ ${lang === "es" ? "Gracia recibida" : "Grace received"}` : `○ ${lang === "es" ? "Marcar como recibida" : "Mark as received"}`}
                   </button>
-                  <button onClick={() => deletePrayer(p.id)} style={{ padding: "7px 12px", borderRadius: 20, border: `1px solid ${CREAM_DARK}`, background: WHITE, color: MUTED, fontSize: 12, cursor: "pointer" }}>
+                  <button onClick={() => deletePrayer(p.id)} style={{ padding: "7px 12px", borderRadius: 20, border: `1px solid ${CREAM_DARK}`, background: BG_CARD, color: MUTED, fontSize: 12, cursor: "pointer" }}>
                     ✕
                   </button>
                 </div>
@@ -1311,7 +1313,7 @@ export default function App() {
             {!user ? (
               <div style={{ textAlign: "center", padding: "48px 20px" }}>
                 <div style={{ fontSize: 44, marginBottom: 12 }}>🔵</div>
-                <div style={{ fontSize: 14, color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                <div style={{ fontSize: 14, color: CREAM, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
                   {lang === "es" ? <>Inicia sesión para unirte a Conec<span style={cx}>✝</span>2 de Oración</> : <>Sign in to join Pray<span style={cx}>✝</span>2gether</>}
                 </div>
                 <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
@@ -1321,14 +1323,14 @@ export default function App() {
             ) : circleView === "list" ? (
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>
+                  <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Crimson Text', serif" }}>
                     <>{lang === "es" ? "Mis" : "My"} {lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>}</>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => { setCircleError(""); setNewCircleName(""); setNewCircleDesc(""); setNewCircleType("publico"); setCircleView("create"); }} style={{ padding: "8px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
                       + {lang === "es" ? "Crear" : "Create"}
                     </button>
-                    <button onClick={() => { setCircleError(""); setJoinCode(""); setJoinMode("private"); setPublicCircles([]); setCircleView("join"); }} style={{ padding: "8px 14px", background: WHITE, color: NAVY, border: `1px solid ${NAVY}`, borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                    <button onClick={() => { setCircleError(""); setJoinCode(""); setJoinMode("private"); setPublicCircles([]); setCircleView("join"); }} style={{ padding: "8px 14px", background: BG_CARD, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
                       {lang === "es" ? "Unirse" : "Join"}
                     </button>
                   </div>
@@ -1341,16 +1343,16 @@ export default function App() {
                 ) : myCircles.length === 0 ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
                     <div style={{ fontSize: 44, marginBottom: 12 }}>🙏</div>
-                    <div style={{ fontSize: 15, color: NAVY_DARK, marginBottom: 8, fontFamily: "'Crimson Text', serif" }}>
+                    <div style={{ fontSize: 15, color: CREAM, marginBottom: 8, fontFamily: "'Crimson Text', serif" }}>
                       {lang === "es" ? <>Aún no perteneces a ningún Conec<span style={cx}>✝</span>2</> : <>You're not in any Pray<span style={cx}>✝</span>2gether yet</>}
                     </div>
                     <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea uno o únete a uno para orar juntos" : "Create or join one to pray together"}</div>
                   </div>
                 ) : myCircles.map(c => (
-                  <div key={c.id} onClick={() => openCircle(c)} style={{ background: WHITE, borderRadius: 16, padding: "14px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)", cursor: "pointer" }}>
+                  <div key={c.id} onClick={() => openCircle(c)} style={{ background: BG_CARD, borderRadius: 16, padding: "14px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)", cursor: "pointer" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
-                        <div style={{ fontSize: 15, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif", marginBottom: 3 }}>{c.nombre}</div>
+                        <div style={{ fontSize: 15, fontWeight: "bold", color: CREAM, fontFamily: "'Crimson Text', serif", marginBottom: 3 }}>{c.nombre}</div>
                         {c.descripcion && <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.5 }}>{c.descripcion.length > 80 ? c.descripcion.substring(0, 80) + "…" : c.descripcion}</div>}
                       </div>
                       <span style={{ fontSize: 11, background: c.tipo === "privado" ? `${NAVY}18` : `${GOLD}22`, color: c.tipo === "privado" ? NAVY : "#8B6A1A", padding: "3px 8px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
@@ -1365,25 +1367,25 @@ export default function App() {
               </div>
             ) : circleView === "create" ? (
               <div>
-                <button onClick={() => setCircleView("list")} style={{ background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: "0 0 16px 0", fontWeight: "bold" }}>
+                <button onClick={() => setCircleView("list")} style={{ background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: "0 0 16px 0", fontWeight: "bold" }}>
                   ← {lang === "es" ? "Volver" : "Back"}
                 </button>
-                <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
                   {lang === "es" ? <>Crear Conec<span style={cx}>✝</span>2</> : <>Create Pray<span style={cx}>✝</span>2gether</>}
                 </div>
-                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                   <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Nombre del círculo*" : "Circle name*"}</div>
-                  <input value={newCircleName} onChange={e => setNewCircleName(e.target.value)} placeholder={lang === "es" ? "Ej: Familia López" : "E.g.: Lopez Family"} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif" }} />
+                  <input value={newCircleName} onChange={e => setNewCircleName(e.target.value)} placeholder={lang === "es" ? "Ej: Familia López" : "E.g.: Lopez Family"} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: CREAM, background: NAVY, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif" }} />
                 </div>
-                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                   <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Descripción (opcional)" : "Description (optional)"}</div>
-                  <textarea value={newCircleDesc} onChange={e => setNewCircleDesc(e.target.value)} placeholder={lang === "es" ? "¿De qué trata este círculo?" : "What is this circle about?"} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, minHeight: 70, boxSizing: "border-box", resize: "vertical", outline: "none", fontFamily: "Georgia, serif" }} />
+                  <textarea value={newCircleDesc} onChange={e => setNewCircleDesc(e.target.value)} placeholder={lang === "es" ? "¿De qué trata este círculo?" : "What is this circle about?"} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: CREAM, background: NAVY, minHeight: 70, boxSizing: "border-box", resize: "vertical", outline: "none", fontFamily: "Georgia, serif" }} />
                 </div>
-                <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
+                <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
                   <div style={{ fontSize: 12, color: MUTED, marginBottom: 10 }}>{lang === "es" ? "Tipo de círculo" : "Circle type"}</div>
                   <div style={{ display: "flex", gap: 8 }}>
                     {[["publico", "🌍", lang === "es" ? "Público" : "Public"], ["privado", "🔒", lang === "es" ? "Privado" : "Private"]].map(([type, icon, label]) => (
-                      <button key={type} onClick={() => setNewCircleType(type)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${newCircleType === type ? NAVY : CREAM_DARK}`, background: newCircleType === type ? `${NAVY}18` : WHITE, color: newCircleType === type ? NAVY : MUTED, fontSize: 13, fontWeight: "bold", cursor: "pointer" }}>
+                      <button key={type} onClick={() => setNewCircleType(type)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${newCircleType === type ? NAVY : CREAM_DARK}`, background: newCircleType === type ? `${GOLD}18` : BG_CARD, color: newCircleType === type ? GOLD : MUTED, fontSize: 13, fontWeight: "bold", cursor: "pointer" }}>
                         {icon} {label}
                       </button>
                     ))}
@@ -1406,24 +1408,24 @@ export default function App() {
               </div>
             ) : circleView === "join" ? (
               <div>
-                <button onClick={() => setCircleView("list")} style={{ background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: "0 0 16px 0", fontWeight: "bold" }}>
+                <button onClick={() => setCircleView("list")} style={{ background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: "0 0 16px 0", fontWeight: "bold" }}>
                   ← {lang === "es" ? "Volver" : "Back"}
                 </button>
-                <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
                   {lang === "es" ? <>Unirse a un Conec<span style={cx}>✝</span>2</> : <>Join a Pray<span style={cx}>✝</span>2gether</>}
                 </div>
                 <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
                   {[["private", "🔒", lang === "es" ? "Código privado" : "Private code"], ["public", "🌍", lang === "es" ? <>Conec<span style={cx}>✝</span>2 públicos</> : <>Public Pray<span style={cx}>✝</span>2gether</>]].map(([mode, icon, label]) => (
-                    <button key={mode} onClick={() => { setJoinMode(mode); if (mode === "public") loadPublicCircles(); }} style={{ flex: 1, padding: "9px 8px", borderRadius: 12, background: joinMode === mode ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : WHITE, color: joinMode === mode ? WHITE : MUTED, border: `1px solid ${joinMode === mode ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                    <button key={mode} onClick={() => { setJoinMode(mode); if (mode === "public") loadPublicCircles(); }} style={{ flex: 1, padding: "9px 8px", borderRadius: 12, background: joinMode === mode ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: joinMode === mode ? WHITE : MUTED, border: `1px solid ${joinMode === mode ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
                       {icon} {label}
                     </button>
                   ))}
                 </div>
                 {joinMode === "private" ? (
                   <div>
-                    <div style={{ background: WHITE, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                    <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                       <div style={{ fontSize: 12, color: MUTED, marginBottom: 8 }}>{lang === "es" ? "Código del círculo" : "Circle code"}</div>
-                      <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} placeholder="XXXXXX" maxLength={6} style={{ width: "100%", padding: "12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 22, fontFamily: "monospace", letterSpacing: 6, color: NAVY_DARK, background: CREAM, boxSizing: "border-box", textAlign: "center", outline: "none" }} />
+                      <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} placeholder="XXXXXX" maxLength={6} style={{ width: "100%", padding: "12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 22, fontFamily: "monospace", letterSpacing: 6, color: CREAM, background: NAVY, boxSizing: "border-box", textAlign: "center", outline: "none" }} />
                     </div>
                     {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
                     <button onClick={joinCircleByCode} disabled={circleLoading || joinCode.length < 6} style={{ width: "100%", padding: 13, background: joinCode.length < 6 ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: joinCode.length < 6 ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: joinCode.length >= 6 ? "pointer" : "default", fontFamily: "'Crimson Text', serif" }}>
@@ -1442,8 +1444,8 @@ export default function App() {
                         <div style={{ fontSize: 14 }}>{lang === "es" ? <>No hay Conec<span style={cx}>✝</span>2 públicos disponibles</> : <>No public Pray<span style={cx}>✝</span>2gether available</>}</div>
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).map(c => (
-                      <div key={c.id} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}` }}>
-                        <div style={{ fontSize: 14, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{c.nombre}</div>
+                      <div key={c.id} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}` }}>
+                        <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Crimson Text', serif" }}>{c.nombre}</div>
                         {c.descripcion && <div style={{ fontSize: 13, color: MUTED, marginTop: 3, marginBottom: 8 }}>{c.descripcion}</div>}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div style={{ fontSize: 12, color: MUTED }}>👥 {c.miembros?.length || 1}/10</div>
@@ -1460,11 +1462,11 @@ export default function App() {
               /* Inside circle */
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                  <button onClick={() => { setCircleView("list"); setSelectedCircle(null); setCircleIntenciones([]); }} style={{ background: "none", border: "none", color: NAVY, fontSize: 18, cursor: "pointer", fontWeight: "bold", padding: 0 }}>
+                  <button onClick={() => { setCircleView("list"); setSelectedCircle(null); setCircleIntenciones([]); }} style={{ background: "none", border: "none", color: CREAM, fontSize: 18, cursor: "pointer", fontWeight: "bold", padding: 0 }}>
                     ←
                   </button>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 16, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Crimson Text', serif" }}>{selectedCircle?.nombre}</div>
+                    <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Crimson Text', serif" }}>{selectedCircle?.nombre}</div>
                     {selectedCircle?.descripcion && <div style={{ fontSize: 12, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCircle.descripcion}</div>}
                   </div>
                   <div style={{ fontSize: 12, color: MUTED, flexShrink: 0 }}>👥 {selectedCircle?.miembros?.length || 1}/10</div>
@@ -1479,7 +1481,7 @@ export default function App() {
                         <div style={{ fontSize: 10, color: "#8B6A1A", fontWeight: "bold", letterSpacing: 0.5 }}>
                           {lang === "es" ? "CÓDIGO DE ACCESO" : "ACCESS CODE"}
                         </div>
-                        <div style={{ fontSize: 18, fontWeight: "bold", color: NAVY, fontFamily: "monospace", letterSpacing: 4 }}>
+                        <div style={{ fontSize: 18, fontWeight: "bold", color: GOLD, fontFamily: "monospace", letterSpacing: 4 }}>
                           {selectedCircle.codigo}
                         </div>
                       </div>
@@ -1498,8 +1500,8 @@ export default function App() {
                 )}
 
                 {/* Add intention */}
-                <div style={{ background: WHITE, borderRadius: 12, padding: 14, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
-                  <textarea value={newIntencion} onChange={e => setNewIntencion(e.target.value)} placeholder={lang === "es" ? "Comparte una intención de oración..." : "Share a prayer intention..."} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: NAVY_DARK, background: CREAM, minHeight: 60, boxSizing: "border-box", resize: "none", outline: "none", fontFamily: "Georgia, serif" }} />
+                <div style={{ background: BG_CARD, borderRadius: 12, padding: 14, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
+                  <textarea value={newIntencion} onChange={e => setNewIntencion(e.target.value)} placeholder={lang === "es" ? "Comparte una intención de oración..." : "Share a prayer intention..."} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: CREAM, background: NAVY, minHeight: 60, boxSizing: "border-box", resize: "none", outline: "none", fontFamily: "Georgia, serif" }} />
                   <button onClick={addIntencion} disabled={!newIntencion.trim()} style={{ marginTop: 8, width: "100%", padding: "9px", background: !newIntencion.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newIntencion.trim() ? MUTED : WHITE, border: "none", borderRadius: 10, fontSize: 13, fontWeight: "bold", cursor: newIntencion.trim() ? "pointer" : "default" }}>
                     🙏 {lang === "es" ? "Compartir intención" : "Share intention"}
                   </button>
@@ -1520,9 +1522,9 @@ export default function App() {
                   const orandoCount = intent.orando?.length || 0;
                   const canDelete = intent.autorId === user.uid || selectedCircle?.creadorId === user.uid;
                   return (
-                    <div key={intent.id} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
+                    <div key={intent.id} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
                       <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginBottom: 6 }}>{intent.autorNombre}</div>
-                      <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.65, fontFamily: "'Crimson Text', serif", marginBottom: 10 }}>{intent.texto}</div>
+                      <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.65, fontFamily: "'Crimson Text', serif", marginBottom: 10 }}>{intent.texto}</div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <button onClick={() => toggleOrando(intent)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isOrando ? `${GOLD}22` : CREAM, border: `1px solid ${isOrando ? GOLD : CREAM_DARK}`, borderRadius: 20, fontSize: 13, cursor: "pointer", color: isOrando ? "#8B6A1A" : MUTED }}>
                           🙏 {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
@@ -1554,7 +1556,7 @@ export default function App() {
             {!user ? (
               <div style={{ textAlign: "center", padding: "48px 20px" }}>
                 <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
-                <div style={{ fontSize: 14, color: NAVY_DARK, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
+                <div style={{ fontSize: 14, color: CREAM, marginBottom: 16, fontFamily: "'Crimson Text', serif" }}>
                   {lang === "es" ? "Inicia sesión para ver tu libro de oraciones" : "Sign in to see your prayer book"}
                 </div>
                 <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
@@ -1578,7 +1580,7 @@ export default function App() {
                 ? p.intencion
                 : p.oracion.split('\n').filter(l => l.trim()).slice(0, 2).join(' ');
               return (
-                <div key={p.id} style={{ background: WHITE, borderRadius: 16, marginBottom: 14, overflow: "hidden", border: `1px solid ${p.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: p.respondida ? `0 4px 20px ${GOLD}28` : "0 2px 10px rgba(15,28,50,0.06)" }}>
+                <div key={p.id} style={{ background: BG_CARD, borderRadius: 16, marginBottom: 14, overflow: "hidden", border: `1px solid ${p.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: p.respondida ? `0 4px 20px ${GOLD}28` : "0 2px 10px rgba(15,28,50,0.06)" }}>
                   {/* Header — clic para expandir/colapsar */}
                   <div onClick={() => setExpandedPrayerId(isOpen ? null : p.id)} style={{ background: p.respondida ? `linear-gradient(135deg, ${NAVY_DARK}, #3a2800)` : `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -1590,7 +1592,7 @@ export default function App() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                       {p.respondida && (
-                        <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, fontSize: 11, fontWeight: "bold", padding: "4px 10px", borderRadius: 20 }}>
+                        <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: CREAM, fontSize: 11, fontWeight: "bold", padding: "4px 10px", borderRadius: 20 }}>
                           ✨ {lang === "es" ? "Respondida" : "Answered"}
                         </span>
                       )}
@@ -1601,7 +1603,7 @@ export default function App() {
                   {/* Vista colapsada: intención o primeras 2 líneas */}
                   {!isOpen && (
                     <div style={{ padding: "12px 16px", borderTop: `1px solid ${CREAM_DARK}` }}>
-                      <div style={{ fontSize: 13, color: p.intencion ? "#5A3A2E" : MUTED, lineHeight: 1.6, fontStyle: p.intencion ? "italic" : "normal" }}>
+                      <div style={{ fontSize: 13, color: p.intencion ? CREAM : MUTED, lineHeight: 1.6, fontStyle: p.intencion ? "italic" : "normal" }}>
                         {previewText.length > 120 ? previewText.substring(0, 120) + "…" : previewText}
                       </div>
                     </div>
@@ -1615,7 +1617,7 @@ export default function App() {
                           <div style={{ fontSize: 11, color: "#8B6A1A", fontWeight: "bold", marginBottom: 4, letterSpacing: 0.5 }}>
                             {lang === "es" ? "TU INTENCIÓN" : "YOUR INTENTION"}
                           </div>
-                          <div style={{ fontSize: 14, color: "#5A3A2E", fontStyle: "italic", lineHeight: 1.65, fontFamily: "'Crimson Text', serif" }}>
+                          <div style={{ fontSize: 14, color: CREAM, fontStyle: "italic", lineHeight: 1.65, fontFamily: "'Crimson Text', serif" }}>
                             {p.intencion}
                           </div>
                         </div>
@@ -1625,7 +1627,7 @@ export default function App() {
                         const idx = p.oracion.indexOf(marker);
                         if (idx === -1) {
                           return (
-                            <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
+                            <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
                               {p.oracion}
                             </div>
                           );
@@ -1634,10 +1636,10 @@ export default function App() {
                         const line = p.oracion.substring(idx).trim();
                         return (
                           <>
-                            <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap", marginBottom: 12 }}>
+                            <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap", marginBottom: 12 }}>
                               {before}
                             </div>
-                            <div style={{ background: "#FDF3DC", borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 12, fontStyle: "italic", color: NAVY, fontSize: 14, fontFamily: "'Crimson Text', serif", lineHeight: 1.7 }}>
+                            <div style={{ background: "rgba(201,168,76,0.1)", borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 12, fontStyle: "italic", color: CREAM, fontSize: 14, fontFamily: "'Crimson Text', serif", lineHeight: 1.7 }}>
                               {line}
                             </div>
                           </>
@@ -1664,11 +1666,11 @@ export default function App() {
       <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, fontStyle: "italic" }}>{lang === 'es' ? 'Artículos para acompañar tu fe' : 'Items to accompany your faith'}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {products.map((item) => (
-          <div key={item.id} style={{ background: WHITE, borderRadius: 16, padding: 16, boxShadow: "0 4px 16px rgba(15,28,50,0.07)", position: "relative", textAlign: "center", border: `1px solid ${CREAM_DARK}` }}>
-            {item.tag && <span style={{ position: "absolute", top: 8, right: 8, background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, fontSize: 9, fontWeight: "bold", padding: "3px 8px", borderRadius: 10 }}>{item.tag}</span>}
+          <div key={item.id} style={{ background: BG_CARD, borderRadius: 16, padding: 16, boxShadow: "0 4px 16px rgba(15,28,50,0.07)", position: "relative", textAlign: "center", border: `1px solid ${CREAM_DARK}` }}>
+            {item.tag && <span style={{ position: "absolute", top: 8, right: 8, background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: CREAM, fontSize: 9, fontWeight: "bold", padding: "3px 8px", borderRadius: 10 }}>{item.tag}</span>}
             <div style={{ fontSize: 36, marginBottom: 8 }}>{item.icon}</div>
-            <div style={{ fontSize: 13, fontWeight: "bold", color: NAVY_DARK, marginBottom: 4, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? item.nameEs : item.nameEn}</div>
-            <div style={{ fontSize: 15, color: NAVY, fontWeight: "bold", marginBottom: 10 }}>{formatPrice(item.price)}</div>
+            <div style={{ fontSize: 13, fontWeight: "bold", color: CREAM, marginBottom: 4, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? item.nameEs : item.nameEn}</div>
+            <div style={{ fontSize: 15, color: GOLD, fontWeight: "bold", marginBottom: 10 }}>{formatPrice(item.price)}</div>
             <button onClick={() => addToCart(item)} style={{ background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", padding: "8px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%", fontFamily: "'Cinzel', serif" }}>
               {lang === "es" ? "Añadir al carrito" : "Add to cart"}
             </button>
@@ -1720,14 +1722,14 @@ export default function App() {
             <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
             <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Activar notificaciones' : 'Enable notifications'}</div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 16 }}>{lang === 'es' ? 'Recibe recordatorios para rezar cada día' : 'Receive daily prayer reminders'}</div>
-            <button onClick={requestPermission} style={{ background: GOLD, color: NAVY_DARK, border: "none", padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Permitir notificaciones' : 'Allow notifications'}</button>
+            <button onClick={requestPermission} style={{ background: GOLD, color: CREAM, border: "none", padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Permitir notificaciones' : 'Allow notifications'}</button>
           </div>
         )}
         {notifs.map((n, i) => (
-          <div key={i} style={{ background: WHITE, borderRadius: 16, padding: 18, marginBottom: 12, boxShadow: "0 2px 12px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
+          <div key={i} style={{ background: BG_CARD, borderRadius: 16, padding: 18, marginBottom: 12, boxShadow: "0 2px 12px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontWeight: "bold", color: NAVY_DARK, fontSize: 14, fontFamily: "'Cinzel', serif" }}>{n.label}</div>
+                <div style={{ fontWeight: "bold", color: CREAM, fontSize: 14, fontFamily: "'Cinzel', serif" }}>{n.label}</div>
                 <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{n.desc}</div>
               </div>
               <button style={switchStyle(n.active)} onClick={() => n.setter(!n.active)}>
@@ -1737,7 +1739,7 @@ export default function App() {
             {n.active && (
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
                 <span style={{ fontSize: 12, color: MUTED }}>{lang === 'es' ? 'Hora:' : 'Time:'}</span>
-                <input type="time" value={n.time} onChange={e => n.setTime(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${CREAM_DARK}`, fontSize: 13, color: NAVY_DARK, background: CREAM }} />
+                <input type="time" value={n.time} onChange={e => n.setTime(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${CREAM_DARK}`, fontSize: 13, color: CREAM, background: NAVY }} />
               </div>
             )}
           </div>
@@ -1837,7 +1839,7 @@ export default function App() {
           onChange={e => setBibleSearch(e.target.value)}
           onKeyDown={e => e.key === "Enter" && doSearch()}
           placeholder={lang === "es" ? "Buscar versículo..." : "Search verse..."}
-          style={{ flex: 1, padding: "10px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: NAVY_DARK, background: CREAM, fontFamily: "'Georgia', serif", outline: "none", boxSizing: "border-box" }}
+          style={{ flex: 1, padding: "10px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: CREAM, background: NAVY, fontFamily: "'Georgia', serif", outline: "none", boxSizing: "border-box" }}
         />
         <button onClick={doSearch} style={{ padding: "10px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 16, cursor: "pointer", flexShrink: 0 }}>
           🔍
@@ -1868,11 +1870,11 @@ export default function App() {
                   flex: 1, padding: "12px 8px", borderRadius: 12,
                   background: bibleTestament === key
                     ? `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`
-                    : WHITE,
+                    : BG_CARD,
                   border: bibleTestament === key
                     ? `2px solid ${GOLD}`
                     : `1px solid ${CREAM_DARK}`,
-                  color: bibleTestament === key ? WHITE : NAVY_DARK,
+                  color: bibleTestament === key ? WHITE : CREAM,
                   fontSize: 13, fontWeight: "bold", cursor: "pointer",
                   fontFamily: "'Cinzel', serif", lineHeight: 1.3,
                 }}
@@ -1910,8 +1912,8 @@ export default function App() {
                 onClick={() => loadChapters(b)}
                 style={{
                   padding: "9px 6px", borderRadius: 10,
-                  background: WHITE, border: `1px solid ${CREAM_DARK}`,
-                  color: NAVY_DARK, fontSize: 12, cursor: "pointer",
+                  background: BG_CARD, border: `1px solid ${CREAM_DARK}`,
+                  color: CREAM, fontSize: 12, cursor: "pointer",
                   fontFamily: "'Crimson Text', serif", textAlign: "center",
                   fontWeight: "600", lineHeight: 1.3,
                 }}
@@ -1927,7 +1929,7 @@ export default function App() {
     if (bibleView === "chapters") {
       return (
         <div>
-          <button onClick={() => setBibleView("books")} style={{ marginBottom: 16, background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif", display: "flex", alignItems: "center", gap: 4 }}>
+          <button onClick={() => setBibleView("books")} style={{ marginBottom: 16, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif", display: "flex", alignItems: "center", gap: 4 }}>
             ← {lang === "es" ? "Libros" : "Books"}
           </button>
           <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 14, padding: "14px 18px", marginBottom: 16, color: WHITE }}>
@@ -1941,7 +1943,7 @@ export default function App() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
               {bibleChapters.map(c => (
-                <button key={c.id} onClick={() => loadChapter(c)} style={{ padding: "13px 6px", borderRadius: 10, background: WHITE, border: `1px solid ${CREAM_DARK}`, color: NAVY_DARK, fontSize: 15, cursor: "pointer", fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>
+                <button key={c.id} onClick={() => loadChapter(c)} style={{ padding: "13px 6px", borderRadius: 10, background: BG_CARD, border: `1px solid ${CREAM_DARK}`, color: CREAM, fontSize: 15, cursor: "pointer", fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>
                   {c.number}
                 </button>
               ))}
@@ -1954,7 +1956,7 @@ export default function App() {
     if (bibleView === "search") {
       return (
         <div>
-          <button onClick={() => { setBibleView("books"); setBibleSearchResults(null); }} style={{ marginBottom: 16, background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif" }}>
+          <button onClick={() => { setBibleView("books"); setBibleSearchResults(null); }} style={{ marginBottom: 16, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif" }}>
             ← {lang === "es" ? "Libros" : "Books"}
           </button>
           {searchBarJsx(true)}
@@ -1973,11 +1975,11 @@ export default function App() {
                 {bibleSearchResults.length} {lang === "es" ? "versículos encontrados" : "verses found"}
               </div>
               {bibleSearchResults.map((v, i) => (
-                <div key={i} style={{ background: WHITE, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
+                <div key={i} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
                   <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 6, fontFamily: "'Cinzel', serif", letterSpacing: 0.5 }}>
                     {formatRef(v.reference)}
                   </div>
-                  <div style={{ fontSize: 14, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif" }}>
+                  <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.75, fontFamily: "'Crimson Text', serif" }}>
                     {v.text?.replace(/\s+/g, " ").trim()}
                   </div>
                 </div>
@@ -1992,7 +1994,7 @@ export default function App() {
       const verses = parseVerses(bibleChapterText);
       return (
         <div>
-          <button onClick={() => setBibleView("chapters")} style={{ marginBottom: 14, background: "none", border: "none", color: NAVY, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif" }}>
+          <button onClick={() => setBibleView("chapters")} style={{ marginBottom: 14, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Crimson Text', serif" }}>
             ← {bibleSelectedBook?.name}
           </button>
           <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 14, padding: "14px 18px", marginBottom: 16, color: WHITE }}>
@@ -2018,7 +2020,7 @@ export default function App() {
                       {v.num}
                     </div>
                   )}
-                  <div style={{ fontSize: 15, color: NAVY_DARK, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", flex: 1 }}>
+                  <div style={{ fontSize: 15, color: CREAM, lineHeight: 1.8, fontFamily: "'Crimson Text', serif", flex: 1 }}>
                     {v.text}
                   </div>
                 </div>
@@ -2127,13 +2129,13 @@ export default function App() {
   const sections = [renderHome, renderPersonalPrayer, renderGospel, renderReadings, renderRosary, renderPrayers, renderBible, renderReflections, renderShop, renderSettings];
 
   return (
-    <div style={{ fontFamily: "'Georgia', serif", background: CREAM, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(15,28,50,0.12)" }}>
+    <div style={{ fontFamily: "'Georgia', serif", background: BG_MAIN, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(0,0,0,0.5)" }}>
 
       {/* Splash screen */}
       {showSplash && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: CREAM,
+          background: BG_MAIN,
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
           opacity: splashIn && !splashOut ? 1 : 0,
@@ -2172,7 +2174,7 @@ export default function App() {
             fontFamily: "'Cinzel', serif",
             fontSize: 42,
             fontWeight: 700,
-            color: NAVY,
+            color: CREAM,
             letterSpacing: 12,
             marginTop: 18,
             textTransform: "uppercase",
@@ -2197,10 +2199,13 @@ export default function App() {
       {showCart && renderCartModal()}
 
       <style>{`
+        body { background: #0A0F1E; }
         @keyframes lambPulse {
           0%, 100% { box-shadow: 0 4px 14px rgba(201,168,76,0.5), 0 0 0 0 rgba(201,168,76,0.35); }
           50%       { box-shadow: 0 4px 18px rgba(201,168,76,0.7), 0 0 0 9px rgba(201,168,76,0); }
         }
+        input::placeholder, textarea::placeholder { color: #8A9BB5; opacity: 1; }
+        input, textarea, select { color-scheme: dark; }
       `}</style>
 
       {/* Botón Cordero de Dios */}
@@ -2227,13 +2232,13 @@ export default function App() {
           onClick={() => setLambOpen(false)}
         >
           <div
-            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "linear-gradient(145deg, #FAF5ED 0%, #F5EDD8 100%)", border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "90vw", maxWidth: 440, maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}
+            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: BG_CARD, border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "90vw", maxWidth: 440, maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
             onClick={e => e.stopPropagation()}
           >
             {/* Título centrado */}
             <div style={{ textAlign: "center", marginBottom: 4 }}>
               <div style={{ fontSize: 22, marginBottom: 6 }}>🐑</div>
-              <div style={{ fontSize: 20, fontWeight: "bold", color: NAVY, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>
+              <div style={{ fontSize: 20, fontWeight: "bold", color: CREAM, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>
                 {lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
               </div>
               <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>
@@ -2257,12 +2262,12 @@ export default function App() {
                 </div>
               </div>
             ) : lambText ? (
-              <div style={{ fontSize: 15, color: NAVY_DARK, lineHeight: 1.75, fontFamily: "'Crimson Text', serif" }}>
+              <div style={{ fontSize: 15, color: CREAM, lineHeight: 1.75, fontFamily: "'Crimson Text', serif" }}>
                 <ReactMarkdown
                   components={{
-                    h2: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 15, color: NAVY, marginTop: 14, marginBottom: 3 }}>{children}</div>,
-                    h3: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 14, color: NAVY, marginTop: 12, marginBottom: 3 }}>{children}</div>,
-                    strong: ({ children }) => <strong style={{ color: NAVY }}>{children}</strong>,
+                    h2: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 15, color: GOLD, marginTop: 14, marginBottom: 3 }}>{children}</div>,
+                    h3: ({ children }) => <div style={{ fontWeight: "bold", fontSize: 14, color: GOLD, marginTop: 12, marginBottom: 3 }}>{children}</div>,
+                    strong: ({ children }) => <strong style={{ color: GOLD }}>{children}</strong>,
                     p: ({ children }) => <p style={{ margin: "0 0 10px" }}>{children}</p>,
                     hr: () => <hr style={{ border: "none", borderTop: `1px solid ${GOLD}55`, margin: "12px 0" }} />,
                   }}
@@ -2412,7 +2417,7 @@ export default function App() {
 
         {/* Menú desplegable */}
         {menuOpen && (
-          <div style={{ background: NAVY_DARK, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
+          <div style={{ background: BG_MAIN, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
             {t.nav.map((n, i) => (
               <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "left" }}>
                 <span style={{ display: "flex", alignItems: "center" }}>{navIcons[i](tab === i ? GOLD : "rgba(255,255,255,0.75)")}</span>
@@ -2426,7 +2431,7 @@ export default function App() {
       {/* ── CONTENIDO ── */}
       <div style={{ padding: "20px 20px 52px" }}>
         {tab !== 0 && (
-          <div style={{ fontSize: 19, fontWeight: "bold", color: NAVY, marginBottom: 18, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Crimson Text', serif" }}>
+          <div style={{ fontSize: 19, fontWeight: "bold", color: CREAM, marginBottom: 18, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Crimson Text', serif" }}>
             {t.nav[tab]}
           </div>
         )}
