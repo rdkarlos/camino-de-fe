@@ -653,30 +653,30 @@ export default function App() {
     const dailyVerse = DAILY_VERSES[_dayOfYear % DAILY_VERSES.length][lang] || DAILY_VERSES[_dayOfYear % DAILY_VERSES.length].es;
     return (
       <div>
-        <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "stretch", flexDirection: window.innerWidth > 600 ? "row" : "column" }}>
-          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "14px 12px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
+        <div style={{ display: "flex", flexDirection: "row", gap: 12, marginBottom: 16, alignItems: "stretch" }}>
+          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
             <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08, color: GOLD }}>✝</div>
-            <div style={{ fontSize: 10, color: NAVY, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
-            <div style={{ fontSize: 13, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif" }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
+            <div style={{ fontSize: 9, color: NAVY, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
+            <div style={{ fontSize: 11, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif", lineHeight: 1.4 }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
             {user ? (
-              <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 11, color: NAVY_DARK }}>👤 {user.displayName || user.email}</span>
-                <span style={{ fontSize: 11, color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
+              <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
+                <span style={{ fontSize: 10, color: NAVY_DARK }}>👤 {user.displayName || user.email}</span>
+                <span style={{ fontSize: 10, color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
               </div>
             ) : (
-              <div onClick={() => setAuthMode('login')} style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 5, background: NAVY_DARK, padding: "4px 10px", borderRadius: 20, cursor: "pointer" }}>
-                <span style={{ fontSize: 11, color: WHITE }}>👤 {lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span>
-                <span style={{ color: GOLD, fontSize: 12 }}>→</span>
+              <div onClick={() => setAuthMode('login')} style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 4, background: NAVY_DARK, padding: "4px 8px", borderRadius: 20, cursor: "pointer" }}>
+                <span style={{ fontSize: 10, color: WHITE }}>👤 {lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span>
+                <span style={{ color: GOLD, fontSize: 11 }}>→</span>
               </div>
             )}
           </div>
-          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "14px 12px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div style={{ flex: 1, background: "linear-gradient(135deg, #FAF5ED, #FDF3DC)", borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
             <div>
-              <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 5, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: 12, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.5 }}>"{dailyVerse.text}"</div>
+              <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+              <div style={{ fontSize: 11, fontStyle: "italic", color: NAVY_DARK, lineHeight: 1.5 }}>"{dailyVerse.text}"</div>
             </div>
-            <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {formatRef(dailyVerse.ref)}</div>
+            <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", marginTop: 6 }}>— {formatRef(dailyVerse.ref)}</div>
           </div>
         </div>
         {t.home.cards.map((c, i) => (
