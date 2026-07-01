@@ -5,6 +5,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
 import { products, formatPrice } from "./products";
+import Rosario from "./Rosario";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -896,31 +897,7 @@ export default function App() {
     );
   };
 
-  const renderRosary = () => (
-    <div>
-      <div style={{ background: `linear-gradient(135deg, #4A1259, #7B2D8B)`, borderRadius: 16, padding: "16px 20px", marginBottom: 16, color: WHITE }}>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>✨ {lang === 'es' ? 'Hoy rezamos los' : "Today's mysteries"}</div>
-        <div style={{ fontSize: 17, fontWeight: "bold", fontFamily: "'Cinzel', serif" }}>{t.rosary.today}</div>
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-        {t.rosary.mysteries.map((m, i) => (
-          <button key={i} onClick={() => setSelectedMystery(i)} style={{ padding: "8px 14px", borderRadius: 20, border: `1px solid ${selectedMystery === i ? NAVY : CREAM_DARK}`, background: selectedMystery === i ? `${GOLD}22` : BG_CARD, color: selectedMystery === i ? GOLD : MUTED, fontSize: 11, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{m}</button>
-        ))}
-      </div>
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {t.rosary.steps.map((step, i) => (
-          <li key={i} onClick={() => setRosaryStep(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 12, marginBottom: 6, background: i < rosaryStep ? "rgba(201,168,76,0.08)" : rosaryStep === i ? `${GOLD}18` : BG_CARD, border: `1px solid ${i < rosaryStep ? GOLD+"44" : rosaryStep === i ? GOLD : CREAM_DARK}`, fontSize: 13, color: i < rosaryStep ? GOLD : CREAM, cursor: "pointer" }}>
-            <span style={{ fontSize: 16 }}>{i < rosaryStep ? "✅" : rosaryStep === i ? "👉" : "○"}</span>
-            <span>{step}</span>
-          </li>
-        ))}
-      </ul>
-      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-        <button onClick={() => setRosaryStep(Math.max(0, rosaryStep - 1))} style={{ flex: 1, padding: "10px", background: CREAM_DARK, color: CREAM, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>← {lang === 'es' ? 'Anterior' : 'Previous'}</button>
-        <button onClick={() => setRosaryStep(Math.min(t.rosary.steps.length - 1, rosaryStep + 1))} style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer", fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? 'Siguiente' : 'Next'} →</button>
-      </div>
-    </div>
-  );
+  const renderRosary = () => <Rosario lang={lang} />;
 
   const renderPrayers = () => (
     <div>
