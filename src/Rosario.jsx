@@ -156,18 +156,9 @@ export default function Rosario({ lang = "es", onHome }) {
 
   return (
     <div style={{ position: "relative", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
-      {/* Silueta de fondo — Virgen María en oración */}
+      {/* Resplandor de fondo */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", pointerEvents: "none" }}>
-        <svg width="80%" height="80%" viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet">
-          {/* Cabeza */}
-          <ellipse cx="100" cy="55" rx="26" ry="30" fill="rgba(201,168,76,0.08)" />
-          {/* Velo, cae de la cabeza a los hombros */}
-          <path d="M62 46 C 40 90, 34 130, 44 162 L 156 162 C 166 130, 160 90, 138 46 C 120 68, 80 68, 62 46 Z" fill="rgba(201,168,76,0.08)" />
-          {/* Manto, del hombro hasta abajo */}
-          <path d="M44 162 C 16 224, 6 320, 28 400 L 172 400 C 194 320, 184 224, 156 162 C 128 194, 72 194, 44 162 Z" fill="rgba(201,168,76,0.08)" />
-          {/* Manos juntas en oración */}
-          <path d="M100 208 L 114 252 L 100 270 L 86 252 Z" fill="rgba(201,168,76,0.08)" />
-        </svg>
+        <div style={{ width: 300, height: 500, borderRadius: "50%", background: "rgba(201,168,76,0.06)", filter: "blur(60px)" }} />
       </div>
 
       {/* Barra de progreso */}
@@ -211,6 +202,17 @@ export default function Rosario({ lang = "es", onHome }) {
                 style={{ padding: "13px 28px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif", boxShadow: `0 0 24px ${GOLD}55` }}
               >
                 🔄 {lang === "es" ? "Rezar de nuevo" : "Pray again"}
+              </button>
+              <button
+                onClick={() => onHome && onHome()}
+                title={lang === "es" ? "Inicio" : "Home"}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "18px auto 0", width: 48, height: 48, padding: 0, background: NAVY, border: `1px solid ${GOLD}`, borderRadius: 12, cursor: "pointer" }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M2 11 L12 3 L22 11" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+                  <rect x="4" y="11" width="16" height="10" rx="1" stroke={GOLD} strokeWidth="1.5"/>
+                  <rect x="9.5" y="15" width="5" height="6" fill={GOLD} rx="0.5"/>
+                </svg>
               </button>
             </div>
           ) : (
@@ -262,27 +264,27 @@ export default function Rosario({ lang = "es", onHome }) {
       </div>
 
       {/* Navegación */}
-      <div style={{ position: "fixed", zIndex: 1, bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
-          <button
-            onClick={goPrev}
-            disabled={pageIndex === 0}
-            style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
-          >
-            ← {lang === "es" ? "Anterior" : "Previous"}
-          </button>
-          <button
-            onClick={() => onHome && onHome()}
-            title={lang === "es" ? "Inicio" : "Home"}
-            style={{ flex: "0 0 48px", width: 48, padding: 0, background: NAVY, border: `1px solid ${GOLD}`, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M2 11 L12 3 L22 11" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
-              <rect x="4" y="11" width="16" height="10" rx="1" stroke={GOLD} strokeWidth="1.5"/>
-              <rect x="9.5" y="15" width="5" height="6" fill={GOLD} rx="0.5"/>
-            </svg>
-          </button>
-          {!isComplete && (
+      {!isComplete && (
+        <div style={{ position: "fixed", zIndex: 1, bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
+          <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
+            <button
+              onClick={goPrev}
+              disabled={pageIndex === 0}
+              style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
+            >
+              ← {lang === "es" ? "Anterior" : "Previous"}
+            </button>
+            <button
+              onClick={() => onHome && onHome()}
+              title={lang === "es" ? "Inicio" : "Home"}
+              style={{ flex: "0 0 48px", width: 48, padding: 0, background: NAVY, border: `1px solid ${GOLD}`, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M2 11 L12 3 L22 11" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+                <rect x="4" y="11" width="16" height="10" rx="1" stroke={GOLD} strokeWidth="1.5"/>
+                <rect x="9.5" y="15" width="5" height="6" fill={GOLD} rx="0.5"/>
+              </svg>
+            </button>
             <button
               onClick={goNext}
               disabled={pageIndex === pages.length - 1}
@@ -290,9 +292,9 @@ export default function Rosario({ lang = "es", onHome }) {
             >
               {lang === "es" ? "Siguiente" : "Next"} →
             </button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
