@@ -28,8 +28,8 @@ if ('serviceWorker' in navigator) {
 
 const translations = {
   es: {
-    appName: "Camino de Fe",
-    tagline: "Cada día, un paso más cerca de Dios",
+    appName: "Lumora",
+    tagline: "Luz que guía, amor que une",
     nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Reflexiones", "Tienda", "Configuración"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
@@ -71,8 +71,8 @@ const translations = {
     },
   },
   en: {
-    appName: "Path of Faith",
-    tagline: "Every day, one step closer to God",
+    appName: "Lumora",
+    tagline: "Light that guides, love that unites",
     nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Reflections", "Shop", "Settings"],
     home: {
       greeting: "May the peace of the Lord be with you",
