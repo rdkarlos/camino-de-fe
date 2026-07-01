@@ -57,7 +57,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
-        system: `Eres un guía espiritual católico sabio y compasivo. Basándote en el evangelio del día, das exactamente 2 reflexiones prácticas y espirituales para aplicar en la vida diaria. Cada reflexión debe tener:\n- Un título corto en negrita\n- 3-4 líneas de texto profundo y cálido\nResponde siempre en el idioma del usuario. Tus respuestas son inspiradoras, concretas y cercanas. Máximo 250 palabras en total.\nIf lang is 'en', respond in English. If lang is 'es', respond in Spanish. The lang parameter for this request is: ${lang}.`,
+        system: `You are a wise and compassionate Catholic spiritual guide. Based on today's gospel, provide exactly 3 short spiritual reflections to apply in daily life. Each reflection must have:\n- A short bold title\n- 2-3 sentences of warm, practical, and inspiring text\nAlways respond in the language of the user: if the request is in Spanish, respond in Spanish; if in English, respond in English.\nKeep the total response under 250 words. Do not add introductions or conclusions. The current language is: ${lang}.`,
         messages: [{ role: 'user', content: userMessage }],
       }),
     });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
@@ -253,6 +253,12 @@ const DAILY_VERSES = [
 
 const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1, $2') : r;
 
+const LAMB_BTN_SIZE = 50;
+const clampLambPos = ({ x, y }) => ({
+  x: Math.min(Math.max(x, 0), Math.max(window.innerWidth - LAMB_BTN_SIZE, 0)),
+  y: Math.min(Math.max(y, 0), Math.max(window.innerHeight - LAMB_BTN_SIZE, 0)),
+});
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -297,6 +303,17 @@ export default function App() {
   const [lambOpen, setLambOpen] = useState(false);
   const [lambLoading, setLambLoading] = useState(false);
   const [lambText, setLambText] = useState("");
+  const [lambPos, setLambPos] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('lambPosition'));
+      if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
+        return clampLambPos(saved);
+      }
+    } catch {}
+    return clampLambPos({ x: 20, y: window.innerHeight - 80 - LAMB_BTN_SIZE });
+  });
+  const [lambDragging, setLambDragging] = useState(false);
+  const lambDragRef = useRef({ pointerId: null, startX: 0, startY: 0, origX: 0, origY: 0, dragging: false, moved: false, isTouch: false, longPressTimer: null });
   const [generatedPrayer, setGeneratedPrayer] = useState(null);
   const [savedPrayers, setSavedPrayers] = useState([]);
   const [prayerBook, setPrayerBook] = useState([]);
@@ -514,6 +531,67 @@ export default function App() {
     } finally {
       setLambLoading(false);
     }
+  };
+
+  const LAMB_LONG_PRESS_MS = 400;
+  const LAMB_DRAG_THRESHOLD = 6;
+
+  const handleLambPointerDown = (e) => {
+    const drag = lambDragRef.current;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.pointerId = e.pointerId;
+    drag.startX = e.clientX;
+    drag.startY = e.clientY;
+    drag.origX = lambPos.x;
+    drag.origY = lambPos.y;
+    drag.dragging = false;
+    drag.moved = false;
+    drag.isTouch = e.pointerType !== 'mouse';
+    clearTimeout(drag.longPressTimer);
+    if (drag.isTouch) {
+      drag.longPressTimer = setTimeout(() => {
+        drag.dragging = true;
+        if (navigator.vibrate) navigator.vibrate(30);
+        setLambDragging(true);
+      }, LAMB_LONG_PRESS_MS);
+    }
+  };
+
+  const handleLambPointerMove = (e) => {
+    const drag = lambDragRef.current;
+    if (drag.pointerId !== e.pointerId) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    if (!drag.dragging) {
+      if (!drag.isTouch && (Math.abs(dx) > LAMB_DRAG_THRESHOLD || Math.abs(dy) > LAMB_DRAG_THRESHOLD)) {
+        drag.dragging = true;
+        setLambDragging(true);
+      } else {
+        return;
+      }
+    }
+    drag.moved = true;
+    setLambPos(clampLambPos({ x: drag.origX + dx, y: drag.origY + dy }));
+  };
+
+  const handleLambPointerUp = (e) => {
+    const drag = lambDragRef.current;
+    if (drag.pointerId !== e.pointerId) return;
+    clearTimeout(drag.longPressTimer);
+    if (drag.dragging) {
+      localStorage.setItem('lambPosition', JSON.stringify(lambPos));
+    }
+    drag.dragging = false;
+    drag.pointerId = null;
+    setLambDragging(false);
+  };
+
+  const handleLambButtonClick = () => {
+    if (lambDragRef.current.moved) {
+      lambDragRef.current.moved = false;
+      return;
+    }
+    handleLambClick();
   };
 
   const addToCart = (product) => {
@@ -2247,24 +2325,25 @@ export default function App() {
         }
         input::placeholder, textarea::placeholder { color: #8A9BB5; opacity: 1; }
         input, textarea, select { color-scheme: dark; }
-        @media (min-width: 769px) {
-          .lamb-fab { left: 50% !important; right: auto !important; bottom: 40px !important; transform: translateX(-200px) !important; }
-        }
       `}</style>
 
       {/* Botón Cordero de Dios */}
       {tab === 2 && gospelData && (
         <button
-          onClick={handleLambClick}
+          onClick={handleLambButtonClick}
+          onPointerDown={handleLambPointerDown}
+          onPointerMove={handleLambPointerMove}
+          onPointerUp={handleLambPointerUp}
+          onPointerCancel={handleLambPointerUp}
           title={lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
-          className="lamb-fab"
           style={{
-            position: "fixed", bottom: 80, left: 20, zIndex: 60,
-            width: 50, height: 50, borderRadius: "50%",
+            position: "fixed", left: lambPos.x, top: lambPos.y, zIndex: 60,
+            width: LAMB_BTN_SIZE, height: LAMB_BTN_SIZE, borderRadius: "50%",
             background: NAVY_DARK,
-            border: "none", cursor: "pointer",
+            border: "none", cursor: lambDragging ? "grabbing" : "pointer",
+            touchAction: "none",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 24, animation: "lambPulse 2.5s ease-in-out infinite",
+            fontSize: 24, animation: lambDragging ? "none" : "lambPulse 2.5s ease-in-out infinite",
             boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
           }}
         >🐑</button>
