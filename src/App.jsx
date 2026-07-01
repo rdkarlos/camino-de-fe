@@ -2248,7 +2248,7 @@ export default function App() {
         input::placeholder, textarea::placeholder { color: #8A9BB5; opacity: 1; }
         input, textarea, select { color-scheme: dark; }
         @media (min-width: 769px) {
-          .lamb-fab { left: 40px !important; right: auto !important; bottom: 40px !important; }
+          .lamb-fab { left: 50% !important; right: auto !important; bottom: 40px !important; transform: translateX(-200px) !important; }
         }
       `}</style>
 
