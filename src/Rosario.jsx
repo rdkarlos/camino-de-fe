@@ -194,15 +194,9 @@ export default function Rosario({ lang = "es", onHome }) {
               <div style={{ fontSize: 22, fontWeight: "bold", fontFamily: "'Cinzel', serif", color: GOLD, marginBottom: 12 }}>
                 {page.title}
               </div>
-              <div style={{ fontSize: 17, lineHeight: 1.7, color: CREAM, fontFamily: "'Crimson Text', serif", marginBottom: 28 }}>
+              <div style={{ fontSize: 17, lineHeight: 1.7, color: CREAM, fontFamily: "'Crimson Text', serif" }}>
                 {page.text}
               </div>
-              <button
-                onClick={goRestart}
-                style={{ padding: "13px 28px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif", boxShadow: `0 0 24px ${GOLD}55` }}
-              >
-                {lang === "es" ? "Rezar de nuevo" : "Pray again"}
-              </button>
             </div>
           ) : (
             <>
@@ -255,13 +249,22 @@ export default function Rosario({ lang = "es", onHome }) {
       {/* Navegación */}
       <div style={{ position: "fixed", zIndex: 1, bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
-          <button
-            onClick={goPrev}
-            disabled={pageIndex === 0}
-            style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
-          >
-            ← {lang === "es" ? "Anterior" : "Previous"}
-          </button>
+          {isComplete ? (
+            <button
+              onClick={goRestart}
+              style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}
+            >
+              {lang === "es" ? "Rezar de nuevo" : "Pray again"}
+            </button>
+          ) : (
+            <button
+              onClick={goPrev}
+              disabled={pageIndex === 0}
+              style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
+            >
+              ← {lang === "es" ? "Anterior" : "Previous"}
+            </button>
+          )}
           <button
             onClick={() => onHome && onHome()}
             title={lang === "es" ? "Inicio" : "Home"}

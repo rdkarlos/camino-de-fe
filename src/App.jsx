@@ -460,8 +460,10 @@ export default function App() {
     setLambOpen(true);
     setLambText('');
 
-    const colombiaDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
-    const today = colombiaDate.toISOString().split('T')[0];
+    const now = new Date();
+    const colombiaOffset = -5 * 60;
+    const colombiaTime = new Date(now.getTime() + (colombiaOffset - now.getTimezoneOffset()) * 60000);
+    const today = colombiaTime.toISOString().split('T')[0];
 
     // 1. localStorage — instantáneo
     const cached = localStorage.getItem(`reflexion_${today}_${lang}`);
@@ -2271,7 +2273,7 @@ export default function App() {
           onClick={() => setLambOpen(false)}
         >
           <div
-            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: BG_CARD, border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "90vw", maxWidth: 440, maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
+            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: BG_CARD, border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "85%", maxWidth: "85%", maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
             onClick={e => e.stopPropagation()}
           >
             {/* Título centrado */}
