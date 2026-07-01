@@ -3,6 +3,7 @@
 ## URLs
 - Producción: https://camino-de-fe-seven.vercel.app
 - GitHub: github.com/rdkarlos/camino-de-fe
+- Local: C:\Users\rdkar\camino-de-fe
 
 ## Stack
 - React + Vite + Vercel
@@ -19,6 +20,7 @@
 
 ## Archivos clave
 - src/App.jsx — código principal
+- src/Rosario.jsx — Santo Rosario completo
 - src/products.js — productos tienda
 - api/gospel.js — evangelio y lecturas (Universalis)
 - api/spiritual-guide.js — Guía Espiritual IA
@@ -28,12 +30,12 @@
 - public/manifest.json — PWA config
 
 ## Secciones
-1. Inicio — cards compactas modo oscuro
+1. Inicio — cards compactas modo oscuro, versículo del día
 2. Oración Personal — Crear Oración, Diario, Mis Oraciones, Conec✝2
 3. Evangelio — con Guía Espiritual (corderito 🐑)
 4. La Biblia — LBLA, navegación por categorías + buscador
 5. Lecturas del día
-6. Santo Rosario
+6. Santo Rosario — 4 partes, 35 pantallas, misterios del día automáticos, contador Ave Marías
 7. Devocional
 8. Tienda
 9. Configuración
@@ -52,8 +54,9 @@
 - Deploy automático en Vercel con cada push
 
 ## Pendiente
+- Devocional — contenido pendiente
 - Diario de Gracias
-- Dominio propio (candidato: amorae.org)
-- Wompi producción
 - Splash screen con logo Lumora
 - Notificaciones push Conec✝2
+- Dominio propio (candidato: amorae.org)
+- Wompi producción
