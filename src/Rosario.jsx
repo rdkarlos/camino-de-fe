@@ -171,7 +171,7 @@ export default function Rosario({ lang = "es", onHome }) {
       )}
 
       {/* Contenido central */}
-      <div style={{ minHeight: "calc(100vh - 260px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflowY: "auto" }}>
+      <div style={{ minHeight: "calc(100vh - 350px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflowY: "auto" }}>
         <div style={{ maxWidth: 400, width: "100%" }}>
           {!isComplete && (
             <div style={{ fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cinzel', serif" }}>
@@ -182,7 +182,10 @@ export default function Rosario({ lang = "es", onHome }) {
 
           {isComplete ? (
             <div>
-              <div style={{ fontSize: 64, marginBottom: 18 }}>✝️</div>
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 18 }}>
+                <line x1="12" y1="2" x2="12" y2="22" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round"/>
+                <line x1="6" y1="8" x2="18" y2="8" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
               <div style={{ fontSize: 22, fontWeight: "bold", fontFamily: "'Cinzel', serif", color: GOLD, marginBottom: 12 }}>
                 {page.title}
               </div>
