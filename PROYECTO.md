@@ -11,8 +11,8 @@
 
 ## APIs activas
 - Universalis (gratis, sin key) — lecturas del día
-- API.Bible (key: 8z-olVvbUPzjg2OtXjSks) — LBLA español, Bible ID: e3f420b9665abaeb-01
-- Anthropic API — Guía Espiritual (corderito), key en Vercel env
+- API.Bible (key en código) — LBLA español, Bible ID: e3f420b9665abaeb-01
+- Anthropic API — Guía Espiritual (corderito 🐑), key en Vercel env
 - Firebase — project: camino-de-fe-4d9c2
 - Wompi — pagos COP modo test
 - Resend — emails confirmación
@@ -44,6 +44,12 @@
 - Dorado: #C9A84C, Texto: #FAF5ED
 - Tipografía: Cinzel (títulos), Crimson Text (textos)
 - Íconos SVG minimalistas católicos
+
+## Contexto
+- Carlos, Colombia, católico
+- Claude Code para modificaciones directas
+- Git + GitHub para versiones
+- Deploy automático en Vercel con cada push
 
 ## Pendiente
 - Diario de Gracias
