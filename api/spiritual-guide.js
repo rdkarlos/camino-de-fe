@@ -1,3 +1,33 @@
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore, collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
+  authDomain: "camino-de-fe-4d9c2.firebaseapp.com",
+  projectId: "camino-de-fe-4d9c2",
+  storageBucket: "camino-de-fe-4d9c2.firebasestorage.app",
+  messagingSenderId: "1067905510058",
+  appId: "1:1067905510058:web:e68d01c447a0e84c48fed3",
+};
+
+const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+async function cleanOldReflections(today) {
+  try {
+    const snapshot = await getDocs(collection(db, 'reflexiones'));
+    const deletions = [];
+    snapshot.forEach((docSnap) => {
+      if (!docSnap.id.startsWith(today)) {
+        deletions.push(deleteDoc(doc(db, 'reflexiones', docSnap.id)));
+      }
+    });
+    await Promise.all(deletions);
+  } catch (e) {
+    console.error('[spiritual-guide] cleanup error:', e.message);
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -26,8 +56,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 800,
-        system: `Eres un guía espiritual católico sabio y compasivo. Basándote en el evangelio del día, das exactamente 2 reflexiones prácticas para aplicar hoy. Formato de respuesta:\n- Cada reflexión tiene un título corto en negrita\n- Máximo 1 línea de texto por reflexión\n- Sin introducciones ni conclusiones\n- Máximo 100 palabras en total\nIf lang is 'en', respond in English. If lang is 'es', respond in Spanish. The lang parameter for this request is: ${lang}.`,
+        max_tokens: 1000,
+        system: `Eres un guía espiritual católico sabio y compasivo. Basándote en el evangelio del día, das exactamente 2 reflexiones prácticas y espirituales para aplicar en la vida diaria. Cada reflexión debe tener:\n- Un título corto en negrita\n- 3-4 líneas de texto profundo y cálido\nResponde siempre en el idioma del usuario. Tus respuestas son inspiradoras, concretas y cercanas. Máximo 250 palabras en total.\nIf lang is 'en', respond in English. If lang is 'es', respond in Spanish. The lang parameter for this request is: ${lang}.`,
         messages: [{ role: 'user', content: userMessage }],
       }),
     });
@@ -41,6 +71,13 @@ export default async function handler(req, res) {
     }
 
     const data = JSON.parse(rawData);
+
+    const now = new Date();
+    const colombiaOffset = -5 * 60;
+    const colombiaTime = new Date(now.getTime() + (colombiaOffset - now.getTimezoneOffset()) * 60000);
+    const today = colombiaTime.toISOString().split('T')[0];
+    await cleanOldReflections(today);
+
     return res.status(200).json({ text: data.content?.[0]?.text ?? '' });
   } catch (error) {
     console.error('[spiritual-guide] exception:', error.message);

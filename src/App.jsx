@@ -2247,6 +2247,9 @@ export default function App() {
         }
         input::placeholder, textarea::placeholder { color: #8A9BB5; opacity: 1; }
         input, textarea, select { color-scheme: dark; }
+        @media (min-width: 769px) {
+          .lamb-fab { left: 40px !important; right: auto !important; bottom: 40px !important; }
+        }
       `}</style>
 
       {/* Botón Cordero de Dios */}
@@ -2254,6 +2257,7 @@ export default function App() {
         <button
           onClick={handleLambClick}
           title={lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
+          className="lamb-fab"
           style={{
             position: "fixed", bottom: 80, left: 20, zIndex: 60,
             width: 50, height: 50, borderRadius: "50%",
@@ -2273,7 +2277,7 @@ export default function App() {
           onClick={() => setLambOpen(false)}
         >
           <div
-            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: BG_CARD, border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "85%", maxWidth: "85%", maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
+            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: BG_CARD, border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "90%", maxWidth: 480, maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
             onClick={e => e.stopPropagation()}
           >
             {/* Título centrado */}
