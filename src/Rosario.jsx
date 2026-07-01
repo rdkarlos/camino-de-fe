@@ -122,6 +122,7 @@ function buildPages(lang, mysteryKey) {
 export default function Rosario({ lang = "es", onHome }) {
   const [pageIndex, setPageIndex] = useState(0);
   const [aveCounts, setAveCounts] = useState({});
+  const [maryPulse, setMaryPulse] = useState(0);
   const mysteryKey = todayMysteryKey();
   const partTitles = SECTIONS[lang];
   const pages = buildPages(lang, mysteryKey);
@@ -138,6 +139,7 @@ export default function Rosario({ lang = "es", onHome }) {
     if (navigator.vibrate) navigator.vibrate(50);
     const next = current + 1;
     setAveCounts(prev => ({ ...prev, [counterId]: next }));
+    setMaryPulse(k => k + 1);
     if (next === total) {
       setTimeout(goNext, 400);
     }
@@ -156,6 +158,13 @@ export default function Rosario({ lang = "es", onHome }) {
 
   return (
     <div style={{ minHeight: "100vh", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+      <style>{`
+        @keyframes maryFade {
+          0%    { opacity: 0; }
+          16.7% { opacity: 1; }
+          100%  { opacity: 0; }
+        }
+      `}</style>
       {/* Barra de progreso */}
       <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
         {partTitles.map((_, i) => (
@@ -207,19 +216,38 @@ export default function Rosario({ lang = "es", onHome }) {
                   <div style={{ fontSize: 15, lineHeight: 1.7, color: CREAM, fontFamily: "'Crimson Text', serif", fontStyle: "italic", marginBottom: 24 }}>
                     {page.text}
                   </div>
-                  <div
-                    onClick={() => handleAveMariaTap(page.counterId, page.total)}
-                    style={{
-                      width: 140, height: 140, borderRadius: "50%", margin: "0 auto",
-                      background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", userSelect: "none",
-                      boxShadow: `0 0 28px ${GOLD}66`,
-                    }}
-                  >
-                    <span style={{ fontSize: 46, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cinzel', serif" }}>
-                      {aveCounts[page.counterId] || 0}
-                    </span>
+                  <div style={{ position: "relative", width: 140, height: 140, margin: "0 auto" }}>
+                    {maryPulse > 0 && (
+                      <svg
+                        key={maryPulse}
+                        width="230" height="230" viewBox="0 0 100 140"
+                        style={{
+                          position: "absolute", top: "50%", left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          pointerEvents: "none", opacity: 0,
+                          animation: "maryFade 0.6s ease forwards",
+                        }}
+                      >
+                        <circle cx="50" cy="20" r="15" stroke={GOLD} strokeWidth="2" fill="none"/>
+                        <circle cx="50" cy="32" r="10" fill={GOLD}/>
+                        <path d="M50 42 C 32 47, 22 64, 20 92 C 18 112, 26 130, 50 136 C 74 130, 82 112, 80 92 C 78 64, 68 47, 50 42 Z" fill={GOLD}/>
+                        <path d="M50 40 C 39 44, 32 53, 30 64 C 44 57, 56 57, 70 64 C 68 53, 61 44, 50 40 Z" fill={GOLD} opacity="0.85"/>
+                      </svg>
+                    )}
+                    <div
+                      onClick={() => handleAveMariaTap(page.counterId, page.total)}
+                      style={{
+                        position: "relative", zIndex: 1,
+                        width: 140, height: 140, borderRadius: "50%",
+                        background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer", userSelect: "none",
+                      }}
+                    >
+                      <span style={{ fontSize: 46, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cinzel', serif" }}>
+                        {aveCounts[page.counterId] || 0}
+                      </span>
+                    </div>
                   </div>
                   <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 8, maxWidth: 220, margin: "18px auto 0" }}>
                     {Array.from({ length: page.total }).map((_, i) => (
