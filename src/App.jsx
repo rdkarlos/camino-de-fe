@@ -760,7 +760,7 @@ export default function App() {
                   <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
                     <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", letterSpacing: 0.5, marginBottom: 3 }}>{label}</div>
                     {refText && (
-                      <div style={{ fontSize: 13, color: WHITE, fontWeight: "bold", fontFamily: "'Cinzel', serif", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{refText}</div>
+                      <div style={{ fontSize: 16, color: WHITE, fontWeight: 700, fontFamily: "'Cinzel', serif", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{refText}</div>
                     )}
                     <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{preview}</div>
                   </div>
