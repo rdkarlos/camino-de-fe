@@ -758,7 +758,7 @@ export default function App() {
                 {/* Contenido */}
                 <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", boxSizing: "border-box" }}>
                   <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
-                    <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", letterSpacing: 0.5, marginBottom: 3 }}>{label}</div>
+                    <div style={{ fontSize: 16, color: GOLD, fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>{label}</div>
                     {refText && (
                       <div style={{ fontSize: 16, color: WHITE, fontWeight: 700, fontFamily: "'Cinzel', serif", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{refText}</div>
                     )}
