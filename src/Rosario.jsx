@@ -201,18 +201,7 @@ export default function Rosario({ lang = "es", onHome }) {
                 onClick={goRestart}
                 style={{ padding: "13px 28px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif", boxShadow: `0 0 24px ${GOLD}55` }}
               >
-                🔄 {lang === "es" ? "Rezar de nuevo" : "Pray again"}
-              </button>
-              <button
-                onClick={() => onHome && onHome()}
-                title={lang === "es" ? "Inicio" : "Home"}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "18px auto 0", width: 48, height: 48, padding: 0, background: NAVY, border: `1px solid ${GOLD}`, borderRadius: 12, cursor: "pointer" }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M2 11 L12 3 L22 11" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
-                  <rect x="4" y="11" width="16" height="10" rx="1" stroke={GOLD} strokeWidth="1.5"/>
-                  <rect x="9.5" y="15" width="5" height="6" fill={GOLD} rx="0.5"/>
-                </svg>
+                {lang === "es" ? "Rezar de nuevo" : "Pray again"}
               </button>
             </div>
           ) : (
@@ -264,27 +253,27 @@ export default function Rosario({ lang = "es", onHome }) {
       </div>
 
       {/* Navegación */}
-      {!isComplete && (
-        <div style={{ position: "fixed", zIndex: 1, bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
-            <button
-              onClick={goPrev}
-              disabled={pageIndex === 0}
-              style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
-            >
-              ← {lang === "es" ? "Anterior" : "Previous"}
-            </button>
-            <button
-              onClick={() => onHome && onHome()}
-              title={lang === "es" ? "Inicio" : "Home"}
-              style={{ flex: "0 0 48px", width: 48, padding: 0, background: NAVY, border: `1px solid ${GOLD}`, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M2 11 L12 3 L22 11" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
-                <rect x="4" y="11" width="16" height="10" rx="1" stroke={GOLD} strokeWidth="1.5"/>
-                <rect x="9.5" y="15" width="5" height="6" fill={GOLD} rx="0.5"/>
-              </svg>
-            </button>
+      <div style={{ position: "fixed", zIndex: 1, bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
+          <button
+            onClick={goPrev}
+            disabled={pageIndex === 0}
+            style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
+          >
+            ← {lang === "es" ? "Anterior" : "Previous"}
+          </button>
+          <button
+            onClick={() => onHome && onHome()}
+            title={lang === "es" ? "Inicio" : "Home"}
+            style={{ flex: "0 0 48px", width: 48, padding: 0, background: NAVY, border: `1px solid ${GOLD}`, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M2 11 L12 3 L22 11" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+              <rect x="4" y="11" width="16" height="10" rx="1" stroke={GOLD} strokeWidth="1.5"/>
+              <rect x="9.5" y="15" width="5" height="6" fill={GOLD} rx="0.5"/>
+            </svg>
+          </button>
+          {!isComplete && (
             <button
               onClick={goNext}
               disabled={pageIndex === pages.length - 1}
@@ -292,9 +281,9 @@ export default function Rosario({ lang = "es", onHome }) {
             >
               {lang === "es" ? "Siguiente" : "Next"} →
             </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

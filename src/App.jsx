@@ -460,7 +460,8 @@ export default function App() {
     setLambOpen(true);
     setLambText('');
 
-    const today = new Date().toISOString().split('T')[0];
+    const colombiaDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+    const today = colombiaDate.toISOString().split('T')[0];
 
     // 1. localStorage — instantáneo
     const cached = localStorage.getItem(`reflexion_${today}_${lang}`);
