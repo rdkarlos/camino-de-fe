@@ -897,7 +897,7 @@ export default function App() {
     );
   };
 
-  const renderRosary = () => <Rosario lang={lang} />;
+  const renderRosary = () => <Rosario lang={lang} onHome={() => setTab(0)} />;
 
   const renderPrayers = () => (
     <div>
@@ -2325,7 +2325,7 @@ export default function App() {
       )}
 
       {/* Botón Inicio fijo */}
-      {tab !== 0 && (
+      {tab !== 0 && tab !== 4 && (
         <button
           onClick={() => setTab(0)}
           title={lang === "es" ? "Inicio" : "Home"}

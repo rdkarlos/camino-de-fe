@@ -119,7 +119,7 @@ function buildPages(lang, mysteryKey) {
   return [...openingPages, ...buildMysteryPages(lang, mysteryKey), ...buildPopePages(lang), ...buildSalvePages(lang)];
 }
 
-export default function Rosario({ lang = "es" }) {
+export default function Rosario({ lang = "es", onHome }) {
   const [pageIndex, setPageIndex] = useState(0);
   const [aveCounts, setAveCounts] = useState({});
   const mysteryKey = todayMysteryKey();
@@ -245,23 +245,36 @@ export default function Rosario({ lang = "es" }) {
       </div>
 
       {/* Navegación */}
-      <div style={{ display: "flex", gap: 10, position: "fixed", bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
-        <button
-          onClick={goPrev}
-          disabled={pageIndex === 0}
-          style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
-        >
-          ← {lang === "es" ? "Anterior" : "Previous"}
-        </button>
-        {!isComplete && (
+      <div style={{ position: "fixed", bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
           <button
-            onClick={goNext}
-            disabled={pageIndex === pages.length - 1}
-            style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === pages.length - 1 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === pages.length - 1 ? 0.5 : 1 }}
+            onClick={goPrev}
+            disabled={pageIndex === 0}
+            style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
           >
-            {lang === "es" ? "Siguiente" : "Next"} →
+            ← {lang === "es" ? "Anterior" : "Previous"}
           </button>
-        )}
+          <button
+            onClick={() => onHome && onHome()}
+            title={lang === "es" ? "Inicio" : "Home"}
+            style={{ flex: "0 0 48px", width: 48, padding: 0, background: NAVY, border: `1px solid ${GOLD}`, borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M2 11 L12 3 L22 11" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+              <rect x="4" y="11" width="16" height="10" rx="1" stroke={GOLD} strokeWidth="1.5"/>
+              <rect x="9.5" y="15" width="5" height="6" fill={GOLD} rx="0.5"/>
+            </svg>
+          </button>
+          {!isComplete && (
+            <button
+              onClick={goNext}
+              disabled={pageIndex === pages.length - 1}
+              style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === pages.length - 1 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === pages.length - 1 ? 0.5 : 1 }}
+            >
+              {lang === "es" ? "Siguiente" : "Next"} →
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
