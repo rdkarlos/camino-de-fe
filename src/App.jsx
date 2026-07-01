@@ -732,30 +732,58 @@ export default function App() {
             </div>
           </>
         )}
-        {t.home.cards.map((c, i) => (
-          <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
-            <div style={{ position: "absolute", inset: 0, background:
-              i % 2 === 0
-                ? "linear-gradient(to bottom, rgba(139,105,20,0.2) 0%, rgba(139,105,20,0.55) 100%)"
-                : "linear-gradient(to bottom, rgba(27,42,74,0.2) 0%, rgba(27,42,74,0.55) 100%)"
-            }} />
-            <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
-              <div>
-                <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
-                <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>
-                  {i === 1 && gospelData ? (
-                    <><span style={{ fontWeight: "bold", color: GOLD_LIGHT, display: "block", marginBottom: 4 }}>{formatRef(lang === 'en' ? gospelData?.reference : reference)}</span>{body.substring(0, 90) + "…"}</>
-                  ) : i === 2 && gospelData?.reading1 ? (
-                    <><span style={{ fontWeight: "bold", color: "#90CAF9", display: "block", marginBottom: 4 }}>{formatRef(gospelData.reading1.reference)}</span>{gospelData.reading1.text.substring(0, 90) + "…"}</>
-                  ) : c.desc}
+        {t.home.cards.map((c, i) => {
+          // Cards compactas horizontales: Evangelio (i=1) y Lecturas (i=2)
+          if (i === 1 || i === 2) {
+            const label = i === 1
+              ? `✝ ${lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}`
+              : `✝ ${lang === 'es' ? 'Lecturas del Día' : 'Daily Readings'}`;
+            const refText = i === 1
+              ? (gospelData ? formatRef(lang === 'en' ? gospelData?.reference : reference) : null)
+              : (gospelData?.reading1 ? formatRef(gospelData.reading1.reference) : null);
+            const preview = i === 1
+              ? (gospelData ? body.substring(0, 85) + "…" : c.desc)
+              : (gospelData?.reading1 ? gospelData.reading1.text.substring(0, 85) + "…" : c.desc);
+            return (
+              <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
+                {/* Imagen de fondo a 0.4 de opacidad */}
+                <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
+                {/* Gradiente de izquierda a derecha */}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #111827 40%, transparent 100%)" }} />
+                {/* Contenido */}
+                <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", boxSizing: "border-box" }}>
+                  <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+                    <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", letterSpacing: 0.5, marginBottom: 3 }}>{label}</div>
+                    {refText && (
+                      <div style={{ fontSize: 13, color: WHITE, fontWeight: "bold", fontFamily: "'Cinzel', serif", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{refText}</div>
+                    )}
+                    <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{preview}</div>
+                  </div>
+                  <div style={{ color: GOLD, fontSize: 26, fontWeight: "300", flexShrink: 0 }}>›</div>
                 </div>
               </div>
-              <div style={{ marginTop: 14 }}>
-                <span style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.38)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: "bold" }}>{c.btn} →</span>
+            );
+          }
+          // Cards grandes: resto de secciones
+          return (
+            <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+              <div style={{ position: "absolute", inset: 0, background:
+                i % 2 === 0
+                  ? "linear-gradient(to bottom, rgba(139,105,20,0.2) 0%, rgba(139,105,20,0.55) 100%)"
+                  : "linear-gradient(to bottom, rgba(27,42,74,0.2) 0%, rgba(27,42,74,0.55) 100%)"
+              }} />
+              <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
+                <div>
+                  <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
+                  <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>{c.desc}</div>
+                </div>
+                <div style={{ marginTop: 14 }}>
+                  <span style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.38)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: "bold" }}>{c.btn} →</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
