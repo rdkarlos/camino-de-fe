@@ -1289,7 +1289,7 @@ export default function App() {
                 </div>
 
                 <button onClick={generatePrayer} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
-                  ✝️ {lang === "es" ? "Generar mi oración" : "Generate my prayer"}
+                  ✝ {lang === "es" ? "Orar ahora" : "Pray now"}
                 </button>
               </div>
             )}
