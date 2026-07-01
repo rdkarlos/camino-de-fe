@@ -2356,7 +2356,7 @@ export default function App() {
           onClick={() => setLambOpen(false)}
         >
           <div
-            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: BG_CARD, border: `2px solid ${GOLD}`, borderRadius: 24, padding: "28px 24px 24px", width: "90%", maxWidth: 480, maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
+            style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: BG_CARD, border: `2px solid ${GOLD}`, borderRadius: 20, padding: 24, width: "88%", maxWidth: 420, maxHeight: "82vh", overflowY: "auto", zIndex: 101, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
             onClick={e => e.stopPropagation()}
           >
             {/* Título centrado */}
