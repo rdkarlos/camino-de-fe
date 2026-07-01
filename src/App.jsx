@@ -688,9 +688,9 @@ export default function App() {
             <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
             <div>
               <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: 11, fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
+              <div style={{ fontSize: "0.85rem", fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
             </div>
-            <div style={{ fontSize: 10, color: GOLD, fontWeight: "bold", marginTop: 6 }}>— {formatRef(dailyVerse.ref)}</div>
+            <div style={{ fontSize: "0.8rem", color: GOLD, fontWeight: "bold", marginTop: 6 }}>— {formatRef(dailyVerse.ref)}</div>
           </div>
         </div>
 
@@ -736,8 +736,8 @@ export default function App() {
           <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
             <div style={{ position: "absolute", inset: 0, background:
               i % 2 === 0
-                ? "linear-gradient(to bottom, rgba(139,105,20,0.45) 0%, rgba(139,105,20,0.9) 100%)"
-                : "linear-gradient(to bottom, rgba(27,42,74,0.45) 0%, rgba(27,42,74,0.9) 100%)"
+                ? "linear-gradient(to bottom, rgba(139,105,20,0.2) 0%, rgba(139,105,20,0.55) 100%)"
+                : "linear-gradient(to bottom, rgba(27,42,74,0.2) 0%, rgba(27,42,74,0.55) 100%)"
             }} />
             <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
               <div>
@@ -2385,7 +2385,7 @@ export default function App() {
             const isActive = tab === idx;
             const isHovered = hoveredQuickBtn === idx;
             const isPressed = pressedQuickBtn === idx;
-            const iconColor = isActive ? GOLD : "#FAF5ED";
+            const iconColor = isActive ? GOLD : "#CBD5E1";
             const bibleStyle = {
               background: isActive
                 ? "rgba(201,168,76,0.28)"
