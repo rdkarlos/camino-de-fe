@@ -155,7 +155,7 @@ export default function Rosario({ lang = "es" }) {
   const isComplete = page.kind === "complete";
 
   return (
-    <div style={{ minHeight: "100vh", background: BG_MAIN, color: CREAM, padding: 20, boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {/* Barra de progreso */}
       <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
         {partTitles.map((_, i) => (
@@ -245,7 +245,7 @@ export default function Rosario({ lang = "es" }) {
       </div>
 
       {/* Navegación */}
-      <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+      <div style={{ display: "flex", gap: 10, position: "fixed", bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
         <button
           onClick={goPrev}
           disabled={pageIndex === 0}
