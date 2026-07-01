@@ -152,6 +152,29 @@ const PRAYER_MOODS = {
   ],
 };
 
+const PRAYER_INTENTION_PREFIX = {
+  es: {
+    gratitud:   "Te agradezco especialmente por:",
+    ansiedad:   "Te pido especialmente por:",
+    familia:    "Te encomiendo especialmente a:",
+    trabajo:    "Te pido orientación especialmente en:",
+    duelo:      "En este dolor te ofrezco:",
+    salud:      "Te pido sanación especialmente por:",
+    decisiones: "Te pido sabiduría especialmente en:",
+    otra:       "Te lo pido especialmente por:",
+  },
+  en: {
+    gratitud:   "I especially thank You for:",
+    ansiedad:   "I especially ask You for:",
+    familia:    "I especially entrust to You:",
+    trabajo:    "I especially seek guidance for:",
+    duelo:      "In this pain, I offer You:",
+    salud:      "I especially ask for healing for:",
+    decisiones: "I especially ask for wisdom in:",
+    otra:       "I especially pray for:",
+  },
+};
+
 const BIBLE_BOOKS = {
   es: {
     ot: {
@@ -934,8 +957,9 @@ export default function App() {
       const currentMood = PRAYER_MOODS[lang].find(m => m.id === selectedMood);
       if (!currentMood) return;
       const base = currentMood.prayer;
+      const prefix = PRAYER_INTENTION_PREFIX[lang][currentMood.id] || PRAYER_INTENTION_PREFIX[lang].otra;
       const full = prayerIntention.trim()
-        ? `${base}\n\n${lang === "es" ? "Te lo pido especialmente por" : "I especially pray for"}: ${prayerIntention.trim()}.`
+        ? `${base}\n\n${prefix} ${prayerIntention.trim()}.`
         : base;
       setGeneratedPrayer(full);
     };
@@ -1656,7 +1680,11 @@ export default function App() {
                         </div>
                       )}
                       {(() => {
-                        const marker = lang === "es" ? "Te lo pido especialmente por" : "I especially pray for";
+                        const moodId = [...PRAYER_MOODS.es, ...PRAYER_MOODS.en].find(m => m.label === p.estado)?.id;
+                        const prefixEs = PRAYER_INTENTION_PREFIX.es[moodId] || PRAYER_INTENTION_PREFIX.es.otra;
+                        const prefixEn = PRAYER_INTENTION_PREFIX.en[moodId] || PRAYER_INTENTION_PREFIX.en.otra;
+                        const legacyMarker = lang === "es" ? "Te lo pido especialmente por" : "I especially pray for";
+                        const marker = [prefixEs, prefixEn, legacyMarker].find(m => p.oracion.includes(m)) || legacyMarker;
                         const idx = p.oracion.indexOf(marker);
                         if (idx === -1) {
                           return (
