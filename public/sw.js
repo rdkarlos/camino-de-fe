@@ -1,4 +1,4 @@
-const CACHE_NAME = 'camino-de-fe-v18';
+const CACHE_NAME = 'camino-de-fe-v20';
 const urlsToCache = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => {
