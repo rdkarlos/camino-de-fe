@@ -155,9 +155,23 @@ export default function Rosario({ lang = "es", onHome }) {
   const isComplete = page.kind === "complete";
 
   return (
-    <div style={{ background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+    <div style={{ position: "relative", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+      {/* Silueta de fondo — Virgen María en oración */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", pointerEvents: "none" }}>
+        <svg width="80%" height="80%" viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet">
+          {/* Cabeza */}
+          <ellipse cx="100" cy="55" rx="26" ry="30" fill="rgba(201,168,76,0.08)" />
+          {/* Velo, cae de la cabeza a los hombros */}
+          <path d="M62 46 C 40 90, 34 130, 44 162 L 156 162 C 166 130, 160 90, 138 46 C 120 68, 80 68, 62 46 Z" fill="rgba(201,168,76,0.08)" />
+          {/* Manto, del hombro hasta abajo */}
+          <path d="M44 162 C 16 224, 6 320, 28 400 L 172 400 C 194 320, 184 224, 156 162 C 128 194, 72 194, 44 162 Z" fill="rgba(201,168,76,0.08)" />
+          {/* Manos juntas en oración */}
+          <path d="M100 208 L 114 252 L 100 270 L 86 252 Z" fill="rgba(201,168,76,0.08)" />
+        </svg>
+      </div>
+
       {/* Barra de progreso */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+      <div style={{ position: "relative", zIndex: 1, display: "flex", gap: 6, marginBottom: 12 }}>
         {partTitles.map((_, i) => (
           <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= page.part ? GOLD : CREAM_DARK, transition: "background 0.3s" }} />
         ))}
@@ -165,13 +179,13 @@ export default function Rosario({ lang = "es", onHome }) {
 
       {/* Insignia del misterio de hoy */}
       {page.part === 1 && (
-        <div style={{ textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
           ✨ {lang === "es" ? "Hoy rezamos los" : "Today's mysteries"}: {todayLabel}
         </div>
       )}
 
       {/* Contenido central */}
-      <div style={{ minHeight: "calc(100vh - 350px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflowY: "auto" }}>
+      <div style={{ position: "relative", zIndex: 1, minHeight: "calc(100vh - 350px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflowY: "auto" }}>
         <div style={{ maxWidth: 400, width: "100%" }}>
           {!isComplete && (
             <div style={{ fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cinzel', serif" }}>
@@ -248,7 +262,7 @@ export default function Rosario({ lang = "es", onHome }) {
       </div>
 
       {/* Navegación */}
-      <div style={{ position: "fixed", bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
+      <div style={{ position: "fixed", zIndex: 1, bottom: 20, left: 0, right: 0, padding: "0 16px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
           <button
             onClick={goPrev}
