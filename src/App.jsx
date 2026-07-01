@@ -733,17 +733,22 @@ export default function App() {
           </>
         )}
         {t.home.cards.map((c, i) => {
-          // Cards compactas horizontales: Evangelio (i=1) y Lecturas (i=2)
-          if (i === 1 || i === 2) {
-            const label = i === 1
-              ? `✝ ${lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}`
-              : `✝ ${lang === 'es' ? 'Lecturas del Día' : 'Daily Readings'}`;
-            const refText = i === 1
-              ? (gospelData ? formatRef(lang === 'en' ? gospelData?.reference : reference) : null)
-              : (gospelData?.reading1 ? formatRef(gospelData.reading1.reference) : null);
-            const preview = i === 1
-              ? (gospelData ? body.substring(0, 85) + "…" : c.desc)
-              : (gospelData?.reading1 ? gospelData.reading1.text.substring(0, 85) + "…" : c.desc);
+          // Cards compactas horizontales: todas excepto Oración Personal (i=0)
+          if (i !== 0) {
+            let label, refText, preview;
+            if (i === 1) {
+              label = `✝ ${lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}`;
+              refText = gospelData ? formatRef(lang === 'en' ? gospelData?.reference : reference) : null;
+              preview = gospelData ? body.substring(0, 85) + "…" : c.desc;
+            } else if (i === 2) {
+              label = `✝ ${lang === 'es' ? 'Lecturas del Día' : 'Daily Readings'}`;
+              refText = gospelData?.reading1 ? formatRef(gospelData.reading1.reference) : null;
+              preview = gospelData?.reading1 ? gospelData.reading1.text.substring(0, 85) + "…" : c.desc;
+            } else {
+              label = `✝ ${c.title}`;
+              refText = null;
+              preview = c.desc;
+            }
             return (
               <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
                 {/* Imagen de fondo a 0.4 de opacidad */}
