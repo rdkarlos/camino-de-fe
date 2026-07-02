@@ -90,7 +90,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, message: 'La reflexión de hoy ya existía, no se generó de nuevo' });
     }
 
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+    const baseUrl = process.env.SITE_URL || 'https://camino-de-fe-seven.vercel.app';
 
     if (!existingEs.exists()) {
       const gospelEs = await getGospel(baseUrl, 'es', day, month, year);
