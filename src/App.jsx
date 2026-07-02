@@ -1274,6 +1274,8 @@ export default function App() {
                   </svg>
                 );
               })(), lang === "es" ? "Mis Oraciones" : "Mis Orac."],
+            ["rosario", "📿", lang === "es" ? "Rosario" : "Rosary"],
+            ["devocional", "🕯️", lang === "es" ? "Devocional" : "Devotional"],
             ["circles", (() => {
                 const sel = personalTab === "circles";
                 const fg = sel ? "#FAF5ED" : "#9CA3AF";
@@ -1664,6 +1666,13 @@ export default function App() {
                 )}
               </div>
             )}
+          </div>
+        ) : personalTab === "rosario" ? (
+          <Rosario lang={lang} />
+        ) : personalTab === "devocional" ? (
+          <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+            <div style={{ fontSize: 44, marginBottom: 12 }}>🕯️</div>
+            <div style={{ fontSize: 15 }}>{lang === "es" ? "Próximamente" : "Coming soon"}</div>
           </div>
         ) : (
           /* Pestaña: Mi Libro de Oraciones (Firestore) */
@@ -2543,6 +2552,7 @@ export default function App() {
         {menuOpen && (
           <div style={{ background: BG_MAIN, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
             {t.nav.map((n, i) => (
+              (i === 4 || i === 5) ? null :
               <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "left" }}>
                 <span style={{ display: "flex", alignItems: "center" }}>{navIcons[i](tab === i ? GOLD : "rgba(255,255,255,0.75)")}</span>
                 <span>{n}</span>
