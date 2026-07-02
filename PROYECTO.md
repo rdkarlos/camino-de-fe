@@ -24,10 +24,12 @@
 - src/products.js — productos tienda
 - api/gospel.js — evangelio y lecturas (Universalis)
 - api/spiritual-guide.js — Guía Espiritual IA
+- api/cron-reflexion.js — Cron Job diario 12:10am Colombia: genera reflexión automática
 - api/order.js — pagos Wompi
 - api/confirm-payment.js — emails Resend
 - public/sw.js — service worker v14 (network-first)
 - public/manifest.json — PWA config
+- vercel.json — configuración cron jobs
 
 ## Secciones
 1. Inicio — cards compactas modo oscuro, versículo del día
@@ -46,6 +48,10 @@
 - Dorado: #C9A84C, Texto: #FAF5ED
 - Tipografía: Cinzel (títulos), Crimson Text (textos)
 - Íconos SVG minimalistas católicos
+
+## Variables de entorno en Vercel
+- ANTHROPIC_API_KEY — API de Anthropic
+- CRON_SECRET — seguridad del cron job
 
 ## Contexto
 - Carlos, Colombia, católico
