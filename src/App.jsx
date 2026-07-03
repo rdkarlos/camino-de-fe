@@ -7,6 +7,7 @@ import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, d
 import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
 import Devocional from "./Devocional";
+import JovenFe from "./JovenFe";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -32,7 +33,7 @@ const translations = {
   es: {
     appName: "Lumora",
     tagline: "Luz que guía, amor que une",
-    nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Reflexiones", "Tienda", "Configuración"],
+    nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Reflexiones", "Tienda", "Configuración", "Joven Fe"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -73,7 +74,7 @@ const translations = {
   en: {
     appName: "Lumora",
     tagline: "Light that guides, love that unites",
-    nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Reflections", "Shop", "Settings"],
+    nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Reflections", "Shop", "Settings", "Youth Faith"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -2248,6 +2249,8 @@ export default function App() {
     return null;
   };
 
+  const renderJovenFe = () => <JovenFe lang={lang} onBack={() => setTab(0)} />;
+
   const navIcons = [
     /* 0 Inicio */ (c) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -2339,8 +2342,13 @@ export default function App() {
         <circle cx="12" cy="12" r="3" fill="#C9A84C"/>
       </svg>
     ),
+    /* 10 Joven Fe */ (c) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3 L14.4 9.2 L21 9.6 L15.9 13.7 L17.7 20 L12 16.3 L6.3 20 L8.1 13.7 L3 9.6 L9.6 9.2 Z" stroke={c} strokeWidth="1.4" strokeLinejoin="round"/>
+      </svg>
+    ),
   ];
-  const sections = [renderHome, renderPersonalPrayer, renderGospel, renderReadings, renderRosary, renderPrayers, renderBible, renderReflections, renderShop, renderSettings];
+  const sections = [renderHome, renderPersonalPrayer, renderGospel, renderReadings, renderRosary, renderPrayers, renderBible, renderReflections, renderShop, renderSettings, renderJovenFe];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: BG_MAIN, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(0,0,0,0.5)" }}>
@@ -2552,7 +2560,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Accesos rápidos — 5 ítems que llenan el ancho */}
+        {/* Accesos rápidos — 6 ítems que llenan el ancho */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 5, padding: "7px 10px 9px" }}>
           {[
             { icon: (c) => (
@@ -2600,6 +2608,11 @@ export default function App() {
                   <line x1="11.5" y1="16.5" x2="16.5" y2="16.5" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
+            { icon: (c) => (
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+                  <path d="M14 3.5 L16.8 10.8 L24.5 11.3 L18.5 16 L20.6 23.3 L14 19 L7.4 23.3 L9.5 16 L3.5 11.3 L11.2 10.8 Z" stroke={c} strokeWidth="1.6" strokeLinejoin="round"/>
+                </svg>
+              ), label: lang === 'es' ? "Joven Fe"  : "Youth Faith", idx: 10 },
           ].map(({ icon, label, idx }) => {
             const isActive = tab === idx;
             const isHovered = hoveredQuickBtn === idx;
