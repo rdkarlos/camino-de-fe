@@ -72,10 +72,7 @@ export default async function handler(req, res) {
 
     const data = JSON.parse(rawData);
 
-    const now = new Date();
-    const colombiaOffset = -5 * 60;
-    const colombiaTime = new Date(now.getTime() + (colombiaOffset - now.getTimezoneOffset()) * 60000);
-    const today = colombiaTime.toISOString().split('T')[0];
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
     await cleanOldReflections(today);
 
     return res.status(200).json({ text: data.content?.[0]?.text ?? '' });

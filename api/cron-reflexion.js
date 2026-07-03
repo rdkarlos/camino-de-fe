@@ -70,11 +70,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fecha de hoy en zona horaria Colombia (UTC-5)
-    const now = new Date();
-    const colombiaOffset = -5 * 60;
-    const colombiaTime = new Date(now.getTime() + (colombiaOffset - now.getTimezoneOffset()) * 60000);
-    const today = colombiaTime.toISOString().split('T')[0]; // YYYY-MM-DD
+    // Fecha de hoy en zona horaria Colombia (independiente del huso horario del servidor)
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date()); // YYYY-MM-DD
     const [year, month, day] = today.split('-').map(Number);
 
     const idEs = `${today}_es`;
