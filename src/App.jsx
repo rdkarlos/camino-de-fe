@@ -33,7 +33,7 @@ const translations = {
   es: {
     appName: "Lumora",
     tagline: "Luz que guía, amor que une",
-    nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Reflexiones", "Tienda", "Configuración", "Joven Fe"],
+    nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Tienda", "Configuración", "Joven Fe"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -41,7 +41,7 @@ const translations = {
         { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
         { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
         { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 3 },
-        { icon: "🛒", title: "Tienda", desc: "Artículos de fe para tu hogar y devoción", btn: "Ver tienda", img: "https://images.unsplash.com/photo-1578357078586-491adf1aa5ba?w=800&q=80", tab: 8 },
+        { icon: "🛒", title: "Tienda", desc: "Artículos de fe para tu hogar y devoción", btn: "Ver tienda", img: "https://images.unsplash.com/photo-1578357078586-491adf1aa5ba?w=800&q=80", tab: 7 },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
@@ -63,18 +63,11 @@ const translations = {
         { name: "Ángelus", text: "El ángel del Señor anunció a María, y concibió por obra del Espíritu Santo. Dios te salve, María..." },
       ],
     },
-    reflections: {
-      daily: [
-        { quote: "«La oración es el oxígeno del alma.»", author: "San Pío de Pietrelcina" },
-        { quote: "«No tengas miedo de amar a Dios. Él siempre te amó primero.»", author: "San Juan Pablo II" },
-        { quote: "«Haz el bien hoy, aunque no lo recuerdes mañana.»", author: "Santa Teresa de Calcuta" },
-      ],
-    },
   },
   en: {
     appName: "Lumora",
     tagline: "Light that guides, love that unites",
-    nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Reflections", "Shop", "Settings", "Youth Faith"],
+    nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Shop", "Settings", "Youth Faith"],
     home: {
       greeting: "May the peace of the Lord be with you",
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
@@ -82,7 +75,7 @@ const translations = {
         { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
         { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
         { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 3 },
-        { icon: "🛒", title: "Shop", desc: "Faith items for your home and devotion", btn: "View shop", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 8 },
+        { icon: "🛒", title: "Shop", desc: "Faith items for your home and devotion", btn: "View shop", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 7 },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
@@ -104,13 +97,6 @@ const translations = {
         { name: "Angelus", text: "The Angel of the Lord declared unto Mary, and she conceived of the Holy Spirit. Hail Mary..." },
       ],
     },
-    reflections: {
-      daily: [
-        { quote: "«Prayer is the oxygen of the soul.»", author: "St. Pio of Pietrelcina" },
-        { quote: "«Do not be afraid to love God. He always loved you first.»", author: "St. John Paul II" },
-        { quote: "«Do good today, even if you won't remember it tomorrow.»", author: "St. Teresa of Calcutta" },
-      ],
-    },
   },
 };
 
@@ -118,7 +104,6 @@ const GOLD = "#C9A84C";
 const GOLD_LIGHT = "#E8C76A";
 const NAVY = "#1B2A4A";
 const NAVY_DARK = "#0F1C32";
-const NAVY_MID = "#2C4270";
 const CREAM = "#FAF5ED";
 const CREAM_DARK = "#2A3A5A";
 const MUTED = "#8A9BB5";
@@ -880,7 +865,7 @@ export default function App() {
                 <div key={i}>
                   {compactCard}
                   {/* Card especial Joven Fe */}
-                  <div onClick={() => setTab(10)} style={{ position: "relative", borderRadius: 20, minHeight: 130, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.3)", cursor: "pointer", background: "linear-gradient(135deg, #1B2A4A, #2D1B4E)" }}>
+                  <div onClick={() => setTab(9)} style={{ position: "relative", borderRadius: 20, minHeight: 130, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.3)", cursor: "pointer", background: "linear-gradient(135deg, #1B2A4A, #2D1B4E)" }}>
                     <div style={{ position: "absolute", top: -14, right: -8, opacity: 0.12 }}>
                       <svg width="100" height="100" viewBox="0 0 24 24" fill="none">
                         <path d="M12 2 L14.4 8.6 L21 9 L15.9 13.1 L17.7 19.6 L12 15.9 L6.3 19.6 L8.1 13.1 L3 9 L9.6 8.6 Z" fill={GOLD}/>
@@ -1026,19 +1011,6 @@ export default function App() {
             <span style={{ color: GOLD, fontSize: 20, fontWeight: "bold" }}>{openPrayer === i ? "−" : "+"}</span>
           </div>
           {openPrayer === i && <div style={{ padding: "0 18px 16px", fontSize: 14, color: CREAM, lineHeight: 1.8, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14 }}>{p.text}</div>}
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderReflections = () => (
-    <div>
-      {t.reflections.daily.map((r, i) => (
-        <div key={i} style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY_MID}, #7C4A1E)`, borderRadius: 20, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08 }}>✝</div>
-          <div style={{ fontSize: 13, color: GOLD, marginBottom: 4 }}>✨ {lang === 'es' ? 'Reflexión del día' : 'Daily reflection'}</div>
-          <div style={{ fontSize: 16, fontStyle: "italic", lineHeight: 1.7, marginBottom: 14, fontFamily: "'Crimson Text', serif" }}>{r.quote}</div>
-          <div style={{ fontSize: 12, color: GOLD_LIGHT, fontWeight: "bold" }}>— {r.author}</div>
         </div>
       ))}
     </div>
@@ -2351,20 +2323,7 @@ export default function App() {
         <line x1="13.5" y1="13" x2="19" y2="14" stroke={c} strokeWidth="1"/>
       </svg>
     ),
-    /* 7 Reflexiones */ (c) => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M12 6 C9 5 5 6 3 8 L3 20 C5 18 9 17 12 19 Z" stroke={c} strokeWidth="1.5"/>
-        <path d="M12 6 C15 5 19 6 21 8 L21 20 C19 18 15 17 12 19 Z" stroke={c} strokeWidth="1.5"/>
-        <line x1="12" y1="6" x2="12" y2="19" stroke={c} strokeWidth="1.5"/>
-        <line x1="5" y1="11" x2="10.5" y2="10" stroke="#C9A84C" strokeWidth="1"/>
-        <line x1="5" y1="14" x2="10.5" y2="13" stroke="#C9A84C" strokeWidth="1"/>
-        <line x1="5" y1="17" x2="10.5" y2="16" stroke="#C9A84C" strokeWidth="1"/>
-        <line x1="13.5" y1="10" x2="19" y2="11" stroke="#C9A84C" strokeWidth="1"/>
-        <line x1="13.5" y1="13" x2="19" y2="14" stroke="#C9A84C" strokeWidth="1"/>
-        <line x1="13.5" y1="16" x2="19" y2="17" stroke="#C9A84C" strokeWidth="1"/>
-      </svg>
-    ),
-    /* 8 Tienda */ (c) => (
+    /* 7 Tienda */ (c) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path d="M5 8 H19 L17.5 21 H6.5 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
         <path d="M9 8 C9 4.5 15 4.5 15 8" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
@@ -2372,19 +2331,19 @@ export default function App() {
         <line x1="10" y1="14.5" x2="14" y2="14.5" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
       </svg>
     ),
-    /* 9 Configuración */ (c) => (
+    /* 8 Configuración */ (c) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path d="M18.2 10 L20.8 10.1 L20.8 13.9 L18.2 14 L16.8 16.4 L18 18.7 L14.8 20.6 L13.4 18.4 L10.6 18.4 L9.2 20.6 L6 18.7 L7.2 16.4 L5.8 14 L3.2 13.9 L3.2 10.1 L5.8 10 L7.2 7.6 L6 5.3 L9.2 3.4 L10.6 5.6 L13.4 5.6 L14.8 3.4 L18 5.3 L16.8 7.6 Z" stroke={c} strokeWidth="1.2"/>
         <circle cx="12" cy="12" r="3" fill="#C9A84C"/>
       </svg>
     ),
-    /* 10 Joven Fe */ (c) => (
+    /* 9 Joven Fe */ (c) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path d="M12 3 L14.4 9.2 L21 9.6 L15.9 13.7 L17.7 20 L12 16.3 L6.3 20 L8.1 13.7 L3 9.6 L9.6 9.2 Z" stroke={c} strokeWidth="1.4" strokeLinejoin="round"/>
       </svg>
     ),
   ];
-  const sections = [renderHome, renderPersonalPrayer, renderGospel, renderReadings, renderRosary, renderPrayers, renderBible, renderReflections, renderShop, renderSettings, renderJovenFe];
+  const sections = [renderHome, renderPersonalPrayer, renderGospel, renderReadings, renderRosary, renderPrayers, renderBible, renderShop, renderSettings, renderJovenFe];
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: BG_MAIN, minHeight: "100vh", maxWidth: 430, margin: "0 auto", boxShadow: "0 0 60px rgba(0,0,0,0.5)" }}>
@@ -2643,7 +2602,7 @@ export default function App() {
                   <line x1="14" y1="14" x2="14" y2="19" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
                   <line x1="11.5" y1="16.5" x2="16.5" y2="16.5" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
-              ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
+              ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 7 },
           ].map(({ icon, label, idx }) => {
             const isActive = tab === idx;
             const isHovered = hoveredQuickBtn === idx;
