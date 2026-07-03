@@ -133,9 +133,53 @@ const CLASSIC_PRAYERS = {
   ],
 };
 
+const NOVENA_CLOSING = {
+  es: "Oh Corazón de Jesús, en quien confío, ten misericordia de mí.",
+  en: "O Heart of Jesus, in whom I trust, have mercy on me.",
+};
+
+const NOVENAS = {
+  es: [
+    {
+      id: "sagradocorazon",
+      title: "Novena al Sagrado Corazón de Jesús",
+      days: [
+        "Oh Jesús, que has dicho: 'En verdad os digo que todo lo que pidáis al Padre en mi nombre, os lo dará.' Por los méritos de tu Sagrado Corazón te pido la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'Todo es posible para el que cree.' Por los méritos de tu Sagrado Corazón, aumenta en mí la fe y concédeme la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'No se turbe vuestro corazón, creed en Dios.' Por los méritos de tu Sagrado Corazón, fortalece en mí la esperanza y concédeme la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'Amaos los unos a los otros como yo os he amado.' Por los méritos de tu Sagrado Corazón, enciende en mí la caridad y concédeme la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'Aprended de mí, que soy manso y humilde de corazón.' Por los méritos de tu Sagrado Corazón, concédeme la humildad y la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'Con vuestra paciencia salvaréis vuestras almas.' Por los méritos de tu Sagrado Corazón, dame paciencia y concédeme la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'Bienaventurados los limpios de corazón, porque ellos verán a Dios.' Por los méritos de tu Sagrado Corazón, purifica mi corazón y concédeme la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'Amarás al Señor tu Dios con todo tu corazón.' Por los méritos de tu Sagrado Corazón, enciende en mí el amor a Dios y concédeme la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+        "Oh Jesús, que has dicho: 'El que persevere hasta el fin, ese se salvará.' Por los méritos de tu Sagrado Corazón, dame perseverancia y concédeme la gracia de... (intención personal). Padre Nuestro, Ave María, Gloria.",
+      ],
+    },
+  ],
+  en: [
+    {
+      id: "sagradocorazon",
+      title: "Novena to the Sacred Heart of Jesus",
+      days: [
+        "O Jesus, who has said: 'Truly I say to you, whatever you ask the Father in my name, he will give you.' Through the merits of your Sacred Heart, I ask for the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'All things are possible to him who believes.' Through the merits of your Sacred Heart, increase my faith and grant me the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'Let not your heart be troubled, believe in God.' Through the merits of your Sacred Heart, strengthen my hope and grant me the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'Love one another as I have loved you.' Through the merits of your Sacred Heart, kindle charity in me and grant me the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'Learn from me, for I am meek and humble of heart.' Through the merits of your Sacred Heart, grant me humility and the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'By your patience you will possess your souls.' Through the merits of your Sacred Heart, give me patience and grant me the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'Blessed are the pure of heart, for they shall see God.' Through the merits of your Sacred Heart, purify my heart and grant me the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'You shall love the Lord your God with all your heart.' Through the merits of your Sacred Heart, kindle in me the love of God and grant me the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+        "O Jesus, who has said: 'He who perseveres to the end will be saved.' Through the merits of your Sacred Heart, give me perseverance and grant me the grace of... (personal intention). Our Father, Hail Mary, Glory Be.",
+      ],
+    },
+  ],
+};
+
 export default function Devocional({ lang = "es", onBack }) {
   const [activeTab, setActiveTab] = useState("clasicas");
   const [expandedPrayer, setExpandedPrayer] = useState(null);
+  const [expandedNovena, setExpandedNovena] = useState(null);
+  const [novenaDay, setNovenaDay] = useState({});
 
   return (
     <div style={{ background: BG_MAIN, color: CREAM, minHeight: "100%" }}>
@@ -203,6 +247,72 @@ export default function Devocional({ lang = "es", onBack }) {
                 >
                   <div style={{ padding: "0 16px 16px", fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
                     {p.text}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : activeTab === "novenas" ? (
+        <div>
+          {NOVENAS[lang].map((n) => {
+            const open = expandedNovena === n.id;
+            const day = novenaDay[n.id] || 1;
+            const setDay = (d) => setNovenaDay((prev) => ({ ...prev, [n.id]: Math.min(9, Math.max(1, d)) }));
+            return (
+              <div
+                key={n.id}
+                style={{
+                  background: BG_CARD, borderRadius: 14, marginBottom: 12, overflow: "hidden",
+                  border: `1px solid ${open ? GOLD : CREAM_DARK}`,
+                  transition: "border-color 0.2s ease",
+                }}
+              >
+                <button
+                  onClick={() => setExpandedNovena(open ? null : n.id)}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "14px 16px", background: "none", border: "none", cursor: "pointer",
+                    color: CREAM, fontSize: 15, fontWeight: "bold", fontFamily: "'Cinzel', serif",
+                  }}
+                >
+                  <span>{n.title}</span>
+                  <span style={{ color: GOLD, fontSize: 14, transition: "transform 0.2s ease", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>▼</span>
+                </button>
+                <div
+                  style={{
+                    maxHeight: open ? 700 : 0,
+                    opacity: open ? 1 : 0,
+                    overflow: "hidden",
+                    transition: "max-height 0.35s ease, opacity 0.25s ease",
+                  }}
+                >
+                  <div style={{ padding: "0 16px 18px" }}>
+                    <div style={{ textAlign: "center", fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cinzel', serif" }}>
+                      {lang === "es" ? `Día ${day} de 9` : `Day ${day} of 9`}
+                    </div>
+                    <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", marginBottom: 14 }}>
+                      {n.days[day - 1]}
+                    </div>
+                    <div style={{ fontSize: 14, lineHeight: 1.8, color: GOLD, fontStyle: "italic", fontFamily: "'Crimson Text', serif", marginBottom: 16 }}>
+                      {NOVENA_CLOSING[lang]}
+                    </div>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button
+                        onClick={() => setDay(day - 1)}
+                        disabled={day === 1}
+                        style={{ flex: 1, padding: "10px", background: NAVY_DARK, color: day === 1 ? MUTED : CREAM, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 13, cursor: day === 1 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: day === 1 ? 0.5 : 1 }}
+                      >
+                        ← {lang === "es" ? "Anterior" : "Previous"}
+                      </button>
+                      <button
+                        onClick={() => setDay(day + 1)}
+                        disabled={day === 9}
+                        style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 13, cursor: day === 9 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: day === 9 ? 0.5 : 1 }}
+                      >
+                        {lang === "es" ? "Siguiente" : "Next"} →
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
