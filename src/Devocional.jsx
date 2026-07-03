@@ -175,97 +175,6 @@ const NOVENAS = {
   ],
 };
 
-const DEFAULT_SAINT_KEY = "07-09"; // San Pedro Claver, patrono de Colombia
-
-const SAINTS = {
-  "07-01": {
-    name: { es: "San Junípero Serra", en: "St. Junípero Serra" },
-    bio: { es: "Franciscano que evangelizó las Américas. Fundó misiones en California.", en: "Franciscan who evangelized the Americas. Founded missions in California." },
-    quote: { es: "Siempre adelante, nunca atrás.", en: "Always forward, never back." },
-  },
-  "07-02": {
-    name: { es: "Visitación de la Virgen María", en: "Visitation of the Virgin Mary" },
-    bio: { es: "María visita a su prima Isabel, quien llevaba en su seno a Juan el Bautista.", en: "Mary visits her cousin Elizabeth, who was carrying John the Baptist in her womb." },
-    quote: { es: "Mi alma glorifica al Señor.", en: "My soul magnifies the Lord." },
-  },
-  "07-03": {
-    name: { es: "Santo Tomás Apóstol", en: "St. Thomas the Apostle" },
-    bio: { es: "Apóstol que pasó de la duda a proclamar '¡Señor mío y Dios mío!'", en: "Apostle who went from doubt to proclaiming 'My Lord and my God!'" },
-    quote: { es: "Señor mío y Dios mío.", en: "My Lord and my God." },
-  },
-  "07-04": {
-    name: { es: "Santa Isabel de Portugal", en: "St. Elizabeth of Portugal" },
-    bio: { es: "Reina y pacificadora, amada por su caridad con los pobres.", en: "Queen and peacemaker, beloved for her charity toward the poor." },
-    quote: { es: "La paz es fruto de la justicia.", en: "Peace is the fruit of justice." },
-  },
-  "07-05": {
-    name: { es: "San Antonio María Zaccaria", en: "St. Anthony Mary Zaccaria" },
-    bio: { es: "Renovó la vida cristiana en Italia con amor a la Eucaristía.", en: "Renewed Christian life in Italy with love for the Eucharist." },
-    quote: { es: "La cruz es la llave del cielo.", en: "The cross is the key to heaven." },
-  },
-  "07-06": {
-    name: { es: "Santa María Goretti", en: "St. Maria Goretti" },
-    bio: { es: "Mártir de 12 años que murió perdonando, muy venerada en Colombia.", en: "12-year-old martyr who died forgiving, deeply venerated in Colombia." },
-    quote: { es: "Lo perdono y quiero que esté conmigo en el cielo.", en: "I forgive him, and I want him with me in heaven." },
-  },
-  "07-07": {
-    name: { es: "Beato Pedro Favre", en: "Blessed Peter Faber" },
-    bio: { es: "Primer jesuita ordenado sacerdote, compañero de San Ignacio.", en: "First Jesuit ordained a priest, companion of St. Ignatius." },
-    quote: { es: "Todo para la mayor gloria de Dios.", en: "All for the greater glory of God." },
-  },
-  "07-08": {
-    name: { es: "Santa Priscila", en: "St. Priscilla" },
-    bio: { es: "Compañera de San Pablo, abrió su hogar para la Iglesia primitiva.", en: "Companion of St. Paul, opened her home to the early Church." },
-    quote: { es: "La hospitalidad es una forma de amor.", en: "Hospitality is a form of love." },
-  },
-  "07-09": {
-    name: { es: "San Pedro Claver", en: "St. Peter Claver" },
-    bio: { es: "Apóstol de los esclavos en Cartagena, Colombia. Patrono de Colombia.", en: "Apostle to enslaved people in Cartagena, Colombia. Patron saint of Colombia." },
-    quote: { es: "Esclavo de los negros para siempre.", en: "Slave of the Black people forever." },
-  },
-  "07-10": {
-    name: { es: "San Agustín Zhao Rong", en: "St. Augustine Zhao Rong" },
-    bio: { es: "Mártir chino, representante de los mártires de Asia.", en: "Chinese martyr, representative of the martyrs of Asia." },
-    quote: { es: "La sangre de los mártires es semilla de cristianos.", en: "The blood of martyrs is the seed of Christians." },
-  },
-  "07-11": {
-    name: { es: "San Benito de Nursia", en: "St. Benedict of Nursia" },
-    bio: { es: "Padre del monaquismo occidental. Su regla transformó Europa.", en: "Father of Western monasticism. His rule transformed Europe." },
-    quote: { es: "Ora et Labora — Reza y trabaja.", en: "Ora et Labora — Pray and work." },
-  },
-  "07-12": {
-    name: { es: "San Juan Gualberto", en: "St. John Gualbert" },
-    bio: { es: "Perdonó al asesino de su hermano ante el crucifijo que lo aprobó.", en: "Forgave his brother's murderer before the crucifix that approved of it." },
-    quote: { es: "El perdón libera más al que perdona que al perdonado.", en: "Forgiveness frees the one who forgives more than the one forgiven." },
-  },
-  "07-13": {
-    name: { es: "San Enrique II", en: "St. Henry II" },
-    bio: { es: "Emperador cristiano que gobernó con justicia y piedad.", en: "Christian emperor who ruled with justice and piety." },
-    quote: { es: "El poder es un servicio, no un privilegio.", en: "Power is a service, not a privilege." },
-  },
-  "07-14": {
-    name: { es: "San Camilo de Lelis", en: "St. Camillus de Lellis" },
-    bio: { es: "Fundador de los Camilos, patrono de enfermos y personal de salud.", en: "Founder of the Camillians, patron of the sick and healthcare workers." },
-    quote: { es: "Ver a Cristo en el rostro del enfermo.", en: "To see Christ in the face of the sick." },
-  },
-  "07-15": {
-    name: { es: "San Buenaventura", en: "St. Bonaventure" },
-    bio: { es: "Doctor de la Iglesia, maestro de teología y mística franciscana.", en: "Doctor of the Church, master of theology and Franciscan mysticism." },
-    quote: { es: "El camino hacia Dios pasa por el amor.", en: "The path to God passes through love." },
-  },
-};
-
-function getTodaySaintKey() {
-  const todayISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date()); // YYYY-MM-DD
-  return todayISO.slice(5); // MM-DD
-}
-
-function formatSaintDate(monthDay, lang) {
-  const [month, day] = monthDay.split("-").map(Number);
-  const d = new Date(2000, month - 1, day);
-  return new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { day: "numeric", month: "long" }).format(d);
-}
-
 export default function Devocional({ lang = "es", onBack }) {
   const [activeTab, setActiveTab] = useState("clasicas");
   const [expandedPrayer, setExpandedPrayer] = useState(null);
@@ -417,32 +326,11 @@ export default function Devocional({ lang = "es", onBack }) {
           })}
         </div>
       ) : (
-        (() => {
-          const key = getTodaySaintKey();
-          const saint = SAINTS[key] || SAINTS[DEFAULT_SAINT_KEY];
-          const dateKey = SAINTS[key] ? key : DEFAULT_SAINT_KEY;
-          return (
-            <div>
-              <div style={{ textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
-                ✨ {lang === "es" ? "Hoy celebramos a" : "Today we celebrate"}
-              </div>
-              <div style={{ background: BG_CARD, borderRadius: 14, border: `1px solid ${CREAM_DARK}`, padding: 20 }}>
-                <div style={{ fontSize: 20, fontWeight: "bold", color: GOLD, fontFamily: "'Cinzel', serif", marginBottom: 6 }}>
-                  {saint.name[lang]}
-                </div>
-                <div style={{ fontSize: 12, color: MUTED, marginBottom: 16 }}>
-                  {formatSaintDate(dateKey, lang)}
-                </div>
-                <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", marginBottom: 16 }}>
-                  {saint.bio[lang]}
-                </div>
-                <div style={{ borderLeft: `3px solid ${GOLD}`, paddingLeft: 12, fontSize: 14, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif", lineHeight: 1.6 }}>
-                  "{saint.quote[lang]}"
-                </div>
-              </div>
-            </div>
-          );
-        })()
+        <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+          <div style={{ fontSize: 15 }}>
+            {lang === "es" ? "Cargando santo del día..." : "Loading saint of the day..."}
+          </div>
+        </div>
       )}
     </div>
   );
