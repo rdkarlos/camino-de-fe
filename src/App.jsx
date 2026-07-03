@@ -855,8 +855,8 @@ export default function App() {
               refText = null;
               preview = c.desc;
             }
-            return (
-              <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
+            const compactCard = (
+              <div onClick={() => setTab(c.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
                 {/* Imagen de fondo a 0.4 de opacidad */}
                 <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
                 {/* Gradiente de izquierda a derecha */}
@@ -874,6 +874,42 @@ export default function App() {
                 </div>
               </div>
             );
+
+            if (i === 2) {
+              return (
+                <div key={i}>
+                  {compactCard}
+                  {/* Card especial Joven Fe */}
+                  <div onClick={() => setTab(10)} style={{ position: "relative", borderRadius: 20, minHeight: 130, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.3)", cursor: "pointer", background: "linear-gradient(135deg, #1B2A4A, #2D1B4E)" }}>
+                    <div style={{ position: "absolute", top: -14, right: -8, opacity: 0.12 }}>
+                      <svg width="100" height="100" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2 L14.4 8.6 L21 9 L15.9 13.1 L17.7 19.6 L12 15.9 L6.3 19.6 L8.1 13.1 L3 9 L9.6 8.6 Z" fill={GOLD}/>
+                      </svg>
+                    </div>
+                    <div style={{ position: "relative", padding: "20px 20px 18px", display: "flex", flexDirection: "column", minHeight: 130, justifyContent: "space-between", boxSizing: "border-box" }}>
+                      <div>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 8 }}>
+                          <path d="M12 2 L14.4 8.6 L21 9 L15.9 13.1 L17.7 19.6 L12 15.9 L6.3 19.6 L8.1 13.1 L3 9 L9.6 8.6 Z" fill={GOLD}/>
+                        </svg>
+                        <div style={{ fontWeight: "bold", fontSize: 20, color: GOLD, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>
+                          {lang === 'es' ? 'Joven Fe' : 'Youth Faith'}
+                        </div>
+                        <div style={{ fontSize: 13, lineHeight: 1.6, color: CREAM }}>
+                          {lang === 'es' ? 'Fe viva para jóvenes' : 'Living faith for young people'}
+                        </div>
+                      </div>
+                      <div style={{ marginTop: 14 }}>
+                        <span style={{ background: "rgba(201,168,76,0.15)", border: `1px solid ${GOLD}`, color: GOLD, padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: "bold" }}>
+                          {lang === 'es' ? 'Explorar' : 'Explore'} →
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            return <div key={i}>{compactCard}</div>;
           }
           // Cards grandes: resto de secciones
           return (
@@ -2560,7 +2596,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Accesos rápidos — 6 ítems que llenan el ancho */}
+        {/* Accesos rápidos — 5 ítems que llenan el ancho */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 5, padding: "7px 10px 9px" }}>
           {[
             { icon: (c) => (
@@ -2608,11 +2644,6 @@ export default function App() {
                   <line x1="11.5" y1="16.5" x2="16.5" y2="16.5" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 8 },
-            { icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <path d="M14 3.5 L16.8 10.8 L24.5 11.3 L18.5 16 L20.6 23.3 L14 19 L7.4 23.3 L9.5 16 L3.5 11.3 L11.2 10.8 Z" stroke={c} strokeWidth="1.6" strokeLinejoin="round"/>
-                </svg>
-              ), label: lang === 'es' ? "Joven Fe"  : "Youth Faith", idx: 10 },
           ].map(({ icon, label, idx }) => {
             const isActive = tab === idx;
             const isHovered = hoveredQuickBtn === idx;
