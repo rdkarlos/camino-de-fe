@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import SANTOS from './santos';
 
 const BG_MAIN = "#0A0F1E";
 const BG_CARD = "#111827";
@@ -175,6 +176,21 @@ const NOVENAS = {
   ],
 };
 
+const getSantoHoy = () => {
+  const now = new Date();
+  const colombiaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+  const month = String(colombiaTime.getMonth() + 1).padStart(2, '0');
+  const day = String(colombiaTime.getDate()).padStart(2, '0');
+  const key = `${month}-${day}`;
+  return { key: SANTOS[key] ? key : '01-01', santo: SANTOS[key] || SANTOS['01-01'] };
+};
+
+function formatSantoFecha(key) {
+  const [month, day] = key.split('-').map(Number);
+  const d = new Date(2000, month - 1, day);
+  return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' }).format(d);
+}
+
 export default function Devocional({ lang = "es", onBack }) {
   const [activeTab, setActiveTab] = useState("clasicas");
   const [expandedPrayer, setExpandedPrayer] = useState(null);
@@ -326,11 +342,34 @@ export default function Devocional({ lang = "es", onBack }) {
           })}
         </div>
       ) : (
-        <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-          <div style={{ fontSize: 15 }}>
-            {lang === "es" ? "Cargando santo del día..." : "Loading saint of the day..."}
-          </div>
-        </div>
+        (() => {
+          const { key, santo } = getSantoHoy();
+          return (
+            <div>
+              <div style={{ textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
+                ✨ {lang === "es" ? "Hoy celebramos a" : "Today we celebrate"}
+              </div>
+              <div style={{ background: BG_CARD, borderRadius: 14, border: `1px solid ${CREAM_DARK}`, padding: 20, textAlign: "center" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 14 }}>
+                  <line x1="12" y1="2" x2="12" y2="22" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="6" y1="8" x2="18" y2="8" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+                <div style={{ fontSize: 20, fontWeight: "bold", color: GOLD, fontFamily: "'Cinzel', serif", marginBottom: 6 }}>
+                  {santo.nombre}
+                </div>
+                <div style={{ fontSize: 12, color: MUTED, marginBottom: 16 }}>
+                  {formatSantoFecha(key)}
+                </div>
+                <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", marginBottom: 16, textAlign: "left" }}>
+                  {santo.bio}
+                </div>
+                <div style={{ borderLeft: `3px solid ${GOLD}`, paddingLeft: 12, fontSize: 14, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif", lineHeight: 1.6, textAlign: "left" }}>
+                  "{santo.frase}"
+                </div>
+              </div>
+            </div>
+          );
+        })()
       )}
     </div>
   );
