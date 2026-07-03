@@ -21,6 +21,7 @@
 ## Archivos clave
 - src/App.jsx — código principal
 - src/Rosario.jsx — Santo Rosario completo
+- src/Devocional.jsx — Devocional: oraciones clásicas, novenas, santo del día
 - src/products.js — productos tienda
 - api/gospel.js — evangelio y lecturas (Universalis)
 - api/spiritual-guide.js — Guía Espiritual IA
@@ -33,12 +34,12 @@
 
 ## Secciones
 1. Inicio — cards compactas modo oscuro, versículo del día
-2. Oración Personal — Crear Oración, Diario, Mis Oraciones, Conec✝2
+2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Santo Rosario, Devocional
 3. Evangelio — con Guía Espiritual (corderito 🐑)
 4. La Biblia — LBLA, navegación por categorías + buscador
 5. Lecturas del día
 6. Santo Rosario — 4 partes, 35 pantallas, misterios del día automáticos, contador Ave Marías
-7. Devocional
+7. Devocional — Oraciones Clásicas (12), Novenas (5, contenido días 2-9 pendiente), Santo del Día (pendiente)
 8. Tienda
 9. Configuración
 
@@ -60,7 +61,7 @@
 - Deploy automático en Vercel con cada push
 
 ## Pendiente
-- Devocional — contenido pendiente
+- Devocional — Novenas (contenido días 2-9) y Santo del Día (60+ santos)
 - Diario de Gracias
 - Splash screen con logo Lumora
 - Notificaciones push Conec✝2

@@ -6,6 +6,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPas
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
+import Devocional from "./Devocional";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -1328,15 +1329,7 @@ export default function App() {
     }
 
     if (personalSection === "devocional") {
-      return (
-        <div>
-          {backButton}
-          <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-            <div style={{ fontSize: 44, marginBottom: 12 }}>🕯️</div>
-            <div style={{ fontSize: 15 }}>{lang === "es" ? "Próximamente" : "Coming soon"}</div>
-          </div>
-        </div>
-      );
+      return <Devocional lang={lang} onBack={() => setPersonalSection(null)} />;
     }
 
     return (
