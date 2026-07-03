@@ -294,6 +294,9 @@ export default function App() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [personalTab, setPersonalTab] = useState("builder");
+  const [personalSection, setPersonalSection] = useState(null);
+  const [hoveredPersonalCard, setHoveredPersonalCard] = useState(null);
+  const [pressedPersonalCard, setPressedPersonalCard] = useState(null);
   const [selectedMood, setSelectedMood] = useState(null);
   const [prayerIntention, setPrayerIntention] = useState("");
   const [lambOpen, setLambOpen] = useState(false);
@@ -1234,8 +1237,111 @@ export default function App() {
       } catch (e) {}
     };
 
+    const personalCards = [
+      {
+        id: "oracion",
+        title: lang === "es" ? "Mi Oración" : "My Prayer",
+        desc: lang === "es" ? "Crea oraciones, lleva tu diario y conéctate con otros" : "Create prayers, keep your journal, and connect with others",
+        icon: (
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <circle cx="13" cy="13" r="10" stroke={GOLD} strokeWidth="1.5"/>
+            <line x1="13" y1="7" x2="13" y2="19" stroke={GOLD} strokeWidth="1.6" strokeLinecap="round"/>
+            <line x1="8.5" y1="11" x2="17.5" y2="11" stroke={GOLD} strokeWidth="1.6" strokeLinecap="round"/>
+          </svg>
+        ),
+      },
+      {
+        id: "rosario",
+        title: lang === "es" ? "Santo Rosario" : "Holy Rosary",
+        desc: lang === "es" ? "Reza el rosario con los misterios del día" : "Pray the rosary with today's mysteries",
+        icon: (
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <circle cx="13" cy="10" r="7.5" stroke={GOLD} strokeWidth="1.6" strokeLinecap="round" strokeDasharray="0.1 3"/>
+            <line x1="13" y1="17.5" x2="13" y2="23.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+            <line x1="10.8" y1="20.3" x2="15.2" y2="20.3" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        ),
+      },
+      {
+        id: "devocional",
+        title: lang === "es" ? "Devocional" : "Devotional",
+        desc: lang === "es" ? "Reflexiones y oraciones para tu fe" : "Reflections and prayers for your faith",
+        icon: (
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <path d="M13 2 C15 5, 15 7.5, 13 9 C11 7.5, 11 5, 13 2 Z" stroke={GOLD} strokeWidth="1.3" strokeLinejoin="round"/>
+            <line x1="13" y1="9" x2="13" y2="11.5" stroke={GOLD} strokeWidth="1.2"/>
+            <rect x="9.5" y="11.5" width="7" height="12" rx="1.3" stroke={GOLD} strokeWidth="1.6"/>
+          </svg>
+        ),
+      },
+    ];
+
+    const backButton = (
+      <button
+        onClick={() => setPersonalSection(null)}
+        style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: GOLD, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 18, padding: 0, fontFamily: "'Cinzel', serif" }}
+      >
+        ← {lang === "es" ? "Volver" : "Back"}
+      </button>
+    );
+
+    if (personalSection === null) {
+      return (
+        <div>
+          {personalCards.map(c => (
+            <div
+              key={c.id}
+              onClick={() => setPersonalSection(c.id)}
+              onPointerEnter={() => setHoveredPersonalCard(c.id)}
+              onPointerLeave={() => { setHoveredPersonalCard(null); setPressedPersonalCard(null); }}
+              onPointerDown={() => setPressedPersonalCard(c.id)}
+              onPointerUp={() => setPressedPersonalCard(null)}
+              style={{
+                display: "flex", alignItems: "center", gap: 14,
+                background: BG_CARD,
+                border: `1.5px solid ${(hoveredPersonalCard === c.id || pressedPersonalCard === c.id) ? GOLD : CREAM_DARK}`,
+                borderRadius: 14, padding: 16, marginBottom: 12, cursor: "pointer",
+                transition: "border-color 0.15s ease",
+              }}
+            >
+              <div style={{ width: 52, height: 52, borderRadius: 12, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {c.icon}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Cinzel', serif", marginBottom: 4 }}>{c.title}</div>
+                <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.4 }}>{c.desc}</div>
+              </div>
+              <div style={{ color: GOLD, fontSize: 26, fontWeight: 300, flexShrink: 0 }}>›</div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (personalSection === "rosario") {
+      return (
+        <div>
+          {backButton}
+          <Rosario lang={lang} onHome={() => setPersonalSection(null)} />
+        </div>
+      );
+    }
+
+    if (personalSection === "devocional") {
+      return (
+        <div>
+          {backButton}
+          <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+            <div style={{ fontSize: 44, marginBottom: 12 }}>🕯️</div>
+            <div style={{ fontSize: 15 }}>{lang === "es" ? "Próximamente" : "Coming soon"}</div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div>
+        {backButton}
         {/* Tab switcher */}
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
           {[
@@ -1270,8 +1376,6 @@ export default function App() {
                   </svg>
                 );
               })(), lang === "es" ? "Mis Oraciones" : "Mis Orac."],
-            ["rosario", "📿", lang === "es" ? "Rosario" : "Rosary"],
-            ["devocional", "🕯️", lang === "es" ? "Devocional" : "Devotional"],
             ["circles", (() => {
                 const sel = personalTab === "circles";
                 const fg = sel ? "#FAF5ED" : "#9CA3AF";
@@ -1662,13 +1766,6 @@ export default function App() {
                 )}
               </div>
             )}
-          </div>
-        ) : personalTab === "rosario" ? (
-          <Rosario lang={lang} />
-        ) : personalTab === "devocional" ? (
-          <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-            <div style={{ fontSize: 44, marginBottom: 12 }}>🕯️</div>
-            <div style={{ fontSize: 15 }}>{lang === "es" ? "Próximamente" : "Coming soon"}</div>
           </div>
         ) : (
           /* Pestaña: Mi Libro de Oraciones (Firestore) */
@@ -2416,7 +2513,7 @@ export default function App() {
       )}
 
       {/* Botón Inicio fijo */}
-      {tab !== 0 && tab !== 4 && (
+      {tab !== 0 && tab !== 4 && !(tab === 1 && personalSection === "rosario") && (
         <button
           onClick={() => setTab(0)}
           title={lang === "es" ? "Inicio" : "Home"}
