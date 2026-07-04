@@ -40,7 +40,6 @@ const translations = {
       cards: [
         { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
         { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
-        { icon: "📜", title: "Lecturas del Día", desc: "Primera Lectura y Salmo del día", btn: "Ver lecturas", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 3 },
         { icon: "🛒", title: "Tienda", desc: "Artículos de fe para tu hogar y devoción", btn: "Ver tienda", img: "https://images.unsplash.com/photo-1578357078586-491adf1aa5ba?w=800&q=80", tab: 7 },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
@@ -74,7 +73,6 @@ const translations = {
       cards: [
         { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
         { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
-        { icon: "📜", title: "Daily Readings", desc: "First Reading and Psalm of the day", btn: "View readings", img: "https://images.unsplash.com/photo-1519817914152-22d216bb9170?w=600", tab: 3 },
         { icon: "🛒", title: "Shop", desc: "Faith items for your home and devotion", btn: "View shop", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 7 },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
@@ -831,10 +829,6 @@ export default function App() {
               label = `✝ ${lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}`;
               refText = gospelData ? formatRef(lang === 'en' ? gospelData?.reference : reference) : null;
               preview = gospelData ? body.substring(0, 85) + "…" : c.desc;
-            } else if (i === 2) {
-              label = `✝ ${lang === 'es' ? 'Lecturas del Día' : 'Daily Readings'}`;
-              refText = gospelData?.reading1 ? formatRef(gospelData.reading1.reference) : null;
-              preview = gospelData?.reading1 ? gospelData.reading1.text.substring(0, 85) + "…" : c.desc;
             } else {
               label = `✝ ${c.title}`;
               refText = null;
@@ -860,7 +854,7 @@ export default function App() {
               </div>
             );
 
-            if (i === 2) {
+            if (i === 1) {
               return (
                 <div key={i}>
                   {compactCard}
