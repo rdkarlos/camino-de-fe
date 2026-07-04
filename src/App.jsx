@@ -40,7 +40,6 @@ const translations = {
       cards: [
         { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
         { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
-        { icon: "🛒", title: "Tienda", desc: "Artículos de fe para tu hogar y devoción", btn: "Ver tienda", img: "https://images.unsplash.com/photo-1578357078586-491adf1aa5ba?w=800&q=80", tab: 7 },
       ],
       reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
@@ -73,7 +72,6 @@ const translations = {
       cards: [
         { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
         { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
-        { icon: "🛒", title: "Shop", desc: "Faith items for your home and devotion", btn: "View shop", img: "https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=600", tab: 7 },
       ],
       reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
