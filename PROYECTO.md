@@ -35,9 +35,9 @@
 - vercel.json — configuración cron jobs
 
 ## Secciones
-1. Inicio — cards compactas modo oscuro, versículo del día, splash screen
+1. Inicio — cards compactas modo oscuro, versículo del día, splash screen, onboarding
 2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Santo Rosario, Devocional
-3. Evangelio — con Guía Espiritual (corderito 🐑)
+3. Evangelio — con Guía Espiritual (corderito 🐑), skeleton loader
 4. La Biblia — LBLA, navegación por categorías + buscador
 5. Lecturas del día
 6. Santo Rosario — 4 partes, 35 pantallas, misterios del día automáticos, contador Ave Marías
@@ -69,7 +69,6 @@
 - Devocional — Novenas (contenido días 2-9)
 - Joven Fe — Testimonios y Quiz Bíblico pendientes
 - Diario de Gracias
-- Onboarding para nuevos usuarios
-- Notificaciones push Conec✝2
+- Notificaciones push (Conec✝2 y recordatorio diario)
 - Dominio propio (candidato: amorae.org)
 - Wompi producción

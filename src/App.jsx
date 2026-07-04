@@ -2526,20 +2526,19 @@ export default function App() {
           <div style={{
             position: "fixed", inset: 0, zIndex: 9998,
             background: BG_MAIN,
-            display: "flex", flexDirection: "column",
+            display: "flex", flexDirection: "column", justifyContent: "center",
+            minHeight: "100vh",
           }}>
             {/* Botón Saltar */}
-            <div style={{ display: "flex", justifyContent: "flex-end", padding: "18px 20px 0" }}>
-              <button
-                onClick={finishOnboarding}
-                style={{ background: "none", border: "none", color: MUTED, fontSize: 14, cursor: "pointer", padding: 8, fontFamily: "'Crimson Text', serif" }}
-              >
-                {lang === 'es' ? 'Saltar' : 'Skip'}
-              </button>
-            </div>
+            <button
+              onClick={finishOnboarding}
+              style={{ position: "absolute", top: 18, right: 20, background: "none", border: "none", color: MUTED, fontSize: 14, cursor: "pointer", padding: 8, fontFamily: "'Crimson Text', serif" }}
+            >
+              {lang === 'es' ? 'Saltar' : 'Skip'}
+            </button>
 
             {/* Contenido */}
-            <div key={onboardingStep} className="section-fade" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 32px" }}>
+            <div key={onboardingStep} className="section-fade" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 32px" }}>
               <div style={{ marginBottom: 28 }}>{ONBOARDING_ICONS[screen.icon]}</div>
               <div style={{ fontFamily: "'Cinzel', serif", fontSize: 24, fontWeight: 700, color: GOLD, marginBottom: 16, lineHeight: 1.3 }}>
                 {screen.title}
@@ -2576,7 +2575,7 @@ export default function App() {
               ) : (
                 <button
                   onClick={() => setOnboardingStep(s => Math.min(screens.length - 1, s + 1))}
-                  style={{ width: "100%", padding: "14px", background: "transparent", color: GOLD, border: `1.5px solid ${GOLD}`, borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}
+                  style={{ width: "100%", padding: "14px", background: GOLD, color: NAVY, border: "none", borderRadius: 24, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Cinzel', serif" }}
                 >
                   {lang === 'es' ? 'Siguiente' : 'Next'} →
                 </button>
