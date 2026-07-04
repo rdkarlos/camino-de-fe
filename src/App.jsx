@@ -895,13 +895,13 @@ export default function App() {
                         </div>
                         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                           <span style={{ fontSize: 10, fontWeight: "bold", color: CREAM, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", padding: "3px 8px", borderRadius: 12 }}>
-                            🎯 {lang === 'es' ? 'Retos' : 'Challenges'}
+                            <span style={{ color: GOLD }}>✦</span> {lang === 'es' ? 'Retos' : 'Challenges'}
                           </span>
                           <span style={{ fontSize: 10, fontWeight: "bold", color: CREAM, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", padding: "3px 8px", borderRadius: 12 }}>
-                            💬 {lang === 'es' ? 'Testimonios' : 'Testimonies'}
+                            <span style={{ color: GOLD }}>✦</span> {lang === 'es' ? 'Testimonios' : 'Testimonies'}
                           </span>
                           <span style={{ fontSize: 10, fontWeight: "bold", color: CREAM, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", padding: "3px 8px", borderRadius: 12 }}>
-                            🏆 Quiz
+                            <span style={{ color: GOLD }}>✦</span> Quiz
                           </span>
                         </div>
                       </div>

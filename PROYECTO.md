@@ -23,6 +23,7 @@
 - src/Rosario.jsx — Santo Rosario completo
 - src/Devocional.jsx — Devocional: oraciones clásicas, novenas, santo del día
 - src/santos.js — calendario de 365 santos
+- src/JovenFe.jsx — sección Joven Fe
 - src/products.js — productos tienda
 - api/gospel.js — evangelio y lecturas (Universalis)
 - api/spiritual-guide.js — Guía Espiritual IA
@@ -43,6 +44,7 @@
 7. Devocional — Oraciones Clásicas (12), Novenas (5, contenido días 2-9 pendiente), Santo del Día (365 santos)
 8. Tienda
 9. Configuración
+10. Joven Fe — Retos de Fe (30 días), Testimonios, Quiz Bíblico
 
 ## Diseño
 - Modo oscuro permanente
@@ -63,7 +65,7 @@
 
 ## Pendiente
 - Devocional — Novenas (contenido días 2-9)
-- Joven Fe — sección para jóvenes (Retos de Fe, Testimonios, Quiz Bíblico)
+- Joven Fe — Testimonios y Quiz Bíblico pendientes
 - Diario de Gracias
 - Splash screen con logo Lumora
 - Notificaciones push Conec✝2
