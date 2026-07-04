@@ -264,7 +264,7 @@ export default function Devocional({ lang = "es", onBack }) {
                     maxHeight: open ? 600 : 0,
                     opacity: open ? 1 : 0,
                     overflow: "hidden",
-                    transition: "max-height 0.35s ease, opacity 0.25s ease",
+                    transition: "max-height 0.3s ease, opacity 0.3s ease",
                   }}
                 >
                   <div style={{ padding: "0 16px 16px", fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
@@ -306,7 +306,7 @@ export default function Devocional({ lang = "es", onBack }) {
                     maxHeight: open ? 700 : 0,
                     opacity: open ? 1 : 0,
                     overflow: "hidden",
-                    transition: "max-height 0.35s ease, opacity 0.25s ease",
+                    transition: "max-height 0.3s ease, opacity 0.3s ease",
                   }}
                 >
                   <div style={{ padding: "0 16px 18px" }}>

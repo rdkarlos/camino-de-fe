@@ -328,14 +328,24 @@ export default function App() {
   const [circleError, setCircleError] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
   const [verseExpanded, setVerseExpanded] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      return localStorage.getItem('lumora_splash_shown') !== new Date().toDateString();
+    } catch {
+      return true;
+    }
+  });
   const [splashIn, setSplashIn] = useState(false);
   const [splashOut, setSplashOut] = useState(false);
 
   useEffect(() => {
+    if (!showSplash) return;
     const t0 = setTimeout(() => setSplashIn(true), 60);
-    const t1 = setTimeout(() => setSplashOut(true), 2300);
-    const t2 = setTimeout(() => setShowSplash(false), 3000);
+    const t1 = setTimeout(() => setSplashOut(true), 2500);
+    const t2 = setTimeout(() => {
+      setShowSplash(false);
+      try { localStorage.setItem('lumora_splash_shown', new Date().toDateString()); } catch {}
+    }, 3200);
     return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -935,7 +945,16 @@ export default function App() {
   };
 
   const renderGospel = () => {
-    const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: t.gospel.text };
+    if (!gospelData) {
+      return (
+        <div>
+          <div className="skeleton-shimmer" style={{ height: 20, width: "55%", borderRadius: 6, marginBottom: 10 }} />
+          <div className="skeleton-shimmer" style={{ height: 28, width: "75%", borderRadius: 8, marginBottom: 16 }} />
+          <div className="skeleton-shimmer" style={{ height: 180, borderRadius: 16 }} />
+        </div>
+      );
+    }
+    const { reference, body } = cleanGospelText(gospelData.text);
     const formatted = body.replace(/\. ([A-ZÁÉÍÓÚ«"A-Z])/g, ".\n\n$1").trim();
     return (
       <div>
@@ -1835,7 +1854,7 @@ export default function App() {
 
                   {/* Vista colapsada: intención o primeras 2 líneas */}
                   {!isOpen && (
-                    <div style={{ padding: "12px 16px", borderTop: `1px solid ${CREAM_DARK}` }}>
+                    <div className="expand-fade" style={{ padding: "12px 16px", borderTop: `1px solid ${CREAM_DARK}` }}>
                       <div style={{ fontSize: 13, color: p.intencion ? CREAM : MUTED, lineHeight: 1.6, fontStyle: p.intencion ? "italic" : "normal" }}>
                         {previewText.length > 120 ? previewText.substring(0, 120) + "…" : previewText}
                       </div>
@@ -1844,7 +1863,7 @@ export default function App() {
 
                   {/* Vista expandida: intención resaltada + oración completa */}
                   {isOpen && (
-                    <div style={{ padding: "16px 16px 14px" }}>
+                    <div className="expand-fade" style={{ padding: "16px 16px 14px" }}>
                       {p.intencion && (
                         <div style={{ background: `${GOLD}18`, borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 14 }}>
                           <div style={{ fontSize: 11, color: "#8B6A1A", fontWeight: "bold", marginBottom: 4, letterSpacing: 0.5 }}>
@@ -2366,7 +2385,7 @@ export default function App() {
       {showSplash && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: BG_MAIN,
+          background: CREAM,
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
           opacity: splashIn && !splashOut ? 1 : 0,
@@ -2405,7 +2424,7 @@ export default function App() {
             fontFamily: "'Cinzel', serif",
             fontSize: 42,
             fontWeight: 700,
-            color: CREAM,
+            color: NAVY,
             letterSpacing: 12,
             marginTop: 18,
             textTransform: "uppercase",
@@ -2434,6 +2453,29 @@ export default function App() {
         @keyframes lambPulse {
           0%, 100% { box-shadow: 0 4px 14px rgba(201,168,76,0.5), 0 0 0 0 rgba(201,168,76,0.35); }
           50%       { box-shadow: 0 4px 18px rgba(201,168,76,0.7), 0 0 0 9px rgba(201,168,76,0); }
+        }
+        @keyframes sectionFadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .section-fade { animation: sectionFadeIn 0.3s ease; }
+        @keyframes expandFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .expand-fade { animation: expandFadeIn 0.3s ease; }
+        button { transition: transform 0.15s ease; }
+        button:hover { transform: scale(1.02); }
+        @keyframes shimmer {
+          0% { background-position: -400px 0; }
+          100% { background-position: 400px 0; }
+        }
+        .skeleton-shimmer {
+          background-color: #1B2A4A;
+          background-image: linear-gradient(90deg, rgba(201,168,76,0) 0%, rgba(201,168,76,0.15) 50%, rgba(201,168,76,0) 100%);
+          background-repeat: no-repeat;
+          background-size: 400px 100%;
+          animation: shimmer 1.4s ease-in-out infinite;
         }
         input::placeholder, textarea::placeholder { color: #8A9BB5; opacity: 1; }
         input, textarea, select { color-scheme: dark; }
@@ -2666,7 +2708,7 @@ export default function App() {
       </div>
 
       {/* ── CONTENIDO ── */}
-      <div style={{ padding: "20px 20px 52px" }}>
+      <div key={tab} className="section-fade" style={{ padding: "20px 20px 52px" }}>
         {tab !== 0 && (
           <div style={{ fontSize: 19, fontWeight: "bold", color: CREAM, marginBottom: 18, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Crimson Text', serif" }}>
             {t.nav[tab]}
