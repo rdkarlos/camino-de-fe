@@ -875,38 +875,38 @@ export default function App() {
                   <div
                     onClick={() => setTab(9)}
                     style={{
-                      position: "relative", borderRadius: 20, minHeight: 160, overflow: "hidden", marginBottom: 14,
+                      position: "relative", borderRadius: 20, minHeight: 180, overflow: "hidden", marginBottom: 14,
                       cursor: "pointer", border: `1.5px solid ${GOLD}`, animation: "goldPulse 2s infinite",
                       backgroundImage: "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80)",
                       backgroundSize: "cover", backgroundPosition: "center",
                     }}
                   >
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(45,27,78,0.85), rgba(27,42,74,0.85))" }} />
-                    <div style={{ position: "relative", padding: "20px 20px 18px", display: "flex", flexDirection: "column", minHeight: 160, justifyContent: "space-between", boxSizing: "border-box" }}>
-                      <div>
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(45,27,78,0.65), rgba(27,42,74,0.65))" }} />
+                    <div style={{ position: "relative", padding: "22px 20px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minHeight: 180, justifyContent: "space-between", boxSizing: "border-box" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 8 }}>
                           <path d="M12 2 L14.4 8.6 L21 9 L15.9 13.1 L17.7 19.6 L12 15.9 L6.3 19.6 L8.1 13.1 L3 9 L9.6 8.6 Z" fill={GOLD}/>
                         </svg>
-                        <div style={{ fontWeight: "bold", fontSize: 24, color: GOLD, fontFamily: "'Cinzel', serif", marginBottom: 5, lineHeight: 1.2 }}>
+                        <div style={{ fontWeight: "bold", fontSize: 28, color: GOLD, fontFamily: "'Cinzel', serif", marginBottom: 6, lineHeight: 1.2 }}>
                           {lang === 'es' ? 'Joven Fe' : 'Youth Faith'}
                         </div>
-                        <div style={{ fontSize: 13, lineHeight: 1.6, color: CREAM, marginBottom: 10 }}>
+                        <div style={{ fontSize: 13, lineHeight: 1.6, color: CREAM, marginBottom: 12 }}>
                           {lang === 'es' ? 'Fe viva para jóvenes' : 'Living faith for young people'}
                         </div>
-                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 10, fontWeight: "bold", color: CREAM, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", padding: "3px 8px", borderRadius: 12 }}>
-                            <span style={{ color: GOLD }}>✦</span> {lang === 'es' ? 'Retos' : 'Challenges'}
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+                          <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(201,168,76,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                            ✦ {lang === 'es' ? 'Retos' : 'Challenges'}
                           </span>
-                          <span style={{ fontSize: 10, fontWeight: "bold", color: CREAM, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", padding: "3px 8px", borderRadius: 12 }}>
-                            <span style={{ color: GOLD }}>✦</span> {lang === 'es' ? 'Testimonios' : 'Testimonies'}
+                          <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(201,168,76,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                            ✦ {lang === 'es' ? 'Testimonios' : 'Testimonies'}
                           </span>
-                          <span style={{ fontSize: 10, fontWeight: "bold", color: CREAM, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", padding: "3px 8px", borderRadius: 12 }}>
-                            <span style={{ color: GOLD }}>✦</span> Quiz
+                          <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(201,168,76,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                            ✦ Quiz
                           </span>
                         </div>
                       </div>
-                      <div style={{ marginTop: 14 }}>
-                        <span style={{ background: GOLD, color: NAVY_DARK, padding: "7px 18px", borderRadius: 20, fontSize: 12, fontWeight: "bold" }}>
+                      <div style={{ marginTop: 14, width: "100%" }}>
+                        <span style={{ display: "block", width: "100%", textAlign: "center", background: GOLD, color: NAVY, padding: "10px 18px", borderRadius: 20, fontSize: 13, fontWeight: 700, boxSizing: "border-box" }}>
                           {lang === 'es' ? 'Explorar' : 'Explore'} →
                         </span>
                       </div>
