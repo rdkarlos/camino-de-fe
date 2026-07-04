@@ -197,6 +197,65 @@ const BIBLE_CATEGORIES = {
   },
 };
 
+const ONBOARDING_ICONS = {
+  logo: (
+    <svg viewBox="0 0 160 160" width="88" height="88" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="onboardGlow" cx="50%" cy="43%" r="38%">
+          <stop offset="0%"   stopColor="#E8C76A" stopOpacity="1"/>
+          <stop offset="45%"  stopColor="#C9A84C" stopOpacity="0.55"/>
+          <stop offset="100%" stopColor="#C9A84C" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="80" cy="65" r="58" fill="url(#onboardGlow)"/>
+      <line x1="80" y1="65" x2="5"   y2="158" stroke="#C9A84C" strokeWidth="2"   strokeLinecap="round" opacity="0.5"/>
+      <line x1="80" y1="65" x2="155" y2="158" stroke="#C9A84C" strokeWidth="2"   strokeLinecap="round" opacity="0.5"/>
+      <line x1="80" y1="65" x2="40"  y2="158" stroke="#C9A84C" strokeWidth="1.2" strokeLinecap="round" opacity="0.28"/>
+      <line x1="80" y1="65" x2="120" y2="158" stroke="#C9A84C" strokeWidth="1.2" strokeLinecap="round" opacity="0.28"/>
+      <line x1="80" y1="68" x2="80"  y2="158" stroke="#C9A84C" strokeWidth="1.5" strokeDasharray="11,11" strokeLinecap="round" opacity="0.35"/>
+      <rect x="74" y="30" width="12" height="64" rx="6" fill="#C9A84C"/>
+      <rect x="52" y="52" width="56" height="12" rx="6" fill="#C9A84C"/>
+    </svg>
+  ),
+  book: (
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+      <path d="M12 6 C9 5 5 6 3 8 L3 20 C5 18 9 17 12 19 Z" stroke="#C9A84C" strokeWidth="1.3"/>
+      <path d="M12 6 C15 5 19 6 21 8 L21 20 C19 18 15 17 12 19 Z" stroke="#C9A84C" strokeWidth="1.3"/>
+      <line x1="12" y1="6" x2="12" y2="19" stroke="#C9A84C" strokeWidth="1.3"/>
+      <line x1="5" y1="11" x2="10.5" y2="10" stroke="#C9A84C" strokeWidth="0.9"/>
+      <line x1="5" y1="14" x2="10.5" y2="13" stroke="#C9A84C" strokeWidth="0.9"/>
+      <line x1="13.5" y1="10" x2="19" y2="11" stroke="#C9A84C" strokeWidth="0.9"/>
+      <line x1="13.5" y1="13" x2="19" y2="14" stroke="#C9A84C" strokeWidth="0.9"/>
+    </svg>
+  ),
+  cross: (
+    <svg width="70" height="70" viewBox="0 0 100 100" fill="none">
+      <rect x="42" y="8" width="16" height="84" rx="8" fill="#C9A84C"/>
+      <rect x="18" y="36" width="64" height="16" rx="8" fill="#C9A84C"/>
+    </svg>
+  ),
+  star: (
+    <svg width="76" height="76" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2 L14.4 8.6 L21 9 L15.9 13.1 L17.7 19.6 L12 15.9 L6.3 19.6 L8.1 13.1 L3 9 L9.6 8.6 Z" fill="#C9A84C"/>
+    </svg>
+  ),
+};
+
+const ONBOARDING_SCREENS = {
+  es: [
+    { title: "Bienvenido a Lumora", text: "Tu compañero espiritual diario. Fe, oración y comunidad en tu celular.", icon: "logo" },
+    { title: "El Evangelio cada día", text: "Lee el evangelio del día y recibe reflexiones que transforman tu vida.", icon: "book" },
+    { title: "Ora, reza, crece", text: "Crea oraciones, reza el rosario y únete a círculos con tu familia.", icon: "cross" },
+    { title: "Fe viva para jóvenes", text: "Retos de fe, testimonios y quiz bíblico. ¡La fe es la mayor aventura!", icon: "star" },
+  ],
+  en: [
+    { title: "Welcome to Lumora", text: "Your daily spiritual companion. Faith, prayer, and community in your pocket.", icon: "logo" },
+    { title: "The Gospel every day", text: "Read today's gospel and receive reflections that transform your life.", icon: "book" },
+    { title: "Pray, grow, believe", text: "Create prayers, pray the rosary, and join circles with your family.", icon: "cross" },
+    { title: "Living faith for youth", text: "Faith challenges, testimonies, and Bible quiz. Faith is the greatest adventure!", icon: "star" },
+  ],
+};
+
 const DAILY_VERSES = [
   { es:{ text:"Todo lo puedo en Cristo que me fortalece.", ref:"Filipenses 4:13" }, en:{ text:"I can do all things through Christ who strengthens me.", ref:"Philippians 4:13" } },
   { es:{ text:"De tal manera amó Dios al mundo, que dio a su Hijo unigénito.", ref:"Juan 3:16" }, en:{ text:"God so loved the world that he gave his only Son.", ref:"John 3:16" } },
@@ -348,6 +407,20 @@ export default function App() {
     }, 3200);
     return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
   }, []);
+
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try {
+      return localStorage.getItem('lumora_onboarding_done') !== 'true';
+    } catch {
+      return true;
+    }
+  });
+  const [onboardingStep, setOnboardingStep] = useState(0);
+
+  const finishOnboarding = () => {
+    setShowOnboarding(false);
+    try { localStorage.setItem('lumora_onboarding_done', 'true'); } catch {}
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -2443,6 +2516,75 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Onboarding */}
+      {!showSplash && showOnboarding && (() => {
+        const screens = ONBOARDING_SCREENS[lang];
+        const screen = screens[onboardingStep];
+        const isLast = onboardingStep === screens.length - 1;
+        return (
+          <div style={{
+            position: "fixed", inset: 0, zIndex: 9998,
+            background: BG_MAIN,
+            display: "flex", flexDirection: "column",
+          }}>
+            {/* Botón Saltar */}
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: "18px 20px 0" }}>
+              <button
+                onClick={finishOnboarding}
+                style={{ background: "none", border: "none", color: MUTED, fontSize: 14, cursor: "pointer", padding: 8, fontFamily: "'Crimson Text', serif" }}
+              >
+                {lang === 'es' ? 'Saltar' : 'Skip'}
+              </button>
+            </div>
+
+            {/* Contenido */}
+            <div key={onboardingStep} className="section-fade" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 32px" }}>
+              <div style={{ marginBottom: 28 }}>{ONBOARDING_ICONS[screen.icon]}</div>
+              <div style={{ fontFamily: "'Cinzel', serif", fontSize: 24, fontWeight: 700, color: GOLD, marginBottom: 16, lineHeight: 1.3 }}>
+                {screen.title}
+              </div>
+              <div style={{ fontFamily: "'Crimson Text', serif", fontSize: 16, color: CREAM, lineHeight: 1.7, maxWidth: 320 }}>
+                {screen.text}
+              </div>
+            </div>
+
+            {/* Puntos de navegación */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 24 }}>
+              {screens.map((_, i) => (
+                <div
+                  key={i}
+                  onClick={() => setOnboardingStep(i)}
+                  style={{
+                    width: i === onboardingStep ? 22 : 8, height: 8, borderRadius: 4,
+                    background: i === onboardingStep ? GOLD : CREAM_DARK,
+                    cursor: "pointer", transition: "all 0.25s ease",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Botón inferior */}
+            <div style={{ padding: "0 32px 40px" }}>
+              {isLast ? (
+                <button
+                  onClick={finishOnboarding}
+                  style={{ width: "100%", padding: "14px", background: GOLD, color: NAVY, border: "none", borderRadius: 24, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Cinzel', serif" }}
+                >
+                  {lang === 'es' ? '¡Comenzar mi camino!' : 'Start my journey!'}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setOnboardingStep(s => Math.min(screens.length - 1, s + 1))}
+                  style={{ width: "100%", padding: "14px", background: "transparent", color: GOLD, border: `1.5px solid ${GOLD}`, borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif" }}
+                >
+                  {lang === 'es' ? 'Siguiente' : 'Next'} →
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {paymentSuccess && renderPaymentSuccess()}
       {authMode && renderAuthModal()}

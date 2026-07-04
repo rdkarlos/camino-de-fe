@@ -30,12 +30,12 @@
 - api/cron-reflexion.js — Cron Job diario 12:10am Colombia: genera reflexión automática
 - api/order.js — pagos Wompi
 - api/confirm-payment.js — emails Resend
-- public/sw.js — service worker v14 (network-first)
+- public/sw.js — service worker v15 (network-first)
 - public/manifest.json — PWA config
 - vercel.json — configuración cron jobs
 
 ## Secciones
-1. Inicio — cards compactas modo oscuro, versículo del día
+1. Inicio — cards compactas modo oscuro, versículo del día, splash screen
 2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Santo Rosario, Devocional
 3. Evangelio — con Guía Espiritual (corderito 🐑)
 4. La Biblia — LBLA, navegación por categorías + buscador
@@ -52,6 +52,8 @@
 - Dorado: #C9A84C, Texto: #FAF5ED
 - Tipografía: Cinzel (títulos), Crimson Text (textos)
 - Íconos SVG minimalistas católicos
+- Micro-animaciones entre secciones
+- Skeleton loader en Evangelio
 
 ## Variables de entorno en Vercel
 - ANTHROPIC_API_KEY — API de Anthropic
@@ -67,7 +69,7 @@
 - Devocional — Novenas (contenido días 2-9)
 - Joven Fe — Testimonios y Quiz Bíblico pendientes
 - Diario de Gracias
-- Splash screen con logo Lumora
+- Onboarding para nuevos usuarios
 - Notificaciones push Conec✝2
 - Dominio propio (candidato: amorae.org)
 - Wompi producción
