@@ -49,12 +49,53 @@ async function generateReflection(gospelRef, gospelText, lang) {
   return data.content?.[0]?.text ?? '';
 }
 
+async function generateVerse(gospelText) {
+  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+
+  const userMessage = `Based on today's gospel: ${gospelText}, suggest ONE Bible verse (not from the same passage) that complements the message. Respond ONLY in this exact JSON format: {"texto": "verse text here", "referencia": "Book Chapter, Verse"}. No other text.`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 200,
+      messages: [{ role: 'user', content: userMessage }],
+    }),
+  });
+
+  const rawData = await response.text();
+  if (!response.ok) throw new Error(`Anthropic API error (verse): ${rawData}`);
+  const data = JSON.parse(rawData);
+  const text = data.content?.[0]?.text ?? '';
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('No se pudo parsear el versículo generado');
+  const verse = JSON.parse(match[0]);
+  if (!verse.texto || !verse.referencia) throw new Error('Versículo generado incompleto');
+  return verse;
+}
+
 async function cleanOldReflections(today) {
   const snapshot = await getDocs(collection(db, 'reflexiones'));
   const deletions = [];
   snapshot.forEach((docSnap) => {
     if (!docSnap.id.startsWith(today)) {
       deletions.push(deleteDoc(doc(db, 'reflexiones', docSnap.id)));
+    }
+  });
+  await Promise.all(deletions);
+}
+
+async function cleanOldVersiculos(today) {
+  const snapshot = await getDocs(collection(db, 'versiculos'));
+  const deletions = [];
+  snapshot.forEach((docSnap) => {
+    if (docSnap.id !== today) {
+      deletions.push(deleteDoc(doc(db, 'versiculos', docSnap.id)));
     }
   });
   await Promise.all(deletions);
@@ -77,20 +118,25 @@ export default async function handler(req, res) {
     const idEs = `${today}_es`;
     const idEn = `${today}_en`;
 
-    const [existingEs, existingEn] = await Promise.all([
+    const [existingEs, existingEn, existingVerse] = await Promise.all([
       getDoc(doc(db, 'reflexiones', idEs)),
       getDoc(doc(db, 'reflexiones', idEn)),
+      getDoc(doc(db, 'versiculos', today)),
     ]);
 
-    if (existingEs.exists() && existingEn.exists()) {
-      await cleanOldReflections(today);
+    if (existingEs.exists() && existingEn.exists() && existingVerse.exists()) {
+      await Promise.all([cleanOldReflections(today), cleanOldVersiculos(today)]);
       return res.status(200).json({ success: true, message: 'La reflexión de hoy ya existía, no se generó de nuevo' });
     }
 
     const baseUrl = process.env.SITE_URL || 'https://camino-de-fe-seven.vercel.app';
 
+    let gospelEs = null;
+    if (!existingEs.exists() || !existingVerse.exists()) {
+      gospelEs = await getGospel(baseUrl, 'es', day, month, year);
+    }
+
     if (!existingEs.exists()) {
-      const gospelEs = await getGospel(baseUrl, 'es', day, month, year);
       const textoEs = await generateReflection(gospelEs.reference, gospelEs.text, 'es');
       await setDoc(doc(db, 'reflexiones', idEs), {
         texto: textoEs, fecha: today, evangelio: gospelEs.reference || '',
@@ -105,9 +151,16 @@ export default async function handler(req, res) {
       });
     }
 
-    await cleanOldReflections(today);
+    if (!existingVerse.exists()) {
+      const verse = await generateVerse(gospelEs.text);
+      await setDoc(doc(db, 'versiculos', today), {
+        texto: verse.texto, referencia: verse.referencia, fecha: today,
+      });
+    }
 
-    return res.status(200).json({ success: true, message: 'Reflexión generada' });
+    await Promise.all([cleanOldReflections(today), cleanOldVersiculos(today)]);
+
+    return res.status(200).json({ success: true, message: 'Reflexión y versículo generados' });
   } catch (error) {
     console.error('[cron-reflexion] error:', error.message);
     return res.status(500).json({ success: false, error: error.message });

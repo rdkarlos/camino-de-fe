@@ -8,6 +8,7 @@ import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
 import Devocional from "./Devocional";
 import JovenFe from "./JovenFe";
+import VERSICULOS from "./versiculos";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -256,39 +257,6 @@ const ONBOARDING_SCREENS = {
   ],
 };
 
-const DAILY_VERSES = [
-  { es:{ text:"Todo lo puedo en Cristo que me fortalece.", ref:"Filipenses 4:13" }, en:{ text:"I can do all things through Christ who strengthens me.", ref:"Philippians 4:13" } },
-  { es:{ text:"De tal manera amó Dios al mundo, que dio a su Hijo unigénito.", ref:"Juan 3:16" }, en:{ text:"God so loved the world that he gave his only Son.", ref:"John 3:16" } },
-  { es:{ text:"El Señor es mi pastor; nada me falta.", ref:"Salmo 23:1" }, en:{ text:"The Lord is my shepherd; I shall not want.", ref:"Psalm 23:1" } },
-  { es:{ text:"Busca primero el Reino de Dios y su justicia.", ref:"Mateo 6:33" }, en:{ text:"Seek first the kingdom of God and his righteousness.", ref:"Matthew 6:33" } },
-  { es:{ text:"No se turbe vuestro corazón; creed en Dios, creed también en mí.", ref:"Juan 14:1" }, en:{ text:"Let not your hearts be troubled. Believe in God; believe also in me.", ref:"John 14:1" } },
-  { es:{ text:"Yo soy el camino, la verdad y la vida.", ref:"Juan 14:6" }, en:{ text:"I am the way, the truth, and the life.", ref:"John 14:6" } },
-  { es:{ text:"El amor es paciente, es bondadoso; el amor no tiene envidia.", ref:"1 Corintios 13:4" }, en:{ text:"Love is patient, love is kind; love does not envy.", ref:"1 Corinthians 13:4" } },
-  { es:{ text:"Dad gracias en todo; esta es la voluntad de Dios en Cristo Jesús.", ref:"1 Tesalonicenses 5:18" }, en:{ text:"Give thanks in all circumstances; this is God's will for you.", ref:"1 Thessalonians 5:18" } },
-  { es:{ text:"Con amor eterno te amé; por eso te mantuve con fidelidad.", ref:"Jeremías 31:3" }, en:{ text:"I have loved you with an everlasting love; I have drawn you with loving kindness.", ref:"Jeremiah 31:3" } },
-  { es:{ text:"Venid a mí todos los que estáis fatigados y sobrecargados, y yo os daré descanso.", ref:"Mateo 11:28" }, en:{ text:"Come to me, all who are weary and burdened, and I will give you rest.", ref:"Matthew 11:28" } },
-  { es:{ text:"Confía en el Señor con todo tu corazón y no te apoyes en tu propia prudencia.", ref:"Proverbios 3:5" }, en:{ text:"Trust in the Lord with all your heart and lean not on your own understanding.", ref:"Proverbs 3:5" } },
-  { es:{ text:"El Señor tu Dios está en medio de ti como un guerrero victorioso.", ref:"Sofonías 3:17" }, en:{ text:"The Lord your God is in your midst, a mighty one who will save.", ref:"Zephaniah 3:17" } },
-  { es:{ text:"Bienaventurados los limpios de corazón, porque ellos verán a Dios.", ref:"Mateo 5:8" }, en:{ text:"Blessed are the pure in heart, for they shall see God.", ref:"Matthew 5:8" } },
-  { es:{ text:"La verdad os hará libres.", ref:"Juan 8:32" }, en:{ text:"The truth will set you free.", ref:"John 8:32" } },
-  { es:{ text:"Yo soy la resurrección y la vida; el que cree en mí, aunque muera, vivirá.", ref:"Juan 11:25" }, en:{ text:"I am the resurrection and the life. Whoever believes in me, though he die, yet shall he live.", ref:"John 11:25" } },
-  { es:{ text:"Mi gracia te basta; mi fuerza se manifiesta en la flaqueza.", ref:"2 Corintios 12:9" }, en:{ text:"My grace is sufficient for you, for my power is made perfect in weakness.", ref:"2 Corinthians 12:9" } },
-  { es:{ text:"No temas, porque yo te he redimido; te he llamado por tu nombre, tú eres mío.", ref:"Isaías 43:1" }, en:{ text:"Fear not, for I have redeemed you; I have called you by name, you are mine.", ref:"Isaiah 43:1" } },
-  { es:{ text:"Bienaventurados los que lloran, porque ellos serán consolados.", ref:"Mateo 5:4" }, en:{ text:"Blessed are those who mourn, for they shall be comforted.", ref:"Matthew 5:4" } },
-  { es:{ text:"Yo soy la vid, vosotros los sarmientos; el que permanece en mí da mucho fruto.", ref:"Juan 15:5" }, en:{ text:"I am the vine; you are the branches. Whoever abides in me bears much fruit.", ref:"John 15:5" } },
-  { es:{ text:"Sed buenos y compasivos unos con otros, perdonándoos como Dios os perdonó.", ref:"Efesios 4:32" }, en:{ text:"Be kind and compassionate, forgiving each other, just as in Christ God forgave you.", ref:"Ephesians 4:32" } },
-  { es:{ text:"Dios es nuestro refugio y fortaleza, nuestro pronto auxilio en las tribulaciones.", ref:"Salmo 46:1" }, en:{ text:"God is our refuge and strength, an ever-present help in trouble.", ref:"Psalm 46:1" } },
-  { es:{ text:"A los que aman a Dios, todo les ayuda para bien.", ref:"Romanos 8:28" }, en:{ text:"For those who love God all things work together for good.", ref:"Romans 8:28" } },
-  { es:{ text:"Bienaventurados los que tienen hambre y sed de justicia, porque serán saciados.", ref:"Mateo 5:6" }, en:{ text:"Blessed are those who hunger and thirst for righteousness, for they shall be satisfied.", ref:"Matthew 5:6" } },
-  { es:{ text:"No os inquietéis por nada; en todo, mediante oración y súplica, presentad vuestras peticiones a Dios.", ref:"Filipenses 4:6" }, en:{ text:"Do not be anxious about anything, but in every situation, by prayer and petition, present your requests to God.", ref:"Philippians 4:6" } },
-  { es:{ text:"Orad sin cesar.", ref:"1 Tesalonicenses 5:17" }, en:{ text:"Pray without ceasing.", ref:"1 Thessalonians 5:17" } },
-  { es:{ text:"Amarás al Señor tu Dios con todo tu corazón, con toda tu alma y con toda tu mente.", ref:"Mateo 22:37" }, en:{ text:"You shall love the Lord your God with all your heart, soul, and mind.", ref:"Matthew 22:37" } },
-  { es:{ text:"Nada podrá separarnos del amor de Dios manifestado en Cristo Jesús.", ref:"Romanos 8:39" }, en:{ text:"Nothing will be able to separate us from the love of God in Christ Jesus.", ref:"Romans 8:39" } },
-  { es:{ text:"Gustad y ved cuán bueno es el Señor; dichoso el que se refugia en él.", ref:"Salmo 34:8" }, en:{ text:"Taste and see that the Lord is good; blessed is the one who takes refuge in him.", ref:"Psalm 34:8" } },
-  { es:{ text:"Los que esperan en el Señor renuevan sus fuerzas; vuelan como águilas.", ref:"Isaías 40:31" }, en:{ text:"Those who hope in the Lord will renew their strength; they will soar on wings like eagles.", ref:"Isaiah 40:31" } },
-  { es:{ text:"Bienaventurados los pobres de espíritu, porque de ellos es el reino de los cielos.", ref:"Mateo 5:3" }, en:{ text:"Blessed are the poor in spirit, for theirs is the kingdom of heaven.", ref:"Matthew 5:3" } },
-];
-
 const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1, $2') : r;
 
 const LAMB_BTN_SIZE = 50;
@@ -314,6 +282,7 @@ export default function App() {
   const [openPrayer, setOpenPrayer] = useState(null);
   const [cart, setCart] = useState([]);
   const [gospelData, setGospelData] = useState(null);
+  const [cronVerse, setCronVerse] = useState(null);
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState(null);
   const [authName, setAuthName] = useState("");
@@ -474,6 +443,17 @@ export default function App() {
       })
       .catch(() => {});
   }, [lang]);
+
+  useEffect(() => {
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+    getDoc(doc(db, 'versiculos', today))
+      .then((snap) => {
+        if (snap.exists() && snap.data().texto) {
+          setCronVerse(snap.data());
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -837,11 +817,17 @@ export default function App() {
     </div>
   );
 
+  const getVersiculoHoy = () => {
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+    const key = today.slice(5); // MM-DD
+    return VERSICULOS[key] || VERSICULOS['01-01'];
+  };
+
   const renderHome = () => {
     const { reference, body } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
-    const _today = new Date();
-    const _dayOfYear = Math.floor((_today - new Date(_today.getFullYear(), 0, 0)) / 86400000);
-    const dailyVerse = DAILY_VERSES[_dayOfYear % DAILY_VERSES.length][lang] || DAILY_VERSES[_dayOfYear % DAILY_VERSES.length].es;
+    const versiculoBanco = getVersiculoHoy();
+    const versiculoActivo = cronVerse || versiculoBanco;
+    const dailyVerse = { text: versiculoActivo.texto, ref: versiculoActivo.referencia };
     return (
       <div>
         {/* Tarjeta versículo — ancho completo, clickeable */}
