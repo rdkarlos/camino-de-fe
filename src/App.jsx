@@ -1089,11 +1089,26 @@ export default function App() {
             </div>
             {openReading === s.key && (
               <div style={{ padding: "0 18px 18px", fontSize: 14, color: CREAM, lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>
-                {s.text}
-                {(s.key === 'r1' || s.key === 'r2') && (
-                  <div style={{ fontStyle: "italic", color: GOLD, marginTop: 10, whiteSpace: "normal" }}>
-                    {lang === 'es' ? '— Palabra de Dios.' : '— The Word of the Lord.'}
-                  </div>
+                {s.key === 'ps' ? (
+                  s.text.split('\n').map((line, i) => {
+                    if (!line.trim()) return <div key={i} style={{ height: 8 }} />;
+                    if (line.startsWith('R.')) {
+                      return <div key={i} style={{ color: GOLD, fontWeight: "bold" }}>{line}</div>;
+                    }
+                    if (line.startsWith('V.')) {
+                      return <div key={i}>{line}</div>;
+                    }
+                    return <div key={i}>{line}</div>;
+                  })
+                ) : (
+                  <>
+                    {s.text}
+                    {(s.key === 'r1' || s.key === 'r2') && (
+                      <div style={{ fontStyle: "italic", color: GOLD, marginTop: 10, whiteSpace: "normal" }}>
+                        {lang === 'es' ? '— Palabra de Dios.' : '— The Word of the Lord.'}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

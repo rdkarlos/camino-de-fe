@@ -82,6 +82,96 @@ export default async function handler(req, res) {
     }
   };
 
+  // Parsea el HTML del salmo de Universalis en su estructura litúrgica:
+  // R. (responso), R. alternativo (ej. Aleluya) y estrofas de versos (V.)
+  const parsePsalmStructure = (html) => {
+    if (!html) return null;
+    const divRegex = /<div[^>]*>([\s\S]*?)<\/div>/g;
+    const blocks = [];
+    let m;
+    while ((m = divRegex.exec(html)) !== null) {
+      const inner = m[1];
+      const isItalic = /^<i>/.test(inner);
+      const isBold = /^<b>/.test(inner);
+      const text = inner
+        .replace(/<\/?[ib]>/g, '')
+        .replace(/&#160;|&#xa0;|&nbsp;/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      blocks.push({ isItalic, isBold, text });
+    }
+    if (!blocks.length) return null;
+
+    let i = 0;
+    const response = blocks[i]?.isItalic ? blocks[i++].text : null;
+    let alternative = null;
+    if (blocks[i]?.isBold) {
+      i++; // "or"
+      if (blocks[i]?.isItalic) alternative = blocks[i++].text;
+    }
+
+    const stanzas = [];
+    let current = [];
+    while (i < blocks.length) {
+      const b = blocks[i];
+      if (b.isItalic) {
+        // responso repetido: cierra la estrofa actual y salta el "or" + alternativa
+        if (current.length) { stanzas.push(current); current = []; }
+        i++;
+        if (blocks[i]?.isBold) {
+          i++;
+          if (blocks[i]?.isItalic) i++;
+        }
+      } else if (b.isBold) {
+        i++;
+      } else {
+        if (b.text) current.push(b.text);
+        i++;
+      }
+    }
+    if (current.length) stanzas.push(current);
+
+    return { response, alternative, stanzas };
+  };
+
+  // Formatea el salmo en inglés con la estructura R./V. real de Universalis
+  const formatPsalmEn = (structure) => {
+    if (!structure) return null;
+    const lines = [];
+    if (structure.response) lines.push(`R. ${structure.response}`);
+    if (structure.alternative) lines.push(`R. ${structure.alternative}`);
+    structure.stanzas.forEach((stanza, idx) => {
+      lines.push('');
+      lines.push(`V. ${stanza.join(' ')}`);
+      if (structure.response) lines.push(`R. ${structure.response}`);
+    });
+    return lines.join('\n');
+  };
+
+  // Formatea el salmo en español: usa la cantidad de estrofas de Universalis
+  // como guía y el texto continuo traducido (API.Bible) agrupado en versos.
+  // La primera frase se usa como responso (R.), el resto se agrupa en estrofas.
+  const formatPsalmEs = (structure, spanishText) => {
+    if (!spanishText) return null;
+    const sentences = spanishText.match(/[^.!?]+[.!?]+/g)?.map(s => s.trim()).filter(Boolean) || [spanishText];
+    if (sentences.length < 2) {
+      return `V. ${spanishText}`;
+    }
+    const response = sentences[0];
+    const rest = sentences.slice(1);
+    const stanzaCount = structure?.stanzas?.length > 0 ? structure.stanzas.length : Math.ceil(rest.length / 2);
+    const perStanza = Math.max(1, Math.ceil(rest.length / stanzaCount));
+
+    const lines = [`R. ${response}`, `R. ¡Aleluya!`];
+    for (let i = 0; i < rest.length; i += perStanza) {
+      const stanza = rest.slice(i, i + perStanza).join(' ');
+      lines.push('');
+      lines.push(`V. ${stanza}`);
+      lines.push(`R. ${response}`);
+    }
+    return lines.join('\n');
+  };
+
   // Limpia HTML de Universalis a texto plano
   const cleanText = (html) => {
     if (!html) return '';
@@ -127,6 +217,7 @@ export default async function handler(req, res) {
     const rawReading1Ref = reading1Data?.source || null;
     const rawReading2Ref = reading2Data?.source || null;
     const rawPsalmRef   = psalmData?.source || null;
+    const psalmStructure = psalmData ? parsePsalmStructure(psalmData.text) : null;
 
     if (lang === 'en') {
       return res.status(200).json({
@@ -136,7 +227,7 @@ export default async function handler(req, res) {
         text: cleanText(gospelData.text) || 'Gospel text not available',
         reading1: reading1Data ? { reference: normalizeRef(rawReading1Ref), text: cleanText(reading1Data.text) } : null,
         reading2: reading2Data ? { reference: normalizeRef(rawReading2Ref), text: cleanText(reading2Data.text) } : null,
-        psalm:    psalmData   ? { reference: normalizeRef(rawPsalmRef),    text: cleanText(psalmData.text)   } : null,
+        psalm:    psalmData   ? { reference: normalizeRef(rawPsalmRef),    text: formatPsalmEn(psalmStructure) || cleanText(psalmData.text) } : null,
         reflection: '',
       });
     }
@@ -165,7 +256,7 @@ export default async function handler(req, res) {
         ? { reference: reading2Es.reference || normalizeRef(rawReading2Ref), text: reading2Es.text }
         : (reading2Data ? { reference: normalizeRef(rawReading2Ref), text: cleanText(reading2Data.text) } : null),
       psalm: psalmEs
-        ? { reference: psalmEs.reference || normalizeRef(rawPsalmRef), text: psalmEs.text }
+        ? { reference: psalmEs.reference || normalizeRef(rawPsalmRef), text: formatPsalmEs(psalmStructure, psalmEs.text) || psalmEs.text }
         : (psalmData ? { reference: normalizeRef(rawPsalmRef), text: cleanText(psalmData.text) } : null),
       reflection: '',
     });
