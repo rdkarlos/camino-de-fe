@@ -2009,26 +2009,26 @@ export default function App() {
   };
 
   const renderShop = () => (
-    <div>
-      <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, fontStyle: "italic" }}>{lang === 'es' ? 'Artículos para acompañar tu fe' : 'Items to accompany your faith'}</p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        {products.map((item) => (
-          <div key={item.id} style={{ background: BG_CARD, borderRadius: 16, padding: 16, boxShadow: "0 4px 16px rgba(15,28,50,0.07)", position: "relative", textAlign: "center", border: `1px solid ${CREAM_DARK}` }}>
-            {item.tag && <span style={{ position: "absolute", top: 8, right: 8, background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: CREAM, fontSize: 9, fontWeight: "bold", padding: "3px 8px", borderRadius: 10 }}>{item.tag}</span>}
-            <div style={{ fontSize: 36, marginBottom: 8 }}>{item.icon}</div>
-            <div style={{ fontSize: 13, fontWeight: "bold", color: CREAM, marginBottom: 4, fontFamily: "'Cinzel', serif" }}>{lang === 'es' ? item.nameEs : item.nameEn}</div>
-            <div style={{ fontSize: 15, color: GOLD, fontWeight: "bold", marginBottom: 10 }}>{formatPrice(item.price)}</div>
-            <button onClick={() => addToCart(item)} style={{ background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", padding: "8px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer", width: "100%", fontFamily: "'Cinzel', serif" }}>
-              {lang === "es" ? "Añadir al carrito" : "Add to cart"}
-            </button>
-          </div>
-        ))}
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", textAlign: "center", padding: "20px 10px" }}>
+      <div style={{ background: BG_CARD, border: `1.5px solid ${GOLD}55`, borderRadius: 20, padding: "40px 28px", maxWidth: 340, width: "100%" }}>
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 18 }}>
+          <path d="M5 8 H19 L17.5 21 H6.5 Z" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round"/>
+          <path d="M9 8 C9 4.5 15 4.5 15 8" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+          <line x1="12" y1="12.5" x2="12" y2="16.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+          <line x1="10" y1="14.5" x2="14" y2="14.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        <div style={{ fontFamily: "'Cinzel', serif", fontSize: 22, fontWeight: 700, color: GOLD, marginBottom: 14 }}>
+          {lang === 'es' ? 'Tienda Lumora' : 'Lumora Shop'}
+        </div>
+        <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.7, fontFamily: "'Crimson Text', serif", marginBottom: 18 }}>
+          {lang === 'es'
+            ? 'Estamos preparando algo especial para ti. Pronto encontrarás artículos de fe para tu hogar y devoción.'
+            : 'We are preparing something special for you. Soon you will find faith items for your home and devotion.'}
+        </div>
+        <span style={{ display: "inline-block", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, fontSize: 11, fontWeight: "bold", padding: "6px 16px", borderRadius: 20, letterSpacing: 0.5 }}>
+          {lang === 'es' ? 'Próximamente' : 'Coming Soon'}
+        </span>
       </div>
-      {cart.length > 0 && (
-        <button onClick={() => setShowCart(true)} style={{ position: "fixed", bottom: 24, right: 24, background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 30, padding: "14px 20px", fontSize: 14, fontWeight: "bold", cursor: "pointer", boxShadow: "0 4px 20px rgba(15,28,50,0.35)", zIndex: 50, fontFamily: "'Cinzel', serif" }}>
-          🛒 {cartCount} · {formatPrice(cartTotal)}
-        </button>
-      )}
     </div>
   );
 
