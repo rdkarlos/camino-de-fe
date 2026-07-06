@@ -70,7 +70,7 @@
 - Devocional — Novenas (contenido días 2-9)
 - Joven Fe — Testimonios y Quiz Bíblico pendientes
 - Diario de Gracias
-- Versículo del día — banco 365 + cron genera versículo relacionado con evangelio
+- Versículo del día ✅ — banco 365 conectado + cron genera versículo desde evangelio
 - Compartir reflexión en redes sociales
 - Notificaciones push (Conec✝2 y recordatorio diario)
 - Dominio propio (candidato: amorae.org)
