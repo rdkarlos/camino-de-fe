@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import SANTOS from './santos';
+import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, NOCHE_DARK } from "./theme";
 
-const BG_MAIN = "#0A0F1E";
-const BG_CARD = "#111827";
-const GOLD = "#C9A84C";
-const CREAM = "#FAF5ED";
-const CREAM_DARK = "#2A3A5A";
-const MUTED = "#8A9BB5";
-const NAVY = "#1B2A4A";
-const NAVY_DARK = "#0F1C32";
+const BG_MAIN = NOCHE;
+const BG_CARD = CARD;
+const GOLD = ALBA;
+const CREAM = LINO;
+const CREAM_DARK = PIEDRA;
+const MUTED = CIELO;
+const NAVY = NOCHE;
+const NAVY_DARK = NOCHE_DARK;
 const WHITE = "#FFFFFF";
 
 const TABS = [
@@ -207,7 +208,7 @@ export default function Devocional({ lang = "es", onBack }) {
     <div style={{ background: BG_MAIN, color: CREAM, minHeight: "100%" }}>
       <button
         onClick={() => onBack && onBack()}
-        style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: GOLD, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 18, padding: 0, fontFamily: "'Cinzel', serif" }}
+        style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: GOLD, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 18, padding: 0, fontFamily: "'Cormorant', serif" }}
       >
         ← {lang === "es" ? "Volver" : "Back"}
       </button>
@@ -226,7 +227,7 @@ export default function Devocional({ lang = "es", onBack }) {
                 color: sel ? WHITE : MUTED,
                 border: `1px solid ${sel ? GOLD + "66" : CREAM_DARK}`,
                 fontSize: 13, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Crimson Text', serif", textAlign: "center", lineHeight: 1.3,
+                fontFamily: "'Work Sans', sans-serif", textAlign: "center", lineHeight: 1.3,
               }}
             >
               {lang === "es" ? t.es : t.en}
@@ -253,7 +254,7 @@ export default function Devocional({ lang = "es", onBack }) {
                   style={{
                     width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                     padding: "14px 16px", background: "none", border: "none", cursor: "pointer",
-                    color: CREAM, fontSize: 15, fontWeight: "bold", fontFamily: "'Cinzel', serif",
+                    color: CREAM, fontSize: 15, fontWeight: "bold", fontFamily: "'Cormorant', serif",
                   }}
                 >
                   <span>{p.title}</span>
@@ -267,7 +268,7 @@ export default function Devocional({ lang = "es", onBack }) {
                     transition: "max-height 0.3s ease, opacity 0.3s ease",
                   }}
                 >
-                  <div style={{ padding: "0 16px 16px", fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
+                  <div style={{ padding: "0 16px 16px", fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
                     {p.text}
                   </div>
                 </div>
@@ -295,7 +296,7 @@ export default function Devocional({ lang = "es", onBack }) {
                   style={{
                     width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                     padding: "14px 16px", background: "none", border: "none", cursor: "pointer",
-                    color: CREAM, fontSize: 15, fontWeight: "bold", fontFamily: "'Cinzel', serif",
+                    color: CREAM, fontSize: 15, fontWeight: "bold", fontFamily: "'Cormorant', serif",
                   }}
                 >
                   <span>{n.title}</span>
@@ -310,27 +311,27 @@ export default function Devocional({ lang = "es", onBack }) {
                   }}
                 >
                   <div style={{ padding: "0 16px 18px" }}>
-                    <div style={{ textAlign: "center", fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cinzel', serif" }}>
+                    <div style={{ textAlign: "center", fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cormorant', serif" }}>
                       {lang === "es" ? `Día ${day} de 9` : `Day ${day} of 9`}
                     </div>
-                    <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", marginBottom: 14 }}>
                       {n.days[day - 1]}
                     </div>
-                    <div style={{ fontSize: 14, lineHeight: 1.8, color: GOLD, fontStyle: "italic", fontFamily: "'Crimson Text', serif", marginBottom: 16 }}>
+                    <div style={{ fontSize: 14, lineHeight: 1.8, color: GOLD, fontStyle: "italic", fontFamily: "'Work Sans', sans-serif", marginBottom: 16 }}>
                       {NOVENA_CLOSING[lang]}
                     </div>
                     <div style={{ display: "flex", gap: 10 }}>
                       <button
                         onClick={() => setDay(day - 1)}
                         disabled={day === 1}
-                        style={{ flex: 1, padding: "10px", background: NAVY_DARK, color: day === 1 ? MUTED : CREAM, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 13, cursor: day === 1 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: day === 1 ? 0.5 : 1 }}
+                        style={{ flex: 1, padding: "10px", background: NAVY_DARK, color: day === 1 ? MUTED : CREAM, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 13, cursor: day === 1 ? "default" : "pointer", fontFamily: "'Cormorant', serif", opacity: day === 1 ? 0.5 : 1 }}
                       >
                         ← {lang === "es" ? "Anterior" : "Previous"}
                       </button>
                       <button
                         onClick={() => setDay(day + 1)}
                         disabled={day === 9}
-                        style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 13, cursor: day === 9 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: day === 9 ? 0.5 : 1 }}
+                        style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 13, cursor: day === 9 ? "default" : "pointer", fontFamily: "'Cormorant', serif", opacity: day === 9 ? 0.5 : 1 }}
                       >
                         {lang === "es" ? "Siguiente" : "Next"} →
                       </button>
@@ -346,7 +347,7 @@ export default function Devocional({ lang = "es", onBack }) {
           const { key, santo } = getSantoHoy();
           return (
             <div>
-              <div style={{ textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
+              <div style={{ textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cormorant', serif" }}>
                 ✨ {lang === "es" ? "Hoy celebramos a" : "Today we celebrate"}
               </div>
               <div style={{ background: BG_CARD, borderRadius: 14, border: `1px solid ${CREAM_DARK}`, padding: 20, textAlign: "center" }}>
@@ -354,16 +355,16 @@ export default function Devocional({ lang = "es", onBack }) {
                   <line x1="12" y1="2" x2="12" y2="22" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round" />
                   <line x1="6" y1="8" x2="18" y2="8" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round" />
                 </svg>
-                <div style={{ fontSize: 20, fontWeight: "bold", color: GOLD, fontFamily: "'Cinzel', serif", marginBottom: 6 }}>
+                <div style={{ fontSize: 20, fontWeight: "bold", color: GOLD, fontFamily: "'Cormorant', serif", marginBottom: 6 }}>
                   {santo.nombre}
                 </div>
                 <div style={{ fontSize: 12, color: MUTED, marginBottom: 16 }}>
                   {formatSantoFecha(key)}
                 </div>
-                <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", marginBottom: 16, textAlign: "left" }}>
+                <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", marginBottom: 16, textAlign: "left" }}>
                   {santo.bio}
                 </div>
-                <div style={{ borderLeft: `3px solid ${GOLD}`, paddingLeft: 12, fontSize: 14, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif", lineHeight: 1.6, textAlign: "left" }}>
+                <div style={{ borderLeft: `3px solid ${GOLD}`, paddingLeft: 12, fontSize: 14, fontStyle: "italic", color: GOLD, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.6, textAlign: "left" }}>
                   "{santo.frase}"
                 </div>
               </div>

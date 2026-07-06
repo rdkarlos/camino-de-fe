@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { NOCHE, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, NOCHE_DARK } from "./theme";
 
-const BG_MAIN = "#0A0F1E";
-const GOLD = "#C9A84C";
-const GOLD_LIGHT = "#E8C76A";
-const CREAM = "#FAF5ED";
-const CREAM_DARK = "#2A3A5A";
-const MUTED = "#8A9BB5";
-const NAVY = "#1B2A4A";
-const NAVY_DARK = "#0F1C32";
+const BG_MAIN = NOCHE;
+const GOLD = ALBA;
+const GOLD_LIGHT = ALBA_LIGHT;
+const CREAM = LINO;
+const CREAM_DARK = PIEDRA;
+const MUTED = CIELO;
+const NAVY = NOCHE;
+const NAVY_DARK = NOCHE_DARK;
 
 const SECTIONS = {
   es: ["Oraciones Iniciales", "Los Misterios", "Intenciones del Papa", "Salve Regina"],
@@ -158,7 +159,7 @@ export default function Rosario({ lang = "es", onHome }) {
     <div style={{ position: "relative", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {/* Resplandor de fondo */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", pointerEvents: "none" }}>
-        <div style={{ width: 300, height: 500, borderRadius: "50%", background: "rgba(201,168,76,0.06)", filter: "blur(60px)" }} />
+        <div style={{ width: 300, height: 500, borderRadius: "50%", background: "rgba(232,180,92,0.06)", filter: "blur(60px)" }} />
       </div>
 
       {/* Barra de progreso */}
@@ -170,7 +171,7 @@ export default function Rosario({ lang = "es", onHome }) {
 
       {/* Insignia del misterio de hoy */}
       {page.part === 1 && (
-        <div style={{ position: "relative", zIndex: 1, textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cinzel', serif" }}>
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cormorant', serif" }}>
           ✨ {lang === "es" ? "Hoy rezamos los" : "Today's mysteries"}: {todayLabel}
         </div>
       )}
@@ -179,7 +180,7 @@ export default function Rosario({ lang = "es", onHome }) {
       <div style={{ position: "relative", zIndex: 1, minHeight: "calc(100vh - 350px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflowY: "auto" }}>
         <div style={{ maxWidth: 400, width: "100%" }}>
           {!isComplete && (
-            <div style={{ fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cinzel', serif" }}>
+            <div style={{ fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cormorant', serif" }}>
               {lang === "es" ? `Parte ${page.part + 1} de ${partTitles.length}` : `Part ${page.part + 1} of ${partTitles.length}`}
               {subLabel && ` · ${subLabel}`}
             </div>
@@ -191,28 +192,28 @@ export default function Rosario({ lang = "es", onHome }) {
                 <line x1="12" y1="2" x2="12" y2="22" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round"/>
                 <line x1="6" y1="8" x2="18" y2="8" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
-              <div style={{ fontSize: 22, fontWeight: "bold", fontFamily: "'Cinzel', serif", color: GOLD, marginBottom: 12 }}>
+              <div style={{ fontSize: 22, fontWeight: "bold", fontFamily: "'Cormorant', serif", color: GOLD, marginBottom: 12 }}>
                 {page.title}
               </div>
-              <div style={{ fontSize: 17, lineHeight: 1.7, color: CREAM, fontFamily: "'Crimson Text', serif" }}>
+              <div style={{ fontSize: 17, lineHeight: 1.7, color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>
                 {page.text}
               </div>
               <button
                 onClick={goRestart}
-                style={{ marginTop: 24, padding: "13px 28px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cinzel', serif", boxShadow: `0 0 24px ${GOLD}55` }}
+                style={{ marginTop: 24, padding: "13px 28px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cormorant', serif", boxShadow: `0 0 24px ${GOLD}55` }}
               >
                 {lang === "es" ? "Rezar de nuevo" : "Pray again"}
               </button>
             </div>
           ) : (
             <>
-              <div style={{ fontSize: 22, fontWeight: "bold", fontFamily: "'Cinzel', serif", marginBottom: page.text ? 18 : 0 }}>
+              <div style={{ fontSize: 22, fontWeight: "bold", fontFamily: "'Cormorant', serif", marginBottom: page.text ? 18 : 0 }}>
                 {page.title}
               </div>
 
               {page.kind === "aveMaria" ? (
                 <>
-                  <div style={{ fontSize: 15, lineHeight: 1.7, color: CREAM, fontFamily: "'Crimson Text', serif", fontStyle: "italic", marginBottom: 24 }}>
+                  <div style={{ fontSize: 15, lineHeight: 1.7, color: CREAM, fontFamily: "'Work Sans', sans-serif", fontStyle: "italic", marginBottom: 24 }}>
                     {page.text}
                   </div>
                   <button
@@ -225,7 +226,7 @@ export default function Rosario({ lang = "es", onHome }) {
                       border: "none", outline: "none", padding: 0, WebkitTapHighlightColor: "transparent",
                     }}
                   >
-                    <span style={{ fontSize: 46, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cinzel', serif" }}>
+                    <span style={{ fontSize: 46, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cormorant', serif" }}>
                       {aveCounts[page.counterId] || 0}
                     </span>
                   </button>
@@ -243,7 +244,7 @@ export default function Rosario({ lang = "es", onHome }) {
                   </div>
                 </>
               ) : page.text ? (
-                <div style={{ fontSize: 18, lineHeight: 1.8, color: CREAM, fontFamily: "'Crimson Text', serif", whiteSpace: "pre-wrap" }}>
+                <div style={{ fontSize: 18, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
                   {page.text}
                 </div>
               ) : null}
@@ -273,7 +274,7 @@ export default function Rosario({ lang = "es", onHome }) {
             <button
               onClick={goPrev}
               disabled={pageIndex === 0}
-              style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
+              style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: pageIndex === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === 0 ? "default" : "pointer", fontFamily: "'Cormorant', serif", opacity: pageIndex === 0 ? 0.5 : 1 }}
             >
               ← {lang === "es" ? "Anterior" : "Previous"}
             </button>
@@ -291,7 +292,7 @@ export default function Rosario({ lang = "es", onHome }) {
             <button
               onClick={goNext}
               disabled={pageIndex === pages.length - 1}
-              style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === pages.length - 1 ? "default" : "pointer", fontFamily: "'Cinzel', serif", opacity: pageIndex === pages.length - 1 ? 0.5 : 1 }}
+              style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: pageIndex === pages.length - 1 ? "default" : "pointer", fontFamily: "'Cormorant', serif", opacity: pageIndex === pages.length - 1 ? 0.5 : 1 }}
             >
               {lang === "es" ? "Siguiente" : "Next"} →
             </button>

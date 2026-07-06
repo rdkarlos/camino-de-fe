@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA } from "./theme";
 
-const BG_MAIN = "#0A0F1E";
-const BG_CARD = "#111827";
-const GOLD = "#C9A84C";
-const CREAM = "#FAF5ED";
-const CREAM_DARK = "#2A3A5A";
-const MUTED = "#8A9BB5";
-const NAVY = "#1B2A4A";
+const BG_MAIN = NOCHE;
+const BG_CARD = CARD;
+const GOLD = ALBA;
+const CREAM = LINO;
+const CREAM_DARK = PIEDRA;
+const MUTED = CIELO;
+const NAVY = NOCHE;
 
 export default function JovenFe({ lang = "es", onBack }) {
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -51,7 +52,7 @@ export default function JovenFe({ lang = "es", onBack }) {
     <div style={{ background: BG_MAIN, color: CREAM, minHeight: "100%" }}>
       <button
         onClick={() => onBack && onBack()}
-        style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: GOLD, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 18, padding: 0, fontFamily: "'Cinzel', serif" }}
+        style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: GOLD, fontSize: 14, fontWeight: "bold", cursor: "pointer", marginBottom: 18, padding: 0, fontFamily: "'Cormorant', serif" }}
       >
         ← {lang === "es" ? "Volver" : "Back"}
       </button>
@@ -77,7 +78,7 @@ export default function JovenFe({ lang = "es", onBack }) {
               {c.icon}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Cinzel', serif", marginBottom: 4 }}>{c.title}</div>
+              <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", marginBottom: 4 }}>{c.title}</div>
               <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.4 }}>{c.desc}</div>
             </div>
             <div style={{ color: GOLD, fontSize: 26, fontWeight: 300, flexShrink: 0 }}>›</div>

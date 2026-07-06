@@ -4,8 +4,8 @@
   "description": "Luz que guía, amor que une",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF7F2",
-  "theme_color": "#1B2A4A",
+  "background_color": "#F5F1E8",
+  "theme_color": "#1E2630",
   "orientation": "portrait",
   "icons": [
     {
