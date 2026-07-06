@@ -2858,9 +2858,63 @@ export default function App() {
           })}
         </div>
 
+        {/* Saludo sutil de estado de sesión */}
+        <div style={{ textAlign: "center", padding: "0 14px 9px" }}>
+          {user ? (
+            <div style={{ fontSize: 12, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif" }}>
+              {lang === 'es'
+                ? `Que la paz del Señor esté contigo, ${user.displayName || (user.email ? user.email.split('@')[0] : '')} ✓`
+                : `May the Lord's peace be with you, ${user.displayName || (user.email ? user.email.split('@')[0] : '')} ✓`}
+            </div>
+          ) : (
+            <div onClick={() => setAuthMode('login')} style={{ fontSize: 12, color: MUTED, cursor: "pointer", fontFamily: "'Crimson Text', serif" }}>
+              {lang === 'es' ? 'Inicia sesión para guardar tu progreso' : 'Sign in to save your progress'}
+            </div>
+          )}
+        </div>
+
         {/* Menú desplegable */}
         {menuOpen && (
           <div style={{ background: BG_MAIN, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
+            {/* Perfil */}
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              {user ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: NAVY, color: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: 16, fontFamily: "'Cinzel', serif", flexShrink: 0 }}>
+                    {(user.displayName || user.email || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: CREAM, fontSize: 14, fontWeight: "bold", fontFamily: "'Crimson Text', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {user.displayName || (lang === 'es' ? 'Usuario' : 'User')}
+                    </div>
+                    <div style={{ color: MUTED, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                  </div>
+                  <button onClick={() => { handleLogout(); setMenuOpen(false); }} style={{ background: "rgba(220,90,90,0.12)", border: "1px solid rgba(220,90,90,0.4)", color: "#E08080", fontSize: 11, fontWeight: "bold", borderRadius: 8, padding: "6px 10px", cursor: "pointer", flexShrink: 0, fontFamily: "'Crimson Text', serif" }}>
+                    {lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke={GOLD} strokeWidth="1.5"/>
+                      <path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: GOLD, fontSize: 14, fontWeight: "bold", fontFamily: "'Crimson Text', serif" }}>
+                      {lang === 'es' ? 'Inicia sesión' : 'Sign in'}
+                    </div>
+                    <div style={{ color: MUTED, fontSize: 12 }}>
+                      {lang === 'es' ? 'Guarda tu progreso espiritual' : 'Save your spiritual progress'}
+                    </div>
+                  </div>
+                  <button onClick={() => { setAuthMode('login'); setMenuOpen(false); }} style={{ background: GOLD, border: "none", color: NAVY_DARK, fontSize: 12, fontWeight: "bold", borderRadius: 8, padding: "7px 14px", cursor: "pointer", flexShrink: 0, fontFamily: "'Crimson Text', serif" }}>
+                    {lang === 'es' ? 'Iniciar sesión' : 'Sign in'}
+                  </button>
+                </div>
+              )}
+            </div>
             {t.nav.map((n, i) => (
               (i === 4 || i === 5) ? null :
               <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(201,168,76,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Crimson Text', serif", textAlign: "left" }}>
