@@ -844,42 +844,21 @@ export default function App() {
     const dailyVerse = DAILY_VERSES[_dayOfYear % DAILY_VERSES.length][lang] || DAILY_VERSES[_dayOfYear % DAILY_VERSES.length].es;
     return (
       <div>
-        <div style={{ display: "flex", flexDirection: "row", gap: 12, marginBottom: 16, alignItems: "stretch" }}>
-          {/* Tarjeta saludo — tamaño fijo, no se mueve */}
-          <div style={{ flex: 1, flexShrink: 0, background: BG_CARD, borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`, position: "relative", overflow: "hidden", minWidth: 0 }}>
-            <div style={{ position: "absolute", top: -10, right: -10, fontSize: 60, opacity: 0.08, color: GOLD }}>✝</div>
-            <div style={{ fontSize: 9, color: MUTED, textTransform: "capitalize", marginBottom: 2 }}>{t.home.date}</div>
-            <div style={{ fontSize: 11, fontStyle: "italic", color: GOLD, fontFamily: "'Crimson Text', serif", lineHeight: 1.4 }}>{t.home.greeting}{user ? `, ${user.displayName?.split(' ')[0] || ''}` : ''}!</div>
-            {user ? (
-              <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
-                <span style={{ fontSize: 10, color: MUTED }}>👤 {user.displayName || user.email}</span>
-                <span style={{ fontSize: 10, color: GOLD, cursor: "pointer", fontWeight: "bold" }} onClick={handleLogout}>{lang === 'es' ? 'Salir' : 'Sign out'}</span>
-              </div>
-            ) : (
-              <div onClick={() => setAuthMode('login')} style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 4, background: NAVY_DARK, padding: "4px 8px", borderRadius: 20, cursor: "pointer" }}>
-                <span style={{ fontSize: 10, color: WHITE }}>👤 {lang === 'es' ? 'Inicia sesión' : 'Sign in'}</span>
-                <span style={{ color: GOLD, fontSize: 11 }}>→</span>
-              </div>
-            )}
-          </div>
-          {/* Tarjeta versículo — clickeable, tamaño siempre fijo */}
-          <div
-            onClick={() => setVerseExpanded(true)}
-            style={{
-              flex: 1, flexShrink: 0, background: BG_CARD,
-              borderRadius: 16, padding: "12px 10px", border: `1.5px solid ${GOLD}`,
-              position: "relative", overflow: "hidden", minWidth: 0,
-              display: "flex", flexDirection: "column", justifyContent: "space-between",
-              cursor: "pointer",
-            }}
-          >
-            <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
-            <div>
-              <div style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4, fontWeight: "bold" }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: "0.85rem", fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
-            </div>
-            <div style={{ fontSize: "0.8rem", color: GOLD, fontWeight: "bold", marginTop: 6 }}>— {formatRef(dailyVerse.ref)}</div>
-          </div>
+        {/* Tarjeta versículo — ancho completo, clickeable */}
+        <div
+          onClick={() => setVerseExpanded(true)}
+          style={{
+            background: "linear-gradient(135deg, #0A0F1E, #1B2A4A)",
+            border: `1px solid ${GOLD}`,
+            borderRadius: 16, padding: "16px 18px", marginBottom: 16,
+            position: "relative", overflow: "hidden",
+            cursor: "pointer",
+          }}
+        >
+          <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
+          <div style={{ fontSize: 11, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: "bold" }}>✦ {lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+          <div style={{ fontSize: 15, fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
+          <div style={{ fontSize: "0.8rem", color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {formatRef(dailyVerse.ref)}</div>
         </div>
 
         {/* Overlay versículo expandido */}
