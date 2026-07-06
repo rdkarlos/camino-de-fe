@@ -20,6 +20,8 @@
 
 ## Archivos clave
 - src/App.jsx — código principal
+- src/theme.js — paleta de colores centralizada (única fuente de verdad)
+- src/index.css — variables CSS globales de la paleta
 - src/Rosario.jsx — Santo Rosario completo
 - src/Devocional.jsx — Devocional: oraciones clásicas, novenas, santo del día
 - src/santos.js — calendario de 365 santos
@@ -31,7 +33,7 @@
 - api/cron-reflexion.js — Cron Job diario 12:10am Colombia: genera reflexión + versículo del día
 - api/order.js — pagos Wompi
 - api/confirm-payment.js — emails Resend
-- public/sw.js — service worker v15 (network-first)
+- public/sw.js — service worker v16 (network-first)
 - public/manifest.json — PWA config
 - vercel.json — configuración cron jobs
 
@@ -47,14 +49,29 @@
 9. Configuración
 10. Joven Fe — Retos de Fe (30 días), Testimonios, Quiz Bíblico
 
-## Diseño
+## Diseño (brand book — Fase 1 aplicada)
 - Modo oscuro permanente
-- Fondo: #0A0F1E, Cards: #111827, Header: #1B2A4A
-- Dorado: #C9A84C, Texto: #FAF5ED
-- Tipografía: Cinzel (títulos), Crimson Text (textos)
+- Paleta oficial (6 colores canónicos):
+  - Noche #1E2630 — fondo principal
+  - Card #28313D — tarjetas
+  - Luz del Alba #E8B45C — dorado principal
+  - Lino #F5F1E8 — texto
+  - Cielo #7E97AB — textos secundarios, subtítulos, iconos inactivos
+  - Piedra #B8AE9C — bordes, divisores, estados neutros
+- Tonos derivados (no oficiales del brand book): ALBA_LIGHT #EEC785, ALBA_DARK #A0711F, NOCHE_DARK #151B22
+- Header: fundido con el fondo (sólido Noche) + borde inferior 1px Piedra al 20%
+- Colores centralizados: src/theme.js (JS) + :root en src/index.css (CSS) — todo cambio de paleta se hace SOLO ahí
+- Tipografía: Cormorant 500/600 (títulos), Work Sans 400/500 (textos e interfaz)
+- theme-color: #1E2630 (index.html y manifest.json)
+- background_color del manifest: #F5F1E8 (pendiente evaluar cambio a #1E2630 en Fase 2)
 - Íconos SVG minimalistas católicos
 - Micro-animaciones entre secciones
 - Skeleton loader en Evangelio
+
+## Brand book — plan de ejecución
+- ✅ Fase 1 — paleta nueva + tipografía (Cormorant/Work Sans) + centralización en theme.js
+- ⬜ Fase 2 — degradado noche→alba en splash, vértice de luz como motivo e ícono PWA, background_color del manifest a #1E2630
+- ⬜ Fase 3 — revisión de textos y tono (tutear, invitar sin ordenar), reemplazar corderito 🐑 por SVG minimalista, subir service worker de versión al cierre
 
 ## Variables de entorno en Vercel
 - ANTHROPIC_API_KEY — API de Anthropic
@@ -67,6 +84,7 @@
 - Deploy automático en Vercel con cada push
 
 ## Pendiente
+- Brand book — Fases 2 y 3 (ver plan arriba)
 - Devocional — Novenas (contenido días 2-9)
 - Joven Fe — Testimonios y Quiz Bíblico pendientes
 - Diario de Gracias

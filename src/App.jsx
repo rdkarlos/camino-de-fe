@@ -10,6 +10,7 @@ import Devocional from "./Devocional";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
 import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK } from "./theme";
+import VerticeDeLuz from "./VerticeDeLuz";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -2457,46 +2458,28 @@ export default function App() {
       {showSplash && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: CREAM,
+          background: `linear-gradient(180deg, #4B453A 0%, ${NOCHE} 34%, ${NOCHE_DARK} 100%)`,
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
           opacity: splashIn && !splashOut ? 1 : 0,
           transition: splashOut ? "opacity 0.7s ease" : "opacity 0.6s ease",
           pointerEvents: "none",
         }}>
-          {/* Logo SVG — road converging to a glowing cross */}
-          <svg viewBox="0 0 160 160" width="150" height="150" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="lumoraGlow" cx="50%" cy="43%" r="38%">
-                <stop offset="0%"   stopColor={GOLD_LIGHT} stopOpacity="1"/>
-                <stop offset="45%"  stopColor={GOLD} stopOpacity="0.55"/>
-                <stop offset="100%" stopColor={GOLD} stopOpacity="0"/>
-              </radialGradient>
-            </defs>
-            {/* Golden glow disc behind cross */}
-            <circle cx="80" cy="65" r="58" fill="url(#lumoraGlow)"/>
-            {/* Road perspective — outer edges */}
-            <line x1="80" y1="65" x2="5"   y2="158" stroke={GOLD} strokeWidth="2"   strokeLinecap="round" opacity="0.5"/>
-            <line x1="80" y1="65" x2="155" y2="158" stroke={GOLD} strokeWidth="2"   strokeLinecap="round" opacity="0.5"/>
-            {/* Road perspective — inner lane marks */}
-            <line x1="80" y1="65" x2="40"  y2="158" stroke={GOLD} strokeWidth="1.2" strokeLinecap="round" opacity="0.28"/>
-            <line x1="80" y1="65" x2="120" y2="158" stroke={GOLD} strokeWidth="1.2" strokeLinecap="round" opacity="0.28"/>
-            {/* Center dashed lane */}
-            <line x1="80" y1="68" x2="80"  y2="158" stroke={GOLD} strokeWidth="1.5" strokeDasharray="11,11" strokeLinecap="round" opacity="0.35"/>
-            {/* Horizontal depth lines */}
-            <line x1="27" y1="108" x2="133" y2="108" stroke={GOLD} strokeWidth="1" opacity="0.18"/>
-            <line x1="14" y1="133" x2="146" y2="133" stroke={GOLD} strokeWidth="1" opacity="0.13"/>
-            {/* Cross — centered at (80, 62) */}
-            <rect x="74" y="30" width="12" height="64" rx="6" fill={GOLD}/>
-            <rect x="52" y="52" width="56" height="12" rx="6" fill={GOLD}/>
-          </svg>
+          {/* Vértice de luz — fade-in propio, con un leve retraso respecto al fondo */}
+          <div style={{
+            opacity: splashIn ? 1 : 0,
+            transform: splashIn ? "translateY(0)" : "translateY(-10px)",
+            transition: "opacity 1s ease 0.25s, transform 1s ease 0.25s",
+          }}>
+            <VerticeDeLuz size={120} />
+          </div>
 
           {/* App name */}
           <div style={{
             fontFamily: "'Cormorant', serif",
             fontSize: 42,
-            fontWeight: 700,
-            color: NAVY,
+            fontWeight: 600,
+            color: LINO,
             letterSpacing: 12,
             marginTop: 18,
             textTransform: "uppercase",
