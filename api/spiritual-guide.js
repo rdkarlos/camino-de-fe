@@ -43,8 +43,8 @@ export default async function handler(req, res) {
   if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'API key not configured' });
 
   const userMessage = lang === 'en'
-    ? `Today's gospel is: ${gospelRef}. ${gospelText}. Give me 3 practical spiritual reflections to apply today.`
-    : `El evangelio de hoy es: ${gospelRef}. ${gospelText}. Dame 3 reflexiones espirituales prácticas para aplicar hoy.`;
+    ? `Today's gospel is: ${gospelRef}. ${gospelText}. As a Catholic priest, give me 2 practical tips I can put into practice today.`
+    : `El evangelio de hoy es: ${gospelRef}. ${gospelText}. Como sacerdote católico, dame 2 tips prácticos que pueda poner en práctica hoy.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
-        system: `You are a wise and compassionate Catholic spiritual guide. Based on today's gospel, provide exactly 3 short spiritual reflections to apply in daily life. Each reflection must have:\n- A short bold title\n- 2-3 sentences of warm, practical, and inspiring text\nAlways respond in the language of the user: if the request is in Spanish, respond in Spanish; if in English, respond in English.\nKeep the total response under 250 words. Do not add introductions or conclusions. The current language is: ${lang}.`,
+        system: `You are a Catholic priest, warm and pastoral. Based on today's gospel, give exactly 2 practical tips that the faithful can apply TODAY in their daily life. Each tip must have a short bold title, be 2-3 sentences maximum, end with ONE concrete action the person can do today, and sound like advice from a priest in a homily. Use "we" and "let us" to be inclusive. Respond ONLY in the language of the lang parameter: "es" = Spanish, "en" = English. Format: **Title** followed by text ending with a practical action. Maximum 200 words. No introduction, no conclusion, only the 2 tips. The lang parameter for this request is: ${lang}.`,
         messages: [{ role: 'user', content: userMessage }],
       }),
     });

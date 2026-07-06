@@ -13,7 +13,7 @@
 ## APIs activas
 - Universalis (gratis, sin key) — lecturas del día
 - API.Bible (key en código) — LBLA español, Bible ID: e3f420b9665abaeb-01
-- Anthropic API — Guía Espiritual (corderito 🐑), key en Vercel env
+- Anthropic API — "Ponlo en Práctica" (corderito 🐑), key en Vercel env
 - Firebase — project: camino-de-fe-4d9c2
 - Wompi — pagos COP modo test
 - Resend — emails confirmación
@@ -26,7 +26,7 @@
 - src/JovenFe.jsx — sección Joven Fe
 - src/products.js — productos tienda
 - api/gospel.js — evangelio y lecturas (Universalis)
-- api/spiritual-guide.js — Guía Espiritual IA
+- api/spiritual-guide.js — "Ponlo en Práctica" IA (sacerdote católico)
 - api/cron-reflexion.js — Cron Job diario 12:10am Colombia: genera reflexión automática
 - api/order.js — pagos Wompi
 - api/confirm-payment.js — emails Resend
@@ -37,7 +37,7 @@
 ## Secciones
 1. Inicio — cards compactas modo oscuro, versículo del día, splash screen, onboarding
 2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Santo Rosario, Devocional
-3. Evangelio — con Guía Espiritual (corderito 🐑), skeleton loader
+3. Evangelio — con "Ponlo en Práctica" (corderito 🐑), skeleton loader
 4. La Biblia — LBLA, navegación por categorías + buscador
 5. Lecturas del día
 6. Santo Rosario — 4 partes, 35 pantallas, misterios del día automáticos, contador Ave Marías
@@ -69,6 +69,7 @@
 - Devocional — Novenas (contenido días 2-9)
 - Joven Fe — Testimonios y Quiz Bíblico pendientes
 - Diario de Gracias
+- Compartir reflexión en redes sociales
 - Notificaciones push (Conec✝2 y recordatorio diario)
 - Dominio propio (candidato: amorae.org)
 - Wompi producción

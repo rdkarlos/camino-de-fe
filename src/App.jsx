@@ -344,6 +344,7 @@ export default function App() {
   const [lambOpen, setLambOpen] = useState(false);
   const [lambLoading, setLambLoading] = useState(false);
   const [lambText, setLambText] = useState("");
+  const [lambCopied, setLambCopied] = useState(false);
   const [lambPos, setLambPos] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('lambPosition'));
@@ -596,6 +597,23 @@ export default function App() {
     } finally {
       setLambLoading(false);
     }
+  };
+
+  const handleShareLamb = async () => {
+    const shareData = {
+      title: 'Ponlo en Práctica — Lumora',
+      text: lambText,
+      url: 'https://camino-de-fe-seven.vercel.app',
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch (e) {}
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareData.text}\n\n${shareData.url}`);
+      setLambCopied(true);
+      setTimeout(() => setLambCopied(false), 2000);
+    } catch (e) {}
   };
 
   const LAMB_LONG_PRESS_MS = 400;
@@ -1075,9 +1093,9 @@ export default function App() {
         <line x1="12" y1="3.5" x2="11.5" y2="16.5" stroke="#C9A84C" strokeWidth="0.9"/>
       </svg>
     );
-    if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera Lectura' : 'First Reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, icon: iconScroll });
-    if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda Lectura' : 'Second Reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, icon: iconBook });
-    if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo Responsorial' : 'Responsorial Psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, icon: iconLyre });
+    if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera lectura' : 'First reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, icon: iconScroll });
+    if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo responsorial' : 'Responsorial psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, icon: iconLyre });
+    if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda lectura' : 'Second reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, icon: iconBook });
     if (!gospelData) return <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>{lang === 'es' ? 'Cargando lecturas...' : 'Loading readings...'}</div>;
     return (
       <div>
@@ -2630,7 +2648,7 @@ export default function App() {
           onPointerMove={handleLambPointerMove}
           onPointerUp={handleLambPointerUp}
           onPointerCancel={handleLambPointerUp}
-          title={lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
+          title={lang === 'es' ? 'Ponlo en Práctica' : 'Put It Into Practice'}
           style={{
             position: "fixed", left: lambPos.x, top: lambPos.y, zIndex: 60,
             width: LAMB_BTN_SIZE, height: LAMB_BTN_SIZE, borderRadius: "50%",
@@ -2644,7 +2662,7 @@ export default function App() {
         >🐑</button>
       )}
 
-      {/* Modal Guía Espiritual */}
+      {/* Modal Ponlo en Práctica */}
       {lambOpen && (
         <div
           style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(10,18,35,0.78)" }}
@@ -2658,7 +2676,7 @@ export default function App() {
             <div style={{ textAlign: "center", marginBottom: 4 }}>
               <div style={{ fontSize: 22, marginBottom: 6 }}>🐑</div>
               <div style={{ fontSize: 20, fontWeight: "bold", color: CREAM, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>
-                {lang === 'es' ? 'Guía Espiritual' : 'Spiritual Guide'}
+                {lang === 'es' ? 'Ponlo en Práctica' : 'Put It Into Practice'}
               </div>
               <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>
                 {lang === 'es' ? 'Reflexión del Evangelio de hoy' : 'Reflection on today\'s Gospel'}
@@ -2695,9 +2713,21 @@ export default function App() {
                 </ReactMarkdown>
               </div>
             ) : null}
+            {!lambLoading && lambText && (
+              <button
+                onClick={handleShareLamb}
+                style={{ marginTop: 18, width: "100%", padding: "11px", background: "none", color: GOLD, border: `1.5px solid ${GOLD}`, borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+              >
+                {lambCopied
+                  ? (lang === 'es' ? '✓ Copiado' : '✓ Copied')
+                  : (typeof navigator !== 'undefined' && navigator.share
+                      ? (lang === 'es' ? '↗ Compartir' : '↗ Share')
+                      : (lang === 'es' ? '⧉ Copiar' : '⧉ Copy'))}
+              </button>
+            )}
             <button
               onClick={() => setLambOpen(false)}
-              style={{ marginTop: 18, width: "100%", padding: "11px", background: NAVY_DARK, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5 }}
+              style={{ marginTop: 10, width: "100%", padding: "11px", background: NAVY_DARK, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5 }}
             >
               {lang === 'es' ? 'Cerrar' : 'Close'}
             </button>
