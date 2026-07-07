@@ -172,7 +172,7 @@ export default function Rosario({ lang = "es", onHome }) {
       {/* Insignia del misterio de hoy */}
       {page.part === 1 && (
         <div style={{ position: "relative", zIndex: 1, textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cormorant', serif" }}>
-          ✨ {lang === "es" ? "Hoy rezamos los" : "Today's mysteries"}: {todayLabel}
+          ✦ {lang === "es" ? "Hoy rezamos los" : "Today's mysteries"}: {todayLabel}
         </div>
       )}
 

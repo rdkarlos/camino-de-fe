@@ -246,10 +246,10 @@ const ONBOARDING_ICONS = {
 
 const ONBOARDING_SCREENS = {
   es: [
-    { title: "Bienvenido a Lumora", text: "Tu compañero espiritual diario. Fe, oración y comunidad en tu celular.", icon: "logo" },
-    { title: "El Evangelio cada día", text: "Lee el evangelio del día y recibe reflexiones que transforman tu vida.", icon: "book" },
-    { title: "Ora, reza, crece", text: "Crea oraciones, reza el rosario y únete a círculos con tu familia.", icon: "cross" },
-    { title: "Fe viva para jóvenes", text: "Retos de fe, testimonios y quiz bíblico. ¡La fe es la mayor aventura!", icon: "star" },
+    { title: "Bienvenido a Lumora", text: "Tu compañero espiritual diario. Fe, oración y comunidad, siempre contigo.", icon: "logo" },
+    { title: "El Evangelio cada día", text: "Lee el Evangelio de cada día y encuentra una reflexión para vivirlo.", icon: "book" },
+    { title: "Reza y crece", text: "Crea oraciones, reza el rosario y únete a círculos con tu familia.", icon: "cross" },
+    { title: "Fe viva para jóvenes", text: "Retos de fe, testimonios y quiz bíblico para vivir tu fe con otros jóvenes.", icon: "star" },
   ],
   en: [
     { title: "Welcome to Lumora", text: "Your daily spiritual companion. Faith, prayer, and community in your pocket.", icon: "logo" },
@@ -772,7 +772,7 @@ export default function App() {
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,28,50,0.75)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => { setShowCart(false); setCheckoutStep(0); }}>
       <div style={{ background: BG_CARD, borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 430, maxHeight: "80vh", overflowY: "auto", border: `1px solid ${CREAM_DARK}`, borderBottom: "none" }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 18, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif" }}>🛒 {lang === 'es' ? 'Tu carrito' : 'Your cart'}</div>
+          <div style={{ fontSize: 18, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif" }}>{lang === 'es' ? 'Tu carrito' : 'Your cart'}</div>
           <button onClick={() => { setShowCart(false); setCheckoutStep(0); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: MUTED }}>✕</button>
         </div>
         {cart.length === 0 ? (
@@ -808,7 +808,7 @@ export default function App() {
                 <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 10, fontFamily: "'Cormorant', serif", boxSizing: "border-box", background: NAVY, color: CREAM }} placeholder={lang === 'es' ? 'Nombre completo' : 'Full name'} value={checkoutName} onChange={e => setCheckoutName(e.target.value)} />
                 <input style={{ width: "100%", padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, marginBottom: 16, fontFamily: "'Cormorant', serif", boxSizing: "border-box", background: NAVY, color: CREAM }} placeholder="Email" type="email" value={checkoutEmail} onChange={e => setCheckoutEmail(e.target.value)} />
                 <button onClick={handleCheckout} disabled={checkoutLoading || !checkoutName || !checkoutEmail} style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg, #2E7D32, #1B5E20)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cormorant', serif", marginBottom: 8 }}>
-                  {checkoutLoading ? '...' : `💳 ${lang === 'es' ? 'Pagar con Wompi' : 'Pay with Wompi'} · ${formatPrice(cartTotal)}`}
+                  {checkoutLoading ? '...' : `${lang === 'es' ? 'Pagar con Wompi' : 'Pay with Wompi'} · ${formatPrice(cartTotal)}`}
                 </button>
                 <button onClick={() => setCheckoutStep(0)} style={{ width: "100%", padding: "10px", background: CREAM_DARK, color: CREAM, border: "none", borderRadius: 12, fontSize: 13, cursor: "pointer" }}>← {lang === 'es' ? 'Volver' : 'Back'}</button>
               </div>
@@ -1241,7 +1241,7 @@ export default function App() {
     };
 
     const createCircle = async () => {
-      if (!newCircleName.trim()) { setCircleError(lang === "es" ? "El nombre es requerido" : "Name is required"); return; }
+      if (!newCircleName.trim()) { setCircleError(lang === "es" ? "Escribe un nombre para tu círculo" : "Name is required"); return; }
       setCircleLoading(true);
       setCircleError("");
       const codigo = newCircleType === "privado" ? generateCode() : "";
@@ -1272,7 +1272,7 @@ export default function App() {
       setCircleError("");
       try {
         const snap = await getDocs(query(collection(db, "circulos"), where("codigo", "==", joinCode.trim().toUpperCase())));
-        if (snap.empty) { setCircleError(lang === "es" ? "Código no encontrado" : "Code not found"); setCircleLoading(false); return; }
+        if (snap.empty) { setCircleError(lang === "es" ? "No encontramos ese código" : "Code not found"); setCircleLoading(false); return; }
         const d = snap.docs[0];
         const circulo = { id: d.id, ...d.data() };
         if (circulo.miembros?.includes(user.uid)) { setCircleError(lang === "es" ? "Ya eres miembro de este círculo" : "Already a member"); setCircleLoading(false); return; }
@@ -1557,7 +1557,7 @@ export default function App() {
                 </div>
 
                 <button onClick={generatePrayer} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                  ✝ {lang === "es" ? "Orar ahora" : "Pray now"}
+                  ✝ {lang === "es" ? "Orar" : "Pray"}
                 </button>
               </div>
             )}
@@ -1573,7 +1573,7 @@ export default function App() {
 
                 {user ? (
                   <button onClick={savePrayer} style={{ width: "100%", padding: "13px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", marginBottom: 10 }}>
-                    🙏 {lang === "es" ? "Guardar oración" : "Save prayer"}
+                    {lang === "es" ? "Guardar oración" : "Save prayer"}
                   </button>
                 ) : (
                   <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "16px", marginBottom: 10, textAlign: "center" }}>
@@ -1581,7 +1581,7 @@ export default function App() {
                       {lang === "es" ? "Inicia sesión para guardar tus oraciones" : "Sign in to save your prayers"}
                     </div>
                     <button onClick={() => setAuthMode("login")} style={{ padding: "9px 24px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                      👤 {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                      {lang === "es" ? "Iniciar sesión" : "Sign in"}
                     </button>
                   </div>
                 )}
@@ -1612,7 +1612,7 @@ export default function App() {
                   </div>
                   {p.received && (
                     <span style={{ fontSize: 11, background: `${GOLD}22`, color: ALBA_DARK, padding: "3px 10px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
-                      ✨ {lang === "es" ? "Recibida" : "Received"}
+                      {lang === "es" ? "Recibida" : "Received"}
                     </span>
                   )}
                 </div>
@@ -1623,7 +1623,7 @@ export default function App() {
 
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={() => toggleReceived(p.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 20, border: `1px solid ${p.received ? GOLD : CREAM_DARK}`, background: p.received ? `${GOLD}18` : BG_CARD, color: p.received ? GOLD : MUTED, fontSize: 12, cursor: "pointer", fontWeight: "bold" }}>
-                    {p.received ? `✨ ${lang === "es" ? "Gracia recibida" : "Grace received"}` : `○ ${lang === "es" ? "Marcar como recibida" : "Mark as received"}`}
+                    {p.received ? (lang === "es" ? "Gracia recibida" : "Grace received") : `○ ${lang === "es" ? "Marcar como recibida" : "Mark as received"}`}
                   </button>
                   <button onClick={() => deletePrayer(p.id)} style={{ padding: "7px 12px", borderRadius: 20, border: `1px solid ${CREAM_DARK}`, background: BG_CARD, color: MUTED, fontSize: 12, cursor: "pointer" }}>
                     ✕
@@ -1642,7 +1642,7 @@ export default function App() {
                   {lang === "es" ? <>Inicia sesión para unirte a Conec<span style={cx}>✝</span>2 de Oración</> : <>Sign in to join Pray<span style={cx}>✝</span>2gether</>}
                 </div>
                 <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                  👤 {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                  {lang === "es" ? "Iniciar sesión" : "Sign in"}
                 </button>
               </div>
             ) : circleView === "list" ? (
@@ -1669,7 +1669,7 @@ export default function App() {
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
                     <div style={{ fontSize: 44, marginBottom: 12 }}>🙏</div>
                     <div style={{ fontSize: 15, color: CREAM, marginBottom: 8, fontFamily: "'Work Sans', sans-serif" }}>
-                      {lang === "es" ? <>Aún no perteneces a ningún Conec<span style={cx}>✝</span>2</> : <>You're not in any Pray<span style={cx}>✝</span>2gether yet</>}
+                      {lang === "es" ? <>Todavía no tienes un Conec<span style={cx}>✝</span>2</> : <>You're not in any Pray<span style={cx}>✝</span>2gether yet</>}
                     </div>
                     <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea uno o únete a uno para orar juntos" : "Create or join one to pray together"}</div>
                   </div>
@@ -1718,7 +1718,7 @@ export default function App() {
                   {newCircleType === "privado" && (
                     <div style={{ marginTop: 12, background: `${GOLD}18`, borderRadius: 10, padding: "10px 14px", border: `1px solid ${GOLD}44` }}>
                       <div style={{ fontSize: 11, color: ALBA_DARK, fontWeight: "bold", marginBottom: 4 }}>
-                        {lang === "es" ? "CÓDIGO DE ACCESO (se genera al crear)" : "ACCESS CODE (generated on create)"}
+                        {lang === "es" ? "Código de acceso (se genera al crear)" : "Access code (generated on create)"}
                       </div>
                       <div style={{ fontSize: 18, color: MUTED, letterSpacing: 4, fontFamily: "monospace" }}>
                         {lang === "es" ? "· · · · · ·" : "· · · · · ·"}
@@ -1804,7 +1804,7 @@ export default function App() {
                       <span style={{ fontSize: 15 }}>🔑</span>
                       <div>
                         <div style={{ fontSize: 10, color: ALBA_DARK, fontWeight: "bold", letterSpacing: 0.5 }}>
-                          {lang === "es" ? "CÓDIGO DE ACCESO" : "ACCESS CODE"}
+                          {lang === "es" ? "Código de acceso" : "Access code"}
                         </div>
                         <div style={{ fontSize: 18, fontWeight: "bold", color: GOLD, fontFamily: "monospace", letterSpacing: 4 }}>
                           {selectedCircle.codigo}
@@ -1828,7 +1828,7 @@ export default function App() {
                 <div style={{ background: BG_CARD, borderRadius: 12, padding: 14, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
                   <textarea value={newIntencion} onChange={e => setNewIntencion(e.target.value)} placeholder={lang === "es" ? "Comparte una intención de oración..." : "Share a prayer intention..."} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: CREAM, background: NAVY, minHeight: 60, boxSizing: "border-box", resize: "none", outline: "none", fontFamily: "Georgia, serif" }} />
                   <button onClick={addIntencion} disabled={!newIntencion.trim()} style={{ marginTop: 8, width: "100%", padding: "9px", background: !newIntencion.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newIntencion.trim() ? MUTED : WHITE, border: "none", borderRadius: 10, fontSize: 13, fontWeight: "bold", cursor: newIntencion.trim() ? "pointer" : "default" }}>
-                    🙏 {lang === "es" ? "Compartir intención" : "Share intention"}
+                    {lang === "es" ? "Compartir intención" : "Share intention"}
                   </button>
                 </div>
 
@@ -1840,7 +1840,7 @@ export default function App() {
                 ) : circleIntenciones.length === 0 ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
                     <div style={{ fontSize: 36, marginBottom: 10 }}>🙏</div>
-                    <div style={{ fontSize: 14 }}>{lang === "es" ? "Sé el primero en compartir una intención" : "Be the first to share an intention"}</div>
+                    <div style={{ fontSize: 14 }}>{lang === "es" ? "Todavía no hay intenciones. ¿Compartes la primera?" : "Be the first to share an intention"}</div>
                   </div>
                 ) : circleIntenciones.map(intent => {
                   const isOrando = intent.orando?.includes(user.uid);
@@ -1852,7 +1852,7 @@ export default function App() {
                       <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.65, fontFamily: "'Work Sans', sans-serif", marginBottom: 10 }}>{intent.texto}</div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <button onClick={() => toggleOrando(intent)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isOrando ? `${GOLD}22` : CREAM, border: `1px solid ${isOrando ? GOLD : CREAM_DARK}`, borderRadius: 20, fontSize: 13, cursor: "pointer", color: isOrando ? ALBA_DARK : MUTED }}>
-                          🙏 {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
+                          {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
                         </button>
                         {canDelete && (
                           <button onClick={() => deleteIntencion(intent)} style={{ background: "none", border: "none", color: MUTED, fontSize: 18, cursor: "pointer", padding: "4px 8px" }}>
@@ -1885,7 +1885,7 @@ export default function App() {
                   {lang === "es" ? "Inicia sesión para ver tu libro de oraciones" : "Sign in to see your prayer book"}
                 </div>
                 <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                  👤 {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                  {lang === "es" ? "Iniciar sesión" : "Sign in"}
                 </button>
               </div>
             ) : prayerBookLoading ? (
@@ -1918,7 +1918,7 @@ export default function App() {
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                       {p.respondida && (
                         <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: CREAM, fontSize: 11, fontWeight: "bold", padding: "4px 10px", borderRadius: 20 }}>
-                          ✨ {lang === "es" ? "Respondida" : "Answered"}
+                          {lang === "es" ? "Respondida" : "Answered"}
                         </span>
                       )}
                       <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{isOpen ? "▲" : "▼"}</span>
@@ -1940,7 +1940,7 @@ export default function App() {
                       {p.intencion && (
                         <div style={{ background: `${GOLD}18`, borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 14 }}>
                           <div style={{ fontSize: 11, color: ALBA_DARK, fontWeight: "bold", marginBottom: 4, letterSpacing: 0.5 }}>
-                            {lang === "es" ? "TU INTENCIÓN" : "YOUR INTENTION"}
+                            {lang === "es" ? "Tu intención" : "Your intention"}
                           </div>
                           <div style={{ fontSize: 14, color: CREAM, fontStyle: "italic", lineHeight: 1.65, fontFamily: "'Work Sans', sans-serif" }}>
                             {p.intencion}
@@ -1976,7 +1976,7 @@ export default function App() {
                       })()}
                       {!p.respondida && (
                         <button onClick={() => markAnswered(p.id)} style={{ marginTop: 14, width: "100%", padding: "10px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                          🙏 {lang === "es" ? "¡Respondida!" : "Answered!"}
+                          {lang === "es" ? "Respondida" : "Answered"}
                         </button>
                       )}
                     </div>
@@ -2029,9 +2029,9 @@ export default function App() {
     const requestPermission = async () => {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        if (notifGospel) scheduleNotification(gospelTime, '📖 Evangelio del día', 'Lee el Evangelio de hoy');
-        if (notifRosary) scheduleNotification(rosaryTime, '📿 Santo Rosario', 'Es hora de rezar el Rosario');
-        if (notifLiturgy) scheduleNotification(liturgyTime, '🕐 Liturgia de las Horas', 'Momento de oración litúrgica');
+        if (notifGospel) scheduleNotification(gospelTime, 'Evangelio del día', 'El Evangelio de hoy te espera');
+        if (notifRosary) scheduleNotification(rosaryTime, 'Santo Rosario', 'Un momento para el Rosario, cuando puedas');
+        if (notifLiturgy) scheduleNotification(liturgyTime, 'Liturgia de las Horas', 'Un espacio para la oración de las horas');
       }
     };
 
@@ -2039,9 +2039,9 @@ export default function App() {
     const knobStyle = (active) => ({ position: "absolute", top: 2, left: active ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: WHITE, transition: "left 0.3s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" });
 
     const notifs = [
-      { label: lang === 'es' ? '📖 Evangelio del día' : '📖 Gospel of the Day', desc: lang === 'es' ? 'Recordatorio matutino' : 'Morning reminder', active: notifGospel, setter: setNotifGospel, time: gospelTime, setTime: setGospelTime },
-      { label: lang === 'es' ? '📿 Santo Rosario' : '📿 Holy Rosary', desc: lang === 'es' ? 'Recordatorio para rezar el Rosario' : 'Rosary reminder', active: notifRosary, setter: setNotifRosary, time: rosaryTime, setTime: setRosaryTime },
-      { label: lang === 'es' ? '🕐 Liturgia de las Horas' : '🕐 Liturgy of the Hours', desc: lang === 'es' ? 'Laudes y Vísperas' : 'Lauds and Vespers', active: notifLiturgy, setter: setNotifLiturgy, time: liturgyTime, setTime: setLiturgyTime },
+      { label: lang === 'es' ? 'Evangelio del día' : 'Gospel of the Day', desc: lang === 'es' ? 'Recordatorio matutino' : 'Morning reminder', active: notifGospel, setter: setNotifGospel, time: gospelTime, setTime: setGospelTime },
+      { label: lang === 'es' ? 'Santo Rosario' : 'Holy Rosary', desc: lang === 'es' ? 'Recordatorio para rezar el Rosario' : 'Rosary reminder', active: notifRosary, setter: setNotifRosary, time: rosaryTime, setTime: setRosaryTime },
+      { label: lang === 'es' ? 'Liturgia de las Horas' : 'Liturgy of the Hours', desc: lang === 'es' ? 'Un espacio para la oración de las horas' : 'A space for the liturgy of the hours', active: notifLiturgy, setter: setNotifLiturgy, time: liturgyTime, setTime: setLiturgyTime },
     ];
 
     return (
@@ -2050,7 +2050,7 @@ export default function App() {
           <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 16, padding: 20, marginBottom: 16, color: WHITE, textAlign: "center" }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
             <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8, fontFamily: "'Cormorant', serif" }}>{lang === 'es' ? 'Activar notificaciones' : 'Enable notifications'}</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 16 }}>{lang === 'es' ? 'Recibe recordatorios para rezar cada día' : 'Receive daily prayer reminders'}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 16 }}>{lang === 'es' ? 'Un recordatorio diario para tu oración' : 'A daily reminder for your prayer'}</div>
             <button onClick={requestPermission} style={{ background: GOLD, color: CREAM, border: "none", padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cormorant', serif" }}>{lang === 'es' ? 'Permitir notificaciones' : 'Allow notifications'}</button>
           </div>
         )}
@@ -2338,7 +2338,7 @@ export default function App() {
             </div>
           ) : verses.length === 0 ? (
             <div style={{ textAlign: "center", color: MUTED, padding: 40, fontSize: 14 }}>
-              {lang === "es" ? "No se pudo cargar el capítulo." : "Could not load chapter."}
+              {lang === "es" ? "No pudimos cargar el capítulo. Intenta de nuevo." : "We couldn't load the chapter. Please try again."}
             </div>
           ) : (
             <div>
@@ -2552,7 +2552,7 @@ export default function App() {
                   onClick={finishOnboarding}
                   style={{ width: "100%", padding: "14px", background: GOLD, color: NAVY, border: "none", borderRadius: 24, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Cormorant', serif" }}
                 >
-                  {lang === 'es' ? '¡Comenzar mi camino!' : 'Start my journey!'}
+                  {lang === 'es' ? 'Comenzar mi camino' : 'Start my journey'}
                 </button>
               ) : (
                 <button
@@ -2623,7 +2623,7 @@ export default function App() {
             fontSize: 24, animation: lambDragging ? "none" : "lambPulse 2.5s ease-in-out infinite",
             boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
           }}
-        >🐑</button>
+        ><VerticeDeLuz size={24} /></button>
       )}
 
       {/* Modal Ponlo en Práctica */}
@@ -2638,7 +2638,7 @@ export default function App() {
           >
             {/* Título centrado */}
             <div style={{ textAlign: "center", marginBottom: 4 }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>🐑</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}><VerticeDeLuz size={28} /></div>
               <div style={{ fontSize: 20, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", letterSpacing: 1 }}>
                 {lang === 'es' ? 'Ponlo en Práctica' : 'Put It Into Practice'}
               </div>

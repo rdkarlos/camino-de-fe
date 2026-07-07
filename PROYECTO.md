@@ -13,7 +13,7 @@
 ## APIs activas
 - Universalis (gratis, sin key) — lecturas del día
 - API.Bible (key en código) — LBLA español, Bible ID: e3f420b9665abaeb-01
-- Anthropic API — "Ponlo en Práctica" (corderito 🐑), key en Vercel env
+- Anthropic API — "Ponlo en Práctica" (vértice de luz), key en Vercel env
 - Firebase — project: camino-de-fe-4d9c2
 - Wompi — pagos COP modo test
 - Resend — emails confirmación
@@ -22,6 +22,7 @@
 - src/App.jsx — código principal
 - src/theme.js — paleta de colores centralizada (única fuente de verdad)
 - src/index.css — variables CSS globales de la paleta
+- src/VerticeDeLuz.jsx — componente SVG del vértice de luz (motivo de marca; usado en splash, íconos y "Ponlo en Práctica")
 - src/Rosario.jsx — Santo Rosario completo
 - src/Devocional.jsx — Devocional: oraciones clásicas, novenas, santo del día
 - src/santos.js — calendario de 365 santos
@@ -33,14 +34,14 @@
 - api/cron-reflexion.js — Cron Job diario 12:10am Colombia: genera reflexión + versículo del día
 - api/order.js — pagos Wompi
 - api/confirm-payment.js — emails Resend
-- public/sw.js — service worker v16 (network-first)
+- public/sw.js — service worker v17 (network-first)
 - public/manifest.json — PWA config
 - vercel.json — configuración cron jobs
 
 ## Secciones
 1. Inicio — versículo del día premium, saludo login, cards modo oscuro, splash screen, onboarding
 2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Santo Rosario, Devocional
-3. Evangelio — con "Ponlo en Práctica" (corderito 🐑), skeleton loader
+3. Evangelio — con "Ponlo en Práctica" (vértice de luz), skeleton loader
 4. La Biblia — LBLA, navegación por categorías + buscador
 5. Lecturas del día
 6. Santo Rosario — 4 partes, 35 pantallas, misterios del día automáticos, contador Ave Marías
@@ -49,7 +50,7 @@
 9. Configuración
 10. Joven Fe — Retos de Fe (30 días), Testimonios, Quiz Bíblico
 
-## Diseño (brand book — Fase 1 aplicada)
+## Diseño (brand book — Fases 1, 2 y 3 aplicadas)
 - Modo oscuro permanente
 - Paleta oficial (6 colores canónicos):
   - Noche #1E2630 — fondo principal
@@ -63,15 +64,20 @@
 - Colores centralizados: src/theme.js (JS) + :root en src/index.css (CSS) — todo cambio de paleta se hace SOLO ahí
 - Tipografía: Cormorant 500/600 (títulos), Work Sans 400/500 (textos e interfaz)
 - theme-color: #1E2630 (index.html y manifest.json)
-- background_color del manifest: #F5F1E8 (pendiente evaluar cambio a #1E2630 en Fase 2)
+- background_color del manifest: #1E2630 (arranque oscuro sin flash)
+- Motivo de marca "vértice de luz": punto cálido en Alba con halo radial (src/VerticeDeLuz.jsx, IDs de gradiente únicos vía useId)
+- Íconos PWA: vértice de luz sobre degradado noche ascendente (favicon.svg, icon-192.png, icon-512.png), sin cruz ni texto
+- Splash: degradado tres paradas (resplandor cálido → Noche → Noche oscuro) + fade-in del vértice, "Lumora" en Cormorant
+- Tono de textos: tuteo, invitar sin ordenar, español neutro, sin emojis pictóricos en interfaz (se conservan símbolos minimalistas ✦ ✝ ♡ ✓)
 - Íconos SVG minimalistas católicos
 - Micro-animaciones entre secciones
 - Skeleton loader en Evangelio
 
 ## Brand book — plan de ejecución
 - ✅ Fase 1 — paleta nueva + tipografía (Cormorant/Work Sans) + centralización en theme.js
-- ⬜ Fase 2 — degradado noche→alba en splash, vértice de luz como motivo e ícono PWA, background_color del manifest a #1E2630
-- ⬜ Fase 3 — revisión de textos y tono (tutear, invitar sin ordenar), reemplazar corderito 🐑 por SVG minimalista, subir service worker de versión al cierre
+- ✅ Fase 2 — degradado noche→alba en splash, vértice de luz como motivo e ícono PWA, background_color del manifest a #1E2630
+- ✅ Fase 3 — revisión de textos y tono (tutear, invitar sin ordenar), corderito 🐑 → vértice de luz, retiro de emojis pictóricos, service worker a v17
+- ⬜ Fase 4 (opcional) — reemplazar emojis ilustrativos grandes de pantallas vacías (📖 🙏 🌍 🔑 🕯️ ✝️ 👥) por SVG minimalistas propios
 
 ## Variables de entorno en Vercel
 - ANTHROPIC_API_KEY — API de Anthropic
@@ -84,7 +90,8 @@
 - Deploy automático en Vercel con cada push
 
 ## Pendiente
-- Brand book — Fases 2 y 3 (ver plan arriba)
+- Brand book — Fase 4 opcional (íconos ilustrativos de pantallas vacías; ver plan arriba)
+- Limpieza futura (baja prioridad): código muerto en translations.es/en (rosary, prayers parcial, home.greeting/reminder) — no visible al usuario
 - Devocional — Novenas (contenido días 2-9)
 - Joven Fe — Testimonios y Quiz Bíblico pendientes
 - Diario de Gracias

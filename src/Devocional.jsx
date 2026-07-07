@@ -348,7 +348,7 @@ export default function Devocional({ lang = "es", onBack }) {
           return (
             <div>
               <div style={{ textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cormorant', serif" }}>
-                ✨ {lang === "es" ? "Hoy celebramos a" : "Today we celebrate"}
+                ✦ {lang === "es" ? "Hoy celebramos a" : "Today we celebrate"}
               </div>
               <div style={{ background: BG_CARD, borderRadius: 14, border: `1px solid ${CREAM_DARK}`, padding: 20, textAlign: "center" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 14 }}>
