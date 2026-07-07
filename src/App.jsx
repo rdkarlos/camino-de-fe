@@ -267,6 +267,33 @@ const clampLambPos = ({ x, y }) => ({
   y: Math.min(Math.max(y, 0), Math.max(window.innerHeight - LAMB_BTN_SIZE, 0)),
 });
 
+// Heurística general para detectar texto en español: no depende de un libro
+// bíblico concreto (no busca "Salmo" a propósito). El texto en español (LBLA)
+// siempre trae tildes/ñ/¿/¡, o al menos palabras funcionales muy comunes.
+// El texto crudo de Universalis (inglés) nunca las tiene.
+const looksSpanish = (text) => {
+  if (!text || typeof text !== 'string') return false;
+  if (/[áéíóúñÁÉÍÓÚÑ¿¡]/.test(text)) return true;
+  return /\b(el|la|los|las|que|del|con|para|su|es)\b/i.test(text);
+};
+
+// Antes de cachear la respuesta de /api/gospel en español, confirma que cada
+// sección presente tenga texto real en español. Una sección "no disponible"
+// (fallback sereno con textEn) es válida pero NO se cachea — ver razonamiento
+// en la conversación: el fallo puede ser transitorio, y cachearlo dejaría al
+// usuario viendo "no disponible" toda la sesión aunque el servidor ya lo
+// resuelva en el siguiente intento.
+const isSafeToCacheGospelEs = (data) => {
+  if (!data?.success) return false;
+  if (!looksSpanish(data.text)) return false;
+  for (const key of ['reading1', 'reading2', 'psalm']) {
+    const section = data[key];
+    if (!section) continue; // esa lectura no aplica hoy, está bien
+    if (!section.text || !looksSpanish(section.text)) return false;
+  }
+  return true;
+};
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -432,7 +459,7 @@ export default function App() {
     const day = today.getDate();
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
-    const cacheKey = `gospel_v3_${lang}_${day}_${month}_${year}`;
+    const cacheKey = `gospel_v4_${lang}_${day}_${month}_${year}`;
     try {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) { setGospelData(JSON.parse(cached)); return; }
@@ -441,7 +468,10 @@ export default function App() {
       .then(res => {
         if (res.data.success) {
           setGospelData(res.data);
-          try { sessionStorage.setItem(cacheKey, JSON.stringify(res.data)); } catch(e) {}
+          const safeToCache = lang === 'es' ? isSafeToCacheGospelEs(res.data) : true;
+          if (safeToCache) {
+            try { sessionStorage.setItem(cacheKey, JSON.stringify(res.data)); } catch(e) {}
+          }
         }
       })
       .catch(() => {});
