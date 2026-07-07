@@ -11,15 +11,22 @@
 - Node.js v24, Windows 10
 
 ## APIs activas
-- Universalis (gratis, sin key) — lecturas del día
-- API.Bible (key en código) — LBLA español, Bible ID: e3f420b9665abaeb-01
+- Universalis (gratis, sin key) — lecturas del día (única fuente litúrgica, siempre en inglés)
+- API.Bible (key en código) — LBLA español (numeración hebrea/moderna), Bible ID: e3f420b9665abaeb-01
 - Anthropic API — "Ponlo en Práctica" (vértice de luz), key en Vercel env
 - Firebase — project: camino-de-fe-4d9c2
 - Wompi — pagos COP modo test
 - Resend — emails confirmación
 
+## Flujo de traducción de lecturas (importante)
+- Universalis entrega TODO en inglés: evangelio, primera lectura, segunda lectura y salmo.
+- Inglés (lang=en): usa el texto y referencia de Universalis directo.
+- Español (lang=es): toma la referencia inglesa, la convierte a ID de pasaje con parseRef(), y pide la traducción a API.Bible. Las 4 secciones dependen de que parseRef() traduzca bien la referencia.
+- parseRef() maneja numeración alterna de salmos con paréntesis y letra de capítulo (ej. "Psalm 113B(115)" → Salmo 115, numeración hebrea de LBLA). El número entre paréntesis es el correcto para API.Bible.
+- Fallback: si parseRef() no logra traducir, se muestra mensaje sereno "Esta lectura aún no está disponible en español" + toggle opcional "Ver en inglés" (no inglés crudo por defecto).
+
 ## Archivos clave
-- src/App.jsx — código principal
+- src/App.jsx — código principal (incluye caché de lecturas en sessionStorage)
 - src/theme.js — paleta de colores centralizada (única fuente de verdad)
 - src/index.css — variables CSS globales de la paleta
 - src/VerticeDeLuz.jsx — componente SVG del vértice de luz (motivo de marca; usado en splash, íconos y "Ponlo en Práctica")
@@ -29,7 +36,7 @@
 - src/versiculos.js — banco de 365 versículos bíblicos
 - src/JovenFe.jsx — sección Joven Fe
 - src/products.js — productos tienda
-- api/gospel.js — evangelio y lecturas (Universalis)
+- api/gospel.js — evangelio y lecturas (Universalis + traducción API.Bible + parseRef + fallback)
 - api/spiritual-guide.js — "Ponlo en Práctica" IA (sacerdote católico)
 - api/cron-reflexion.js — Cron Job diario 12:10am Colombia: genera reflexión + versículo del día
 - api/order.js — pagos Wompi
@@ -89,14 +96,30 @@
 - Git + GitHub para versiones
 - Deploy automático en Vercel con cada push
 
+## Historial de cambios relevantes
+- Brand book Fases 1-3 aplicadas (paleta, tipografía, vértice de luz, tono, emojis)
+- Fix salmos con capítulo-letra (ej. "Psalm 113B(115)" → Salmo 115) en parseRef() — resolvía regresión que dejaba el salmo en inglés los días de salmos "divididos" (113A/113B y similares). El bug era de parseRef() en general, afecta a las 4 lecturas, no solo al salmo.
+- Fallback sereno + "Ver en inglés" cuando parseRef() no traduce (en vez de inglés crudo sin formato)
+- Validación de caché: solo se cachea en sessionStorage si la traducción al español es válida (detector de idioma looksSpanish); respuestas rotas nunca se congelan. Clave subida gospel_v3 → gospel_v4 para invalidar respuestas viejas malas.
+
 ## Pendiente
-- Brand book — Fase 4 opcional (íconos ilustrativos de pantallas vacías; ver plan arriba)
-- Limpieza futura (baja prioridad): código muerto en translations.es/en (rosary, prayers parcial, home.greeting/reminder) — no visible al usuario
-- Devocional — Novenas (contenido días 2-9)
-- Joven Fe — Testimonios y Quiz Bíblico pendientes
+### Contenido
+- Devocional — Novenas (contenido días 2-9 de las 4 novenas restantes)
+- Joven Fe — Testimonios y Quiz Bíblico
 - Diario de Gracias
-- Versículo del día ✅ — banco 365 conectado + cron genera versículo desde evangelio
 - Compartir reflexión en redes sociales
+
+### Técnico / mejoras defensivas
+- Caché lecturas (reforma de fondo, baja prioridad): reconsiderar sessionStorage; evaluar localStorage por fecha con lógica de refresco. La validación actual ya cubre lo urgente.
+- Consistencia fallback Evangelio: hoy lanza error 500 si falla su traducción, en vez del fallback sereno "Ver en inglés" que ya tienen las otras 3 lecturas. Darle el mismo tratamiento.
+- Limpieza (baja prioridad): código muerto en translations.es/en (rosary, prayers parcial, home.greeting/reminder) — no visible al usuario.
+
+### Infraestructura
 - Notificaciones push (Conec✝2 y recordatorio diario)
+- Wompi producción (hoy en modo test)
 - Dominio propio (candidato: amorae.org)
-- Wompi producción
+
+### Hecho ✅
+- Brand book Fases 1-3
+- Fix salmos capítulo-letra + fallback + validación de caché
+- Versículo del día — banco 365 conectado + cron genera versículo desde evangelio
