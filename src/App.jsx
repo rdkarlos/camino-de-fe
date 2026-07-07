@@ -294,6 +294,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openReading, setOpenReading] = useState(null);
+  const [showEnglishFallback, setShowEnglishFallback] = useState({});
   const [notifGospel, setNotifGospel] = useState(false);
   const [notifRosary, setNotifRosary] = useState(false);
   const [notifLiturgy, setNotifLiturgy] = useState(false);
@@ -1060,9 +1061,9 @@ export default function App() {
         <line x1="12" y1="3.5" x2="11.5" y2="16.5" stroke={GOLD} strokeWidth="0.9"/>
       </svg>
     );
-    if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera lectura' : 'First reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, icon: iconScroll });
-    if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo responsorial' : 'Responsorial psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, icon: iconLyre });
-    if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda lectura' : 'Second reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, icon: iconBook });
+    if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera lectura' : 'First reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, refEn: gospelData.reading1.referenceEn, textEn: gospelData.reading1.textEn, icon: iconScroll });
+    if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo responsorial' : 'Responsorial psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, refEn: gospelData.psalm.referenceEn, textEn: gospelData.psalm.textEn, icon: iconLyre });
+    if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda lectura' : 'Second reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, refEn: gospelData.reading2.referenceEn, textEn: gospelData.reading2.textEn, icon: iconBook });
     if (!gospelData) return <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>{lang === 'es' ? 'Cargando lecturas...' : 'Loading readings...'}</div>;
     return (
       <div>
@@ -1077,26 +1078,57 @@ export default function App() {
             </div>
             {openReading === s.key && (
               <div style={{ padding: "0 18px 18px", fontSize: 14, color: CREAM, lineHeight: 1.9, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 14, whiteSpace: "pre-wrap" }}>
-                {s.key === 'ps' ? (
-                  s.text.split('\n').map((line, i) => {
-                    if (!line.trim()) return <div key={i} style={{ height: 8 }} />;
-                    if (line.startsWith('R.')) {
-                      return <div key={i} style={{ color: GOLD, fontWeight: "bold" }}>{line}</div>;
-                    }
-                    if (line.startsWith('V.')) {
+                {s.text ? (
+                  s.key === 'ps' ? (
+                    s.text.split('\n').map((line, i) => {
+                      if (!line.trim()) return <div key={i} style={{ height: 8 }} />;
+                      if (line.startsWith('R.')) {
+                        return <div key={i} style={{ color: GOLD, fontWeight: "bold" }}>{line}</div>;
+                      }
+                      if (line.startsWith('V.')) {
+                        return <div key={i}>{line}</div>;
+                      }
                       return <div key={i}>{line}</div>;
-                    }
-                    return <div key={i}>{line}</div>;
-                  })
+                    })
+                  ) : (
+                    <>
+                      {s.text}
+                      {(s.key === 'r1' || s.key === 'r2') && (
+                        <div style={{ fontStyle: "italic", color: GOLD, marginTop: 10, whiteSpace: "normal" }}>
+                          {lang === 'es' ? '— Palabra de Dios.' : '— The Word of the Lord.'}
+                        </div>
+                      )}
+                    </>
+                  )
                 ) : (
-                  <>
-                    {s.text}
-                    {(s.key === 'r1' || s.key === 'r2') && (
-                      <div style={{ fontStyle: "italic", color: GOLD, marginTop: 10, whiteSpace: "normal" }}>
-                        {lang === 'es' ? '— Palabra de Dios.' : '— The Word of the Lord.'}
+                  <div style={{ whiteSpace: "normal" }}>
+                    <div style={{ color: MUTED, fontStyle: "italic" }}>
+                      {lang === 'es' ? 'Esta lectura aún no está disponible en español.' : "This reading isn't available in English yet."}
+                    </div>
+                    {!showEnglishFallback[s.key] ? (
+                      <button
+                        onClick={() => setShowEnglishFallback(prev => ({ ...prev, [s.key]: true }))}
+                        style={{ marginTop: 10, background: "none", border: "none", padding: 0, color: GOLD, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}
+                      >
+                        {lang === 'es' ? 'Ver en inglés →' : 'View in English →'}
+                      </button>
+                    ) : (
+                      <div style={{ marginTop: 14, whiteSpace: "pre-wrap" }}>
+                        <div style={{ fontSize: 11, color: MUTED, marginBottom: 8 }}>{formatRef(s.refEn)}</div>
+                        {s.key === 'ps' ? (
+                          (s.textEn || '').split('\n').map((line, i) => {
+                            if (!line.trim()) return <div key={i} style={{ height: 8 }} />;
+                            if (line.startsWith('R.')) {
+                              return <div key={i} style={{ color: GOLD, fontWeight: "bold" }}>{line}</div>;
+                            }
+                            return <div key={i}>{line}</div>;
+                          })
+                        ) : (
+                          s.textEn
+                        )}
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
             )}

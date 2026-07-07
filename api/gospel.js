@@ -45,9 +45,13 @@ export default async function handler(req, res) {
   const parseRef = (rawRef) => {
     if (!rawRef) return null;
     let ref = normalizeRef(rawRef);
-    // Psalm 33(34):2-9 → Psalm 34:2-9  (usa el número entre paréntesis)
-    ref = ref.replace(/^(Psalms?)\s+\d+\((\d+)\)/, '$1 $2');
-    const bookMatch = ref.match(/^(\d?\s?[A-Za-z]+(?:\s[A-Za-z]+)?)\s+(\d+):(\d+)/);
+    // Psalm 33(34):2-9  |  Psalm 113B(115):3-10  →  usa el número entre paréntesis
+    // (la letra opcional marca la mitad Vulgata de un salmo dividido; el número
+    // entre paréntesis es la numeración hebrea/moderna, la misma que usa API.Bible)
+    ref = ref.replace(/^(Psalms?)\s+\d+[A-Za-z]?\((\d+)\)/i, '$1 $2');
+    // Tolera una letra pegada al capítulo que no haya sido normalizada arriba
+    // (defensivo, por si aparece en evangelio/lecturas además de salmos)
+    const bookMatch = ref.match(/^(\d?\s?[A-Za-z]+(?:\s[A-Za-z]+)?)\s+(\d+)[A-Za-z]?:(\d+)/);
     if (!bookMatch) return null;
     const bookName = bookMatch[1].trim();
     const bookCode = bookMap[bookName];
@@ -56,7 +60,7 @@ export default async function handler(req, res) {
     const v1  = bookMatch[3];
     const allNums = ref.match(/\d+/g) || [];
     const lastNum = allNums[allNums.length - 1];
-    const chapterChange = ref.match(/(\d+):(\d+)-(\d+):(\d+)/);
+    const chapterChange = ref.match(/(\d+)[A-Za-z]?:(\d+)-(\d+)[A-Za-z]?:(\d+)/);
     if (chapterChange) {
       return `${bookCode}.${chapterChange[1]}.${chapterChange[2]}-${bookCode}.${chapterChange[3]}.${chapterChange[4]}`;
     }
@@ -251,13 +255,13 @@ export default async function handler(req, res) {
       text: `Evangelio del día\nLectura del santo Evangelio según san ${gospelEs.reference || normalizeRef(rawGospelRef)}\n\n${gospelEs.text}`,
       reading1: reading1Es
         ? { reference: reading1Es.reference || normalizeRef(rawReading1Ref), text: reading1Es.text }
-        : (reading1Data ? { reference: normalizeRef(rawReading1Ref), text: cleanText(reading1Data.text) } : null),
+        : (reading1Data ? { reference: null, text: null, referenceEn: normalizeRef(rawReading1Ref), textEn: cleanText(reading1Data.text) } : null),
       reading2: reading2Es
         ? { reference: reading2Es.reference || normalizeRef(rawReading2Ref), text: reading2Es.text }
-        : (reading2Data ? { reference: normalizeRef(rawReading2Ref), text: cleanText(reading2Data.text) } : null),
+        : (reading2Data ? { reference: null, text: null, referenceEn: normalizeRef(rawReading2Ref), textEn: cleanText(reading2Data.text) } : null),
       psalm: psalmEs
         ? { reference: psalmEs.reference || normalizeRef(rawPsalmRef), text: formatPsalmEs(psalmStructure, psalmEs.text) || psalmEs.text }
-        : (psalmData ? { reference: normalizeRef(rawPsalmRef), text: cleanText(psalmData.text) } : null),
+        : (psalmData ? { reference: null, text: null, referenceEn: normalizeRef(rawPsalmRef), textEn: formatPsalmEn(psalmStructure) || cleanText(psalmData.text) } : null),
       reflection: '',
     });
 
