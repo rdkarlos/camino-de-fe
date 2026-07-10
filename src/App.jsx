@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
 import Devocional from "./Devocional";
@@ -294,6 +294,40 @@ const isSafeToCacheGospelEs = (data) => {
   return true;
 };
 
+// Rastro de luz — aviso in-app de intenciones nuevas en Conec✝2.
+// toMillisSafe acepta tanto Timestamp de Firestore como Date local (el que
+// usamos como aproximación optimista justo después de escribir en Firestore).
+const toMillisSafe = (v) => {
+  if (!v) return 0;
+  if (typeof v.toMillis === 'function') return v.toMillis();
+  if (v instanceof Date) return v.getTime();
+  return 0;
+};
+
+// Chequeo barato (sin lecturas extra): compara la última intención del
+// círculo contra el lastSeen del usuario. Ver conversación — es exacto en
+// este modelo porque nunca se puede publicar sin abrir antes el círculo
+// (lo que ya actualiza lastSeen), salvo la ventana angosta que cierra la
+// segunda pasada (findSuspiciousCircles + confirmNewCircles más abajo).
+const circleLooksNew = (circle, lastSeen, uid) => {
+  if (!circle?.ultimaIntencionFecha || circle.ultimaIntencionAutorId === uid) return false;
+  const seen = lastSeen?.[circle.id];
+  if (!seen) return false; // sin línea base todavía (se resuelve con el backfill) — nunca inunda
+  return toMillisSafe(circle.ultimaIntencionFecha) > toMillisSafe(seen);
+};
+
+// Punto de luz — círculo pequeño en Alba con halo suave, sin número ni texto.
+const LightDot = ({ style }) => (
+  <span
+    aria-hidden="true"
+    style={{
+      position: "absolute", width: 9, height: 9, borderRadius: "50%",
+      background: ALBA, boxShadow: `0 0 6px 2px ${ALBA}99, 0 0 2px ${ALBA}`,
+      ...style,
+    }}
+  />
+);
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -377,6 +411,9 @@ export default function App() {
   const [circleLoading, setCircleLoading] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState(null);
   const [circleIntenciones, setCircleIntenciones] = useState([]);
+  const [circleLastSeen, setCircleLastSeen] = useState({});
+  const [circleLastSeenLoaded, setCircleLastSeenLoaded] = useState(false);
+  const [confirmedNewCircles, setConfirmedNewCircles] = useState({});
   const [newCircleName, setNewCircleName] = useState("");
   const [newCircleDesc, setNewCircleDesc] = useState("");
   const [newCircleType, setNewCircleType] = useState("publico");
@@ -515,15 +552,105 @@ export default function App() {
       .finally(() => setPrayerBookLoading(false));
   }, [personalTab, user]);
 
+  // Carga temprana de "mis círculos" + su lastSeen, en cuanto haya sesión —
+  // no espera a que el usuario entre al tab Conec✝2, porque el rastro de luz
+  // de los niveles 1 y 2 (Inicio, entrada a Conec✝2) necesita saber desde el
+  // arranque si hay algo nuevo en cualquier círculo. Es la misma consulta que
+  // ya se hacía antes al entrar al tab, solo que ahora corre una vez al iniciar
+  // sesión en lugar de repetirse cada vez que se abre el tab.
   useEffect(() => {
-    if (personalTab !== "circles" || !user) return;
-    setCircleLoading(true);
-    setCircleView("list");
+    if (!user) {
+      setMyCircles([]); setCircleLastSeen({}); setCircleLastSeenLoaded(false); setConfirmedNewCircles({});
+      return;
+    }
     getDocs(query(collection(db, "circulos"), where("miembros", "array-contains", user.uid)))
       .then(snap => setMyCircles(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
-      .catch(() => {})
-      .finally(() => setCircleLoading(false));
+      .catch(() => {});
+    getDoc(doc(db, "usuarios", user.uid))
+      .then(snap => setCircleLastSeen(snap.exists() ? (snap.data().circleLastSeen || {}) : {}))
+      .catch(() => setCircleLastSeen({}))
+      .finally(() => setCircleLastSeenLoaded(true));
+  }, [user]);
+
+  // Backfill — la primera vez que vemos un círculo del que ya somos miembros
+  // pero sin lastSeen guardado (usuarios existentes al desplegar esto, o recién
+  // unidos), fijamos su lastSeen a "ahora" para que las intenciones viejas no
+  // aparezcan como una avalancha de novedades.
+  useEffect(() => {
+    if (!user || !circleLastSeenLoaded || !myCircles.length) return;
+    const missing = myCircles.filter(c => !circleLastSeen[c.id]);
+    if (!missing.length) return;
+    const patch = {};
+    missing.forEach(c => { patch[c.id] = serverTimestamp(); });
+    setDoc(doc(db, "usuarios", user.uid), { circleLastSeen: patch }, { merge: true })
+      .then(() => {
+        setCircleLastSeen(prev => {
+          const next = { ...prev };
+          missing.forEach(c => { next[c.id] = new Date(); });
+          return next;
+        });
+      })
+      .catch(() => {});
+  }, [user, circleLastSeenLoaded, myCircles, circleLastSeen]);
+
+  // Booleano agregado para los niveles 1 y 2 (Inicio, entrada a Conec✝2):
+  // ¿hay algo nuevo en cualquier círculo? Se recalcula solo cuando cambian
+  // los datos de entrada, no en cada render.
+  const hasAnyNewCircleActivity = useMemo(
+    () => myCircles.some(c => circleLooksNew(c, circleLastSeen, user?.uid)),
+    [myCircles, circleLastSeen, user]
+  );
+
+  useEffect(() => {
+    if (personalTab !== "circles" || !user) return;
+    setCircleView("list");
   }, [personalTab, user]);
+
+  // Segunda pasada — solo para círculos que el chequeo barato ya marcó como
+  // sospechosos. Confirma con una consulta chica (sin índice compuesto: un
+  // solo campo de rango) si de verdad hay una intención ajena sin ver, para
+  // cerrar el caso borde donde una intención propia "tapa" una ajena.
+  useEffect(() => {
+    if (personalTab !== "circles" || !user || !circleLastSeenLoaded) return;
+    const suspicious = myCircles.filter(c => circleLooksNew(c, circleLastSeen, user.uid));
+    if (!suspicious.length) { setConfirmedNewCircles({}); return; }
+    let cancelled = false;
+    Promise.all(suspicious.map(async (c) => {
+      const seen = circleLastSeen[c.id];
+      try {
+        const snap = await getDocs(query(
+          collection(db, "circulos", c.id, "intenciones"),
+          where("fecha", ">", seen),
+          orderBy("fecha", "asc"),
+          limit(3)
+        ));
+        const hasOther = snap.docs.some(d => d.data().autorId !== user.uid);
+        return [c.id, hasOther];
+      } catch (e) {
+        return [c.id, true]; // si la consulta falla, preferimos un falso positivo a perder un aviso real
+      }
+    })).then(results => {
+      if (cancelled) return;
+      const confirmed = {};
+      results.forEach(([id, isNew]) => { if (isNew) confirmed[id] = true; });
+      setConfirmedNewCircles(confirmed);
+    });
+    return () => { cancelled = true; };
+  }, [personalTab, user, circleLastSeenLoaded, myCircles, circleLastSeen]);
+
+  // Marca un círculo como visto ahora — se llama al abrirlo (apaga el rastro
+  // de luz para ese círculo) y al crear/unirse (arranca en cero, sin avalancha).
+  const markCircleSeen = (circleId) => {
+    if (!user) return;
+    setCircleLastSeen(prev => ({ ...prev, [circleId]: new Date() }));
+    setConfirmedNewCircles(prev => {
+      if (!prev[circleId]) return prev;
+      const next = { ...prev };
+      delete next[circleId];
+      return next;
+    });
+    setDoc(doc(db, "usuarios", user.uid), { circleLastSeen: { [circleId]: serverTimestamp() } }, { merge: true }).catch(() => {});
+  };
 
   const handleGoogle = async () => {
     setAuthLoading(true); setAuthError("");
@@ -1299,6 +1426,7 @@ export default function App() {
       setSelectedCircle(circulo);
       setCircleView("inside");
       setCircleIntenciones([]);
+      markCircleSeen(circulo.id);
       await loadIntenciones(circulo);
     };
 
@@ -1320,6 +1448,7 @@ export default function App() {
         };
         const ref = await addDoc(collection(db, "circulos"), circuloData);
         setMyCircles(prev => [{ id: ref.id, ...circuloData, fechaCreacion: new Date() }, ...prev]);
+        markCircleSeen(ref.id);
         setNewCircleName("");
         setNewCircleDesc("");
         setNewCircleType("publico");
@@ -1341,6 +1470,7 @@ export default function App() {
         if ((circulo.miembros?.length || 0) >= 10) { setCircleError(lang === "es" ? "El círculo está lleno (máx. 10)" : "Circle is full (max 10)"); setCircleLoading(false); return; }
         await updateDoc(doc(db, "circulos", circulo.id), { miembros: arrayUnion(user.uid) });
         setMyCircles(prev => [{ ...circulo, miembros: [...(circulo.miembros || []), user.uid] }, ...prev]);
+        markCircleSeen(circulo.id);
         setJoinCode("");
         setCircleView("list");
       } catch (e) { setCircleError(e.message); }
@@ -1354,6 +1484,7 @@ export default function App() {
         const updated = { ...circulo, miembros: [...(circulo.miembros || []), user.uid] };
         setMyCircles(prev => [updated, ...prev]);
         setPublicCircles(prev => prev.map(c => c.id === circulo.id ? updated : c));
+        markCircleSeen(circulo.id);
         setCircleView("list");
       } catch (e) { setCircleError(e.message); }
     };
@@ -1370,6 +1501,13 @@ export default function App() {
         };
         const ref = await addDoc(collection(db, "circulos", selectedCircle.id, "intenciones"), data);
         setCircleIntenciones(prev => [{ id: ref.id, ...data, fecha: new Date() }, ...prev]);
+        updateDoc(doc(db, "circulos", selectedCircle.id), {
+          ultimaIntencionFecha: serverTimestamp(),
+          ultimaIntencionAutorId: user.uid,
+        }).catch(() => {});
+        setMyCircles(prev => prev.map(c => c.id === selectedCircle.id
+          ? { ...c, ultimaIntencionFecha: new Date(), ultimaIntencionAutorId: user.uid }
+          : c));
         setNewIntencion("");
       } catch (e) {}
     };
@@ -1568,7 +1706,8 @@ export default function App() {
                 );
               })(), lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>],
           ].map(([key, icon, label]) => (
-            <button key={key} onClick={() => setPersonalTab(key)} style={{ flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? GOLD+"66" : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", textAlign: "center", lineHeight: 1.3 }}>
+            <button key={key} onClick={() => setPersonalTab(key)} style={{ position: "relative", flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? GOLD+"66" : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", textAlign: "center", lineHeight: 1.3 }}>
+              {key === "circles" && hasAnyNewCircleActivity && <LightDot style={{ top: 4, right: 4 }} />}
               <div style={{ fontSize: 16 }}>{icon}</div>
               <div>{label}</div>
             </button>
@@ -1739,7 +1878,10 @@ export default function App() {
                   <div key={c.id} onClick={() => openCircle(c)} style={{ background: BG_CARD, borderRadius: 16, padding: "14px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)", cursor: "pointer" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
-                        <div style={{ fontSize: 15, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif", marginBottom: 3 }}>{c.nombre}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 15, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif", marginBottom: 3 }}>
+                          {confirmedNewCircles[c.id] && <LightDot style={{ position: "static", flexShrink: 0 }} />}
+                          {c.nombre}
+                        </div>
                         {c.descripcion && <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.5 }}>{c.descripcion.length > 80 ? c.descripcion.substring(0, 80) + "…" : c.descripcion}</div>}
                       </div>
                       <span style={{ fontSize: 11, background: c.tipo === "privado" ? `${NAVY}18` : `${GOLD}22`, color: c.tipo === "privado" ? NAVY : ALBA_DARK, padding: "3px 8px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
@@ -2881,8 +3023,9 @@ export default function App() {
                 onPointerDown={() => setPressedQuickBtn(idx)}
                 onPointerUp={() => setPressedQuickBtn(null)}
                 onPointerCancel={() => setPressedQuickBtn(null)}
-                style={{ flex: 1, padding: "6px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center", transform, transition, ...bibleStyle }}
+                style={{ position: "relative", flex: 1, padding: "6px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center", transform, transition, ...bibleStyle }}
               >
+                {idx === 1 && hasAnyNewCircleActivity && <LightDot style={{ top: 4, right: 4 }} />}
                 <div style={{ marginBottom: 2, lineHeight: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>{icon(iconColor)}</div>
                 <div style={{ fontSize: 13, fontWeight: "600", fontFamily: "'Work Sans', sans-serif", letterSpacing: 0.2, whiteSpace: "nowrap" }}>{label}</div>
               </button>
