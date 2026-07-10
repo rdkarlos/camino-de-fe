@@ -558,18 +558,39 @@ export default function App() {
   // arranque si hay algo nuevo en cualquier círculo. Es la misma consulta que
   // ya se hacía antes al entrar al tab, solo que ahora corre una vez al iniciar
   // sesión en lugar de repetirse cada vez que se abre el tab.
+  //
+  // También se vuelve a ejecutar cuando la app vuelve a primer plano
+  // (visibilitychange), con un throttle de 3 minutos para no recargar si el
+  // usuario alterna rápido entre apps. Sin onSnapshot, sin temporizador de
+  // fondo — solo el trigger de visibilidad.
+  const lastCircleActivityFetchRef = useRef(0);
+  const CIRCLE_ACTIVITY_THROTTLE_MS = 3 * 60 * 1000;
   useEffect(() => {
     if (!user) {
       setMyCircles([]); setCircleLastSeen({}); setCircleLastSeenLoaded(false); setConfirmedNewCircles({});
       return;
     }
-    getDocs(query(collection(db, "circulos"), where("miembros", "array-contains", user.uid)))
-      .then(snap => setMyCircles(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
-      .catch(() => {});
-    getDoc(doc(db, "usuarios", user.uid))
-      .then(snap => setCircleLastSeen(snap.exists() ? (snap.data().circleLastSeen || {}) : {}))
-      .catch(() => setCircleLastSeen({}))
-      .finally(() => setCircleLastSeenLoaded(true));
+
+    const loadCircleActivity = () => {
+      lastCircleActivityFetchRef.current = Date.now();
+      getDocs(query(collection(db, "circulos"), where("miembros", "array-contains", user.uid)))
+        .then(snap => setMyCircles(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
+        .catch(() => {});
+      getDoc(doc(db, "usuarios", user.uid))
+        .then(snap => setCircleLastSeen(snap.exists() ? (snap.data().circleLastSeen || {}) : {}))
+        .catch(() => setCircleLastSeen({}))
+        .finally(() => setCircleLastSeenLoaded(true));
+    };
+
+    loadCircleActivity();
+
+    const handleVisibility = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastCircleActivityFetchRef.current < CIRCLE_ACTIVITY_THROTTLE_MS) return;
+      loadCircleActivity();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [user]);
 
   // Backfill — la primera vez que vemos un círculo del que ya somos miembros
@@ -1613,6 +1634,7 @@ export default function App() {
               onPointerDown={() => setPressedPersonalCard(c.id)}
               onPointerUp={() => setPressedPersonalCard(null)}
               style={{
+                position: "relative",
                 display: "flex", alignItems: "center", gap: 14,
                 background: BG_CARD,
                 border: `1.5px solid ${(hoveredPersonalCard === c.id || pressedPersonalCard === c.id) ? GOLD : CREAM_DARK}`,
@@ -1620,6 +1642,7 @@ export default function App() {
                 transition: "border-color 0.15s ease",
               }}
             >
+              {c.id === "oracion" && hasAnyNewCircleActivity && <LightDot style={{ top: 10, right: 10 }} />}
               <div style={{ width: 52, height: 52, borderRadius: 12, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {c.icon}
               </div>
