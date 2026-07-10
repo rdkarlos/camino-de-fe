@@ -26,7 +26,7 @@
 - Fallback: si parseRef() no logra traducir, se muestra mensaje sereno "Esta lectura aún no está disponible en español" + toggle opcional "Ver en inglés" (no inglés crudo por defecto).
 
 ## Archivos clave
-- src/App.jsx — código principal (incluye caché de lecturas en sessionStorage)
+- src/App.jsx — código principal (incluye caché de lecturas en sessionStorage y la lógica del rastro de luz de Conec✝2)
 - src/theme.js — paleta de colores centralizada (única fuente de verdad)
 - src/index.css — variables CSS globales de la paleta
 - src/VerticeDeLuz.jsx — componente SVG del vértice de luz (motivo de marca; usado en splash, íconos y "Ponlo en Práctica")
@@ -47,7 +47,7 @@
 
 ## Secciones
 1. Inicio — versículo del día premium, saludo login, cards modo oscuro, splash screen, onboarding
-2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Santo Rosario, Devocional
+2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2 con rastro de luz de intenciones nuevas), Santo Rosario, Devocional
 3. Evangelio — con "Ponlo en Práctica" (vértice de luz), skeleton loader
 4. La Biblia — LBLA, navegación por categorías + buscador
 5. Lecturas del día
@@ -80,6 +80,22 @@
 - Micro-animaciones entre secciones
 - Skeleton loader en Evangelio
 
+## Conec✝2 — Rastro de luz (avisos in-app de intenciones nuevas)
+- Notificación DENTRO de la app (no push del sistema, no permisos, no service worker).
+- Un punto de luz cálido (Alba, estilo vértice de luz — LightDot, un <span> con glow) se enciende guiando al usuario hasta la novedad, en 4 niveles continuos: Inicio ("Oración") → Oración Personal (tarjeta "Mi Oración") → Conec✝2 → círculo específico.
+- Variante elegida: solo punto, sin número (más sereno; además es un booleano simple "¿hay algo nuevo?").
+- Regla honesta: el rastro se apaga SOLO al abrir el círculo con la novedad (no antes, aunque el usuario entre a la sección o a la lista). Intenciones propias nunca encienden el punto.
+- Modelo de datos:
+  - usuarios/{uid}.circleLastSeen: { [circleId]: Timestamp } — última visita por círculo (mapa; se lee entero en 1 sola lectura)
+  - circulos/{id}.ultimaIntencionFecha + ultimaIntencionAutorId — para el chequeo barato sin consultar cada círculo (se escriben en addIntencion)
+  - Backfill: círculos sin lastSeen se marcan "vistos ahora" al cargar (no inunda con intenciones viejas; usuarios existentes arrancan limpios)
+  - markCircleSeen(circleId) conectado en openCircle, createCircle, joinCircleByCode, joinPublicCircle
+- Costo: 1 lectura extra al cargar (el doc usuarios/{uid}); las lecturas de círculos ya ocurrían, solo se adelantan (ahora corren al iniciar sesión, no solo al entrar al tab Conec✝2).
+- Segunda pasada condicional: al entrar a la lista de círculos, para círculos marcados "sospechosos" por el chequeo barato, consulta chica (fecha > lastSeen, limit 3, sin índice compuesto) para cerrar el hueco donde la intención propia podría "tapar" una ajena sin ver. En día sin actividad: cero lecturas extra.
+- Auto-refresco: al volver la app a primer plano (visibilitychange → visible), con throttle de 3 min (useRef). Sin onSnapshot, sin temporizador de fondo.
+- Helpers de módulo en App.jsx: toMillisSafe, circleLooksNew (chequeo barato), LightDot; estado circleLastSeen / circleLastSeenLoaded / confirmedNewCircles; hasAnyNewCircleActivity (useMemo).
+- Reglas de Firestore: se agregó match explícito para el documento usuarios/{userId} (el wildcard de subcolección /{document=**} NO cubre el doc raíz). Update de circulos ya era permisivo (allow update: if request.auth != null), no requirió cambio.
+
 ## Brand book — plan de ejecución
 - ✅ Fase 1 — paleta nueva + tipografía (Cormorant/Work Sans) + centralización en theme.js
 - ✅ Fase 2 — degradado noche→alba en splash, vértice de luz como motivo e ícono PWA, background_color del manifest a #1E2630
@@ -101,6 +117,7 @@
 - Fix salmos con capítulo-letra (ej. "Psalm 113B(115)" → Salmo 115) en parseRef() — resolvía regresión que dejaba el salmo en inglés los días de salmos "divididos" (113A/113B y similares). El bug era de parseRef() en general, afecta a las 4 lecturas, no solo al salmo.
 - Fallback sereno + "Ver en inglés" cuando parseRef() no traduce (en vez de inglés crudo sin formato)
 - Validación de caché: solo se cachea en sessionStorage si la traducción al español es válida (detector de idioma looksSpanish); respuestas rotas nunca se congelan. Clave subida gospel_v3 → gospel_v4 para invalidar respuestas viejas malas.
+- Conec✝2 rastro de luz: avisos in-app de intenciones nuevas en 4 niveles (ver sección dedicada arriba). Reglas de Firestore ajustadas (match explícito de usuarios/{userId}).
 
 ## Pendiente
 ### Contenido
@@ -109,13 +126,20 @@
 - Diario de Gracias
 - Compartir reflexión en redes sociales
 
+### Funcionalidad — ideas a futuro
+- Notificaciones push REALES del sistema (app cerrada) — la "fase 2" del rastro de luz. Más compleja: permisos, tokens por dispositivo, service worker, limitaciones en iOS PWA (solo funciona si el usuario instaló la PWA en pantalla de inicio).
+- Idea futura — aviso "están orando por tu intención": notificar al autor de una intención cuando otros marcan "estoy orando" por ella ("3 personas están orando por tu intención"). Es una señal de naturaleza DISTINTA al rastro de intenciones nuevas (avisa "algo bueno pasó con lo tuyo", no "hay algo que ver"), así que conviene diseñarla como fase propia con su propio indicador, para no confundirla con el rastro de luz actual. Requiere modelo de datos aparte (contar reacciones nuevas por intención desde la última vista del autor). Evaluar después de ver cómo rueda el rastro de intenciones con usuarios reales.
+
 ### Técnico / mejoras defensivas
 - Caché lecturas (reforma de fondo, baja prioridad): reconsiderar sessionStorage; evaluar localStorage por fecha con lógica de refresco. La validación actual ya cubre lo urgente.
 - Consistencia fallback Evangelio: hoy lanza error 500 si falla su traducción, en vez del fallback sereno "Ver en inglés" que ya tienen las otras 3 lecturas. Darle el mismo tratamiento.
 - Limpieza (baja prioridad): código muerto en translations.es/en (rosary, prayers parcial, home.greeting/reminder) — no visible al usuario.
 
+### Seguridad Firestore (no urgente)
+- Reglas de circulos e intenciones son abiertas (circulos: allow read: if true, update: if request.auth != null; intenciones: allow read: if true, write: if request.auth != null). Cualquier usuario autenticado puede editar/borrar intenciones de cualquier círculo, sea miembro o no. NO lo introdujo el rastro de luz (ya era así). Endurecer cuando se aborde seguridad a fondo.
+- reflexiones: allow read/write: if true — también abierto, revisar en el mismo pase de seguridad.
+
 ### Infraestructura
-- Notificaciones push (Conec✝2 y recordatorio diario)
 - Wompi producción (hoy en modo test)
 - Dominio propio (candidato: amorae.org)
 
@@ -123,3 +147,4 @@
 - Brand book Fases 1-3
 - Fix salmos capítulo-letra + fallback + validación de caché
 - Versículo del día — banco 365 conectado + cron genera versículo desde evangelio
+- Conec✝2 rastro de luz (avisos in-app de intenciones nuevas)
