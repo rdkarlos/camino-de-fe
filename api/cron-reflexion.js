@@ -1,16 +1,14 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
-  authDomain: "camino-de-fe-4d9c2.firebaseapp.com",
-  projectId: "camino-de-fe-4d9c2",
-  storageBucket: "camino-de-fe-4d9c2.firebasestorage.app",
-  messagingSenderId: "1067905510058",
-  appId: "1:1067905510058:web:e68d01c447a0e84c48fed3",
-};
-
-const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+// Cuenta de servicio de Firebase Admin — nunca se sube al repo, viaja
+// codificada en base64 en la variable de entorno de Vercel. El SDK admin
+// se salta las reglas de seguridad de Firestore (es de confianza, corre en
+// el servidor), así que las reglas de cliente quedan intactas.
+const serviceAccount = JSON.parse(
+  Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8')
+);
+const firebaseApp = getApps().length ? getApps()[0] : initializeApp({ credential: cert(serviceAccount) });
 const db = getFirestore(firebaseApp);
 
 async function getGospel(baseUrl, lang, day, month, year) {
@@ -80,22 +78,22 @@ async function generateVerse(gospelText) {
 }
 
 async function cleanOldReflections(today) {
-  const snapshot = await getDocs(collection(db, 'reflexiones'));
+  const snapshot = await db.collection('reflexiones').get();
   const deletions = [];
   snapshot.forEach((docSnap) => {
     if (!docSnap.id.startsWith(today)) {
-      deletions.push(deleteDoc(doc(db, 'reflexiones', docSnap.id)));
+      deletions.push(db.collection('reflexiones').doc(docSnap.id).delete());
     }
   });
   await Promise.all(deletions);
 }
 
 async function cleanOldVersiculos(today) {
-  const snapshot = await getDocs(collection(db, 'versiculos'));
+  const snapshot = await db.collection('versiculos').get();
   const deletions = [];
   snapshot.forEach((docSnap) => {
     if (docSnap.id !== today) {
-      deletions.push(deleteDoc(doc(db, 'versiculos', docSnap.id)));
+      deletions.push(db.collection('versiculos').doc(docSnap.id).delete());
     }
   });
   await Promise.all(deletions);
@@ -119,12 +117,14 @@ export default async function handler(req, res) {
     const idEn = `${today}_en`;
 
     const [existingEs, existingEn, existingVerse] = await Promise.all([
-      getDoc(doc(db, 'reflexiones', idEs)),
-      getDoc(doc(db, 'reflexiones', idEn)),
-      getDoc(doc(db, 'versiculos', today)),
+      db.collection('reflexiones').doc(idEs).get(),
+      db.collection('reflexiones').doc(idEn).get(),
+      db.collection('versiculos').doc(today).get(),
     ]);
 
-    if (existingEs.exists() && existingEn.exists() && existingVerse.exists()) {
+    // Nota: en el SDK admin, "exists" es una propiedad, no una función
+    // (a diferencia del SDK de cliente que reemplaza) — ojo si se vuelve a tocar esto.
+    if (existingEs.exists && existingEn.exists && existingVerse.exists) {
       await Promise.all([cleanOldReflections(today), cleanOldVersiculos(today)]);
       return res.status(200).json({ success: true, message: 'La reflexión de hoy ya existía, no se generó de nuevo' });
     }
@@ -132,28 +132,28 @@ export default async function handler(req, res) {
     const baseUrl = process.env.SITE_URL || 'https://camino-de-fe-seven.vercel.app';
 
     let gospelEs = null;
-    if (!existingEs.exists() || !existingVerse.exists()) {
+    if (!existingEs.exists || !existingVerse.exists) {
       gospelEs = await getGospel(baseUrl, 'es', day, month, year);
     }
 
-    if (!existingEs.exists()) {
+    if (!existingEs.exists) {
       const textoEs = await generateReflection(gospelEs.reference, gospelEs.text, 'es');
-      await setDoc(doc(db, 'reflexiones', idEs), {
+      await db.collection('reflexiones').doc(idEs).set({
         texto: textoEs, fecha: today, evangelio: gospelEs.reference || '',
       });
     }
 
-    if (!existingEn.exists()) {
+    if (!existingEn.exists) {
       const gospelEn = await getGospel(baseUrl, 'en', day, month, year);
       const textoEn = await generateReflection(gospelEn.reference, gospelEn.text, 'en');
-      await setDoc(doc(db, 'reflexiones', idEn), {
+      await db.collection('reflexiones').doc(idEn).set({
         texto: textoEn, fecha: today, evangelio: gospelEn.reference || '',
       });
     }
 
-    if (!existingVerse.exists()) {
+    if (!existingVerse.exists) {
       const verse = await generateVerse(gospelEs.text);
-      await setDoc(doc(db, 'versiculos', today), {
+      await db.collection('versiculos').doc(today).set({
         texto: verse.texto, referencia: verse.referencia, fecha: today,
       });
     }

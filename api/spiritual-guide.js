@@ -1,25 +1,22 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
-  authDomain: "camino-de-fe-4d9c2.firebaseapp.com",
-  projectId: "camino-de-fe-4d9c2",
-  storageBucket: "camino-de-fe-4d9c2.firebasestorage.app",
-  messagingSenderId: "1067905510058",
-  appId: "1:1067905510058:web:e68d01c447a0e84c48fed3",
-};
-
-const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+// Cuenta de servicio de Firebase Admin — misma variable que usa cron-reflexion.js,
+// nunca se sube al repo. Se salta las reglas de Firestore (SDK de confianza,
+// corre en el servidor), así que las reglas de cliente quedan intactas.
+const serviceAccount = JSON.parse(
+  Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8')
+);
+const firebaseApp = getApps().length ? getApps()[0] : initializeApp({ credential: cert(serviceAccount) });
 const db = getFirestore(firebaseApp);
 
 async function cleanOldReflections(today) {
   try {
-    const snapshot = await getDocs(collection(db, 'reflexiones'));
+    const snapshot = await db.collection('reflexiones').get();
     const deletions = [];
     snapshot.forEach((docSnap) => {
       if (!docSnap.id.startsWith(today)) {
-        deletions.push(deleteDoc(doc(db, 'reflexiones', docSnap.id)));
+        deletions.push(db.collection('reflexiones').doc(docSnap.id).delete());
       }
     });
     await Promise.all(deletions);

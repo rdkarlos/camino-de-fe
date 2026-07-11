@@ -25,3 +25,9 @@ dist-ssr
 
 .vercel
 .env*
+
+# Credenciales de Firebase Admin SDK — nunca deben subirse al repo
+*firebase-adminsdk*.json
+serviceAccountKey.json
+service-account*.json
+*-base64.txt
