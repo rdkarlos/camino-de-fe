@@ -371,6 +371,18 @@ export default function App() {
   const [personalTab, setPersonalTab] = useState("builder");
   const [personalSection, setPersonalSection] = useState(null);
   const [devocionalInitialTab, setDevocionalInitialTab] = useState(null);
+
+  // Entrada "limpia" a una sección desde fuera de ella (menú, accesos rápidos,
+  // tarjetas de Inicio): resetea la memoria de sub-navegación de Oración Personal
+  // antes de cambiar de tab, para que cada entrada sea predecible. Los atajos que
+  // fijan un destino específico (ej. Santo del Día) no pasan por aquí — asignan
+  // su propio estado directamente.
+  const goToTab = (i) => {
+    setPersonalSection(null);
+    setPersonalTab("builder");
+    setDevocionalInitialTab(null);
+    setTab(i);
+  };
   const [hoveredPersonalCard, setHoveredPersonalCard] = useState(null);
   const [pressedPersonalCard, setPressedPersonalCard] = useState(null);
   const [selectedMood, setSelectedMood] = useState(null);
@@ -1073,7 +1085,7 @@ export default function App() {
         {/* ── Bloque "Hoy" — contenido diario, seguido ── */}
 
         {/* Evangelio del Día — card compacta */}
-        <div onClick={() => setTab(evangelioCard.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
+        <div onClick={() => goToTab(evangelioCard.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
           {/* Imagen de fondo a 0.4 de opacidad */}
           <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${evangelioCard.img})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
           {/* Gradiente de izquierda a derecha */}
@@ -1119,7 +1131,7 @@ export default function App() {
         {/* ── Bloque "Tu camino" ── */}
 
         {/* Oración Personal — card grande */}
-        <div onClick={() => setTab(oracionCard.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${oracionCard.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div onClick={() => goToTab(oracionCard.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${oracionCard.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(139,105,20,0.2) 0%, rgba(139,105,20,0.55) 100%)" }} />
           <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
             <div>
@@ -1141,7 +1153,7 @@ export default function App() {
           }
         `}</style>
         <div
-          onClick={() => setTab(9)}
+          onClick={() => goToTab(9)}
           style={{
             position: "relative", borderRadius: 20, minHeight: 180, overflow: "hidden", marginBottom: 14,
             cursor: "pointer", border: `1.5px solid ${GOLD}`, animation: "goldPulse 2s infinite",
@@ -2593,7 +2605,7 @@ export default function App() {
     return null;
   };
 
-  const renderJovenFe = () => <JovenFe lang={lang} onBack={() => setTab(0)} />;
+  const renderJovenFe = () => <JovenFe lang={lang} onBack={() => goToTab(0)} />;
 
   const navIcons = [
     /* 0 Inicio */ (c) => (
@@ -2932,7 +2944,7 @@ export default function App() {
       {/* Botón Inicio fijo */}
       {tab !== 0 && tab !== 4 && !(tab === 1 && personalSection === "rosario") && (
         <button
-          onClick={() => setTab(0)}
+          onClick={() => goToTab(0)}
           title={lang === "es" ? "Inicio" : "Home"}
           style={{
             position: "fixed", bottom: 20, right: 20, zIndex: 60,
@@ -3043,7 +3055,7 @@ export default function App() {
             return (
               <button
                 key={idx}
-                onClick={() => setTab(idx)}
+                onClick={() => goToTab(idx)}
                 onPointerEnter={() => setHoveredQuickBtn(idx)}
                 onPointerLeave={() => { setHoveredQuickBtn(null); setPressedQuickBtn(null); }}
                 onPointerDown={() => setPressedQuickBtn(idx)}
@@ -3118,7 +3130,7 @@ export default function App() {
             </div>
             {t.nav.map((n, i) => (
               (i === 4 || i === 5) ? null :
-              <button key={i} onClick={() => { setTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(232,180,92,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", textAlign: "left" }}>
+              <button key={i} onClick={() => { goToTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(232,180,92,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", textAlign: "left" }}>
                 <span style={{ display: "flex", alignItems: "center" }}>{navIcons[i](tab === i ? GOLD : "rgba(255,255,255,0.75)")}</span>
                 <span>{n}</span>
               </button>

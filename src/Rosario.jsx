@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NOCHE, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, NOCHE_DARK } from "./theme";
 import VerticeDeLuz from "./VerticeDeLuz";
 
@@ -95,6 +95,42 @@ function todayMysteryKey() {
   return "luminosos"; // jueves
 }
 
+// Progreso del Rosario en curso — persistido en localStorage (no en memoria)
+// porque la interrupción típica de una sesión de ~20 minutos es justo la que
+// mata el estado en memoria: la app pasa a segundo plano, el sistema la
+// descarga, o el usuario cierra el navegador sin querer. Anclado al mismo
+// patrón de fecha America/Bogota que todayMysteryKey(), para que un Rosario
+// "en curso" de ayer nunca se ofrezca hoy.
+const ROSARY_PROGRESS_KEY = "lumora_rosario_progress_v1";
+
+function todayDateKey() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+}
+
+function loadSavedRosaryProgress(mysteryKey) {
+  try {
+    const raw = localStorage.getItem(ROSARY_PROGRESS_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    if (saved.date !== todayDateKey() || saved.mysteryKey !== mysteryKey) return null;
+    if (!(saved.pageIndex > 0)) return null;
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+// Describe en qué parte del Rosario quedó el usuario, para el mensaje de retomar.
+function describeSavedPage(page, lang, mysteryKey) {
+  if (page.part === 1) {
+    const name = MYSTERY_SETS[lang][mysteryKey].items[page.mysteryIndex];
+    return lang === "es" ? `el Misterio ${page.mysteryIndex + 1}: ${name}` : `Mystery ${page.mysteryIndex + 1}: ${name}`;
+  }
+  if (page.part === 0) return lang === "es" ? "las oraciones iniciales" : "the opening prayers";
+  if (page.part === 2) return lang === "es" ? "las intenciones del Papa" : "the Pope's intentions";
+  return lang === "es" ? "la Salve Regina" : "the Hail Holy Queen";
+}
+
 const OUR_FATHER = {
   es: "Padre nuestro, que estás en el cielo, santificado sea tu Nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo. Danos hoy nuestro pan de cada día; perdona nuestras ofensas, como también nosotros perdonamos a los que nos ofenden; no nos dejes caer en la tentación, y líbranos del mal. Amén.",
   en: "Our Father, who art in heaven, hallowed be thy name; thy kingdom come; thy will be done on earth as it is in heaven. Give us this day our daily bread; and forgive us our trespasses, as we forgive those who trespass against us; and lead us not into temptation, but deliver us from evil. Amen.",
@@ -171,9 +207,13 @@ function buildPages(lang, mysteryKey) {
 }
 
 export default function Rosario({ lang = "es", onHome }) {
+  const mysteryKey = todayMysteryKey();
+  // Solo se lee una vez, al montar — decide si se ofrece retomar. No se
+  // vuelve a evaluar mientras el componente vive.
+  const [savedProgress] = useState(() => loadSavedRosaryProgress(mysteryKey));
+  const [showResumePrompt, setShowResumePrompt] = useState(!!savedProgress);
   const [pageIndex, setPageIndex] = useState(0);
   const [aveCounts, setAveCounts] = useState({});
-  const mysteryKey = todayMysteryKey();
   const partTitles = SECTIONS[lang];
   const pages = buildPages(lang, mysteryKey);
   const page = pages[pageIndex];
@@ -195,6 +235,63 @@ export default function Rosario({ lang = "es", onHome }) {
   };
 
   const isComplete = page.kind === "complete";
+
+  // Guarda el progreso mientras se reza; se limpia al terminar el Rosario.
+  // No escribe mientras se espera la decisión de retomar, para no pisar el
+  // progreso guardado con el estado inicial (pageIndex 0) todavía sin confirmar.
+  useEffect(() => {
+    if (showResumePrompt) return;
+    if (isComplete) {
+      localStorage.removeItem(ROSARY_PROGRESS_KEY);
+      return;
+    }
+    localStorage.setItem(ROSARY_PROGRESS_KEY, JSON.stringify({ date: todayDateKey(), mysteryKey, pageIndex, aveCounts }));
+  }, [pageIndex, aveCounts, isComplete, showResumePrompt, mysteryKey]);
+
+  const handleResume = () => {
+    if (!savedProgress) return;
+    setPageIndex(savedProgress.pageIndex);
+    setAveCounts(savedProgress.aveCounts || {});
+    setShowResumePrompt(false);
+  };
+
+  const handleStartFresh = () => {
+    localStorage.removeItem(ROSARY_PROGRESS_KEY);
+    setShowResumePrompt(false);
+  };
+
+  if (showResumePrompt && savedProgress) {
+    const savedPage = pages[savedProgress.pageIndex] || pages[0];
+    return (
+      <div style={{ position: "relative", background: BG_MAIN, color: CREAM, minHeight: "100vh", padding: "20px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", pointerEvents: "none" }}>
+          <div style={{ width: 300, height: 500, borderRadius: "50%", background: "rgba(232,180,92,0.08)", filter: "blur(60px)" }} />
+        </div>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 340 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+            <VerticeDeLuz size={40} />
+          </div>
+          <div style={{ fontSize: 19, lineHeight: 1.6, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold", marginBottom: 32 }}>
+            {lang === "es" ? "Dejaste el Rosario en" : "You left off at"} {describeSavedPage(savedPage, lang, mysteryKey)}.
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              onClick={handleResume}
+              style={{ padding: "13px 28px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 24, fontSize: 15, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cormorant', serif", boxShadow: `0 0 24px ${GOLD}55` }}
+            >
+              {lang === "es" ? "Continuar" : "Continue"}
+            </button>
+            <button
+              onClick={handleStartFresh}
+              style={{ padding: "13px 28px", background: NAVY_DARK, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 24, fontSize: 15, cursor: "pointer", fontFamily: "'Cormorant', serif" }}
+            >
+              {lang === "es" ? "Empezar de nuevo" : "Start over"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: "relative", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
