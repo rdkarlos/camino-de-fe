@@ -6,7 +6,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPas
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
-import Devocional from "./Devocional";
+import Devocional, { getSantoHoy } from "./Devocional";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
 import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK } from "./theme";
@@ -370,6 +370,7 @@ export default function App() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [personalTab, setPersonalTab] = useState("builder");
   const [personalSection, setPersonalSection] = useState(null);
+  const [devocionalInitialTab, setDevocionalInitialTab] = useState(null);
   const [hoveredPersonalCard, setHoveredPersonalCard] = useState(null);
   const [pressedPersonalCard, setPressedPersonalCard] = useState(null);
   const [selectedMood, setSelectedMood] = useState(null);
@@ -1009,6 +1010,9 @@ export default function App() {
     const versiculoBanco = getVersiculoHoy();
     const versiculoActivo = cronVerse || versiculoBanco;
     const dailyVerse = { text: versiculoActivo.texto, ref: versiculoActivo.referencia };
+    const { santo } = getSantoHoy();
+    const oracionCard = t.home.cards[0];
+    const evangelioCard = t.home.cards[1];
     return (
       <div>
         {/* Tarjeta versículo — ancho completo, clickeable */}
@@ -1066,117 +1070,116 @@ export default function App() {
             </div>
           </>
         )}
-        {t.home.cards.map((c, i) => {
-          // Cards compactas horizontales: todas excepto Oración Personal (i=0)
-          if (i !== 0) {
-            let label, refText, preview;
-            if (i === 1) {
-              label = `✝ ${lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}`;
-              refText = gospelData ? formatRef(lang === 'en' ? gospelData?.reference : reference) : null;
-              preview = gospelData ? body.substring(0, 85) + "…" : c.desc;
-            } else {
-              label = `✝ ${c.title}`;
-              refText = null;
-              preview = c.desc;
-            }
-            const compactCard = (
-              <div onClick={() => setTab(c.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
-                {/* Imagen de fondo a 0.4 de opacidad */}
-                <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
-                {/* Gradiente de izquierda a derecha */}
-                <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, ${BG_CARD} 40%, transparent 100%)` }} />
-                {/* Contenido */}
-                <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", boxSizing: "border-box" }}>
-                  <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
-                    <div style={{ fontSize: 16, color: GOLD, fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>{label}</div>
-                    {refText && (
-                      <div style={{ fontSize: 16, color: WHITE, fontWeight: 700, fontFamily: "'Cormorant', serif", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{refText}</div>
-                    )}
-                    <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{preview}</div>
-                  </div>
-                  <div style={{ color: GOLD, fontSize: 26, fontWeight: "300", flexShrink: 0 }}>›</div>
-                </div>
-              </div>
-            );
+        {/* ── Bloque "Hoy" — contenido diario, seguido ── */}
 
-            if (i === 1) {
-              return (
-                <div key={i}>
-                  {compactCard}
-                  {/* Card especial Joven Fe */}
-                  <style>{`
-                    @keyframes goldPulse {
-                      0% { box-shadow: 0 0 0 0 rgba(232,180,92,0.4); }
-                      70% { box-shadow: 0 0 0 10px rgba(232,180,92,0); }
-                      100% { box-shadow: 0 0 0 0 rgba(232,180,92,0); }
-                    }
-                  `}</style>
-                  <div
-                    onClick={() => setTab(9)}
-                    style={{
-                      position: "relative", borderRadius: 20, minHeight: 180, overflow: "hidden", marginBottom: 14,
-                      cursor: "pointer", border: `1.5px solid ${GOLD}`, animation: "goldPulse 2s infinite",
-                      backgroundImage: "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80)",
-                      backgroundSize: "cover", backgroundPosition: "center",
-                    }}
-                  >
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(45,27,78,0.65), rgba(30,38,48,0.65))" }} />
-                    <div style={{ position: "relative", padding: "22px 20px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minHeight: 180, justifyContent: "space-between", boxSizing: "border-box" }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 8 }}>
-                          <path d="M12 2 L14.4 8.6 L21 9 L15.9 13.1 L17.7 19.6 L12 15.9 L6.3 19.6 L8.1 13.1 L3 9 L9.6 8.6 Z" fill={GOLD}/>
-                        </svg>
-                        <div style={{ fontWeight: "bold", fontSize: 28, color: GOLD, fontFamily: "'Cormorant', serif", marginBottom: 6, lineHeight: 1.2 }}>
-                          {lang === 'es' ? 'Joven Fe' : 'Youth Faith'}
-                        </div>
-                        <div style={{ fontSize: 13, lineHeight: 1.6, color: CREAM, marginBottom: 12 }}>
-                          {lang === 'es' ? 'Fe viva para jóvenes' : 'Living faith for young people'}
-                        </div>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-                          <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
-                            ✦ {lang === 'es' ? 'Retos' : 'Challenges'}
-                          </span>
-                          <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
-                            ✦ {lang === 'es' ? 'Testimonios' : 'Testimonies'}
-                          </span>
-                          <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
-                            ✦ Quiz
-                          </span>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 14, width: "100%" }}>
-                        <span style={{ display: "block", width: "100%", textAlign: "center", background: GOLD, color: NAVY, padding: "10px 18px", borderRadius: 20, fontSize: 13, fontWeight: 700, boxSizing: "border-box" }}>
-                          {lang === 'es' ? 'Explorar' : 'Explore'} →
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
+        {/* Evangelio del Día — card compacta */}
+        <div onClick={() => setTab(evangelioCard.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
+          {/* Imagen de fondo a 0.4 de opacidad */}
+          <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${evangelioCard.img})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
+          {/* Gradiente de izquierda a derecha */}
+          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, ${BG_CARD} 40%, transparent 100%)` }} />
+          {/* Contenido */}
+          <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", boxSizing: "border-box" }}>
+            <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+              <div style={{ fontSize: 16, color: GOLD, fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>✝ {lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}</div>
+              {gospelData && (
+                <div style={{ fontSize: 16, color: WHITE, fontWeight: 700, fontFamily: "'Cormorant', serif", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{formatRef(lang === 'en' ? gospelData?.reference : reference)}</div>
+              )}
+              <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{gospelData ? body.substring(0, 85) + "…" : evangelioCard.desc}</div>
+            </div>
+            <div style={{ color: GOLD, fontSize: 26, fontWeight: "300", flexShrink: 0 }}>›</div>
+          </div>
+        </div>
 
-            return <div key={i}>{compactCard}</div>;
+        {/* Santo del Día — card, abre el detalle que ya existe en Devocional */}
+        <div
+          onClick={() => { setDevocionalInitialTab('santo'); setPersonalSection('devocional'); setTab(1); }}
+          style={{
+            position: "relative", background: BG_CARD, border: `1px solid ${GOLD}66`,
+            borderRadius: 16, padding: "16px 18px", marginBottom: 16,
+            overflow: "hidden", cursor: "pointer",
+          }}
+        >
+          {/* Motivo vértice de luz — esquina superior derecha, mismo lenguaje del splash y los íconos PWA */}
+          <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(232,180,92,0.11)" }} />
+          <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(232,180,92,0.13)" }} />
+          <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: GOLD, boxShadow: `0 0 8px 2px ${GOLD}99` }} />
+
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 11, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: "bold" }}>✦ {lang === 'es' ? 'Santo del Día' : 'Saint of the Day'}</div>
+            <div style={{ fontSize: 19, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", marginBottom: 6 }}>{santo.nombre}</div>
+            <div style={{ fontSize: 12.5, color: CREAM_DARK, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{santo.bio}</div>
+            <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", marginTop: 10 }}>{lang === 'es' ? 'Conocer su vida' : "Learn about the saint"} ›</div>
+          </div>
+        </div>
+
+        {/* Separador — cierre silencioso del bloque "Hoy" */}
+        <div style={{ height: 1, background: `${CREAM_DARK}1F`, margin: "28px 0" }} />
+
+        {/* ── Bloque "Tu camino" ── */}
+
+        {/* Oración Personal — card grande */}
+        <div onClick={() => setTab(oracionCard.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${oracionCard.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(139,105,20,0.2) 0%, rgba(139,105,20,0.55) 100%)" }} />
+          <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
+            <div>
+              <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cormorant', serif", marginBottom: 5, lineHeight: 1.2 }}>{oracionCard.title}</div>
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>{oracionCard.desc}</div>
+            </div>
+            <div style={{ marginTop: 14 }}>
+              <span style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.38)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: "bold" }}>{oracionCard.btn} →</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card especial Joven Fe */}
+        <style>{`
+          @keyframes goldPulse {
+            0% { box-shadow: 0 0 0 0 rgba(232,180,92,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(232,180,92,0); }
+            100% { box-shadow: 0 0 0 0 rgba(232,180,92,0); }
           }
-          // Cards grandes: resto de secciones
-          return (
-            <div key={i} onClick={() => setTab(c.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${c.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
-              <div style={{ position: "absolute", inset: 0, background:
-                i % 2 === 0
-                  ? "linear-gradient(to bottom, rgba(139,105,20,0.2) 0%, rgba(139,105,20,0.55) 100%)"
-                  : "linear-gradient(to bottom, rgba(30,38,48,0.2) 0%, rgba(30,38,48,0.55) 100%)"
-              }} />
-              <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
-                <div>
-                  <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cormorant', serif", marginBottom: 5, lineHeight: 1.2 }}>{c.title}</div>
-                  <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>{c.desc}</div>
-                </div>
-                <div style={{ marginTop: 14 }}>
-                  <span style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.38)", padding: "6px 16px", borderRadius: 20, fontSize: 11, fontWeight: "bold" }}>{c.btn} →</span>
-                </div>
+        `}</style>
+        <div
+          onClick={() => setTab(9)}
+          style={{
+            position: "relative", borderRadius: 20, minHeight: 180, overflow: "hidden", marginBottom: 14,
+            cursor: "pointer", border: `1.5px solid ${GOLD}`, animation: "goldPulse 2s infinite",
+            backgroundImage: "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80)",
+            backgroundSize: "cover", backgroundPosition: "center",
+          }}
+        >
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(45,27,78,0.65), rgba(30,38,48,0.65))" }} />
+          <div style={{ position: "relative", padding: "22px 20px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minHeight: 180, justifyContent: "space-between", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 8 }}>
+                <path d="M12 2 L14.4 8.6 L21 9 L15.9 13.1 L17.7 19.6 L12 15.9 L6.3 19.6 L8.1 13.1 L3 9 L9.6 8.6 Z" fill={GOLD}/>
+              </svg>
+              <div style={{ fontWeight: "bold", fontSize: 28, color: GOLD, fontFamily: "'Cormorant', serif", marginBottom: 6, lineHeight: 1.2 }}>
+                {lang === 'es' ? 'Joven Fe' : 'Youth Faith'}
+              </div>
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: CREAM, marginBottom: 12 }}>
+                {lang === 'es' ? 'Fe viva para jóvenes' : 'Living faith for young people'}
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                  ✦ {lang === 'es' ? 'Retos' : 'Challenges'}
+                </span>
+                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                  ✦ {lang === 'es' ? 'Testimonios' : 'Testimonies'}
+                </span>
+                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                  ✦ Quiz
+                </span>
               </div>
             </div>
-          );
-        })}
+            <div style={{ marginTop: 14, width: "100%" }}>
+              <span style={{ display: "block", width: "100%", textAlign: "center", background: GOLD, color: NAVY, padding: "10px 18px", borderRadius: 20, fontSize: 13, fontWeight: 700, boxSizing: "border-box" }}>
+                {lang === 'es' ? 'Explorar' : 'Explore'} →
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -1628,7 +1631,7 @@ export default function App() {
           {personalCards.map(c => (
             <div
               key={c.id}
-              onClick={() => setPersonalSection(c.id)}
+              onClick={() => { if (c.id === "devocional") setDevocionalInitialTab(null); setPersonalSection(c.id); }}
               onPointerEnter={() => setHoveredPersonalCard(c.id)}
               onPointerLeave={() => { setHoveredPersonalCard(null); setPressedPersonalCard(null); }}
               onPointerDown={() => setPressedPersonalCard(c.id)}
@@ -1667,7 +1670,7 @@ export default function App() {
     }
 
     if (personalSection === "devocional") {
-      return <Devocional lang={lang} onBack={() => setPersonalSection(null)} />;
+      return <Devocional lang={lang} onBack={() => { setPersonalSection(null); setDevocionalInitialTab(null); }} initialTab={devocionalInitialTab} />;
     }
 
     return (

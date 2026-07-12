@@ -177,7 +177,7 @@ const NOVENAS = {
   ],
 };
 
-const getSantoHoy = () => {
+export const getSantoHoy = () => {
   const now = new Date();
   const colombiaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
   const month = String(colombiaTime.getMonth() + 1).padStart(2, '0');
@@ -192,8 +192,8 @@ function formatSantoFecha(key) {
   return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' }).format(d);
 }
 
-export default function Devocional({ lang = "es", onBack }) {
-  const [activeTab, setActiveTab] = useState("clasicas");
+export default function Devocional({ lang = "es", onBack, initialTab }) {
+  const [activeTab, setActiveTab] = useState(initialTab || "clasicas");
   const [expandedPrayer, setExpandedPrayer] = useState(null);
   const [expandedNovena, setExpandedNovena] = useState(null);
   const [novenaDay, setNovenaDay] = useState({});
