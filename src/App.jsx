@@ -379,6 +379,14 @@ const groupDayLabel = (days, lang) => {
   return `${labels[0]} ${lang === 'es' ? 'a' : 'to'} ${labels[labels.length - 1]}`;
 };
 
+// "2026-07-12" -> "12 de julio de 2026" (o el equivalente en inglés) — para
+// mencionar la fecha del directorio sin que suene a metadato bibliográfico.
+const formatFuenteFecha = (iso, lang) => {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
 export default function App() {
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
@@ -1261,9 +1269,6 @@ export default function App() {
                   </div>
                 );
               })}
-              <div style={{ fontSize: 11, color: MUTED, marginTop: 14 }}>
-                {parroquiaActual.fuente}{parroquiaActual.fuenteFecha ? ` · ${parroquiaActual.fuenteFecha}` : ""}
-              </div>
             </div>
           )}
         </div>
@@ -2469,6 +2474,17 @@ export default function App() {
                   </div>
                 );
               })}
+              {(() => {
+                const fuenteInfo = parroquias.find(p => p.id === userParroquiaId) || parroquias[0];
+                if (!fuenteInfo?.fuente) return null;
+                return (
+                  <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5, marginTop: 10 }}>
+                    {lang === 'es'
+                      ? `Estos horarios vienen del directorio de la Diócesis de Zipaquirá, actualizado el ${formatFuenteFecha(fuenteInfo.fuenteFecha, lang)}. Si algo cambió, escríbenos y lo corregimos.`
+                      : `These schedules come from the Diocese of Zipaquirá's directory, updated on ${formatFuenteFecha(fuenteInfo.fuenteFecha, lang)}. If something changed, let us know and we'll fix it.`}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
