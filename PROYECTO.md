@@ -32,7 +32,7 @@
 - Detalle de migración: en el SDK admin, `snapshot.exists` es PROPIEDAD (sin paréntesis), no función.
 - **Bug histórico resuelto (11 jul 2026):** el cron NUNCA había escrito por sí solo. El contenido que aparecía algunos días lo guardaba un usuario logueado al abrir "Ponlo en Práctica" (setDoc desde el navegador).
 - Disparo manual: `curl -i -H "Authorization: Bearer $CRON_SECRET" https://camino-de-fe-seven.vercel.app/api/cron-reflexion`
-- **PENDIENTE VERIFICAR:** si el cron de Vercel se dispara solo en plan Hobby. Si no: disparador externo (cron-job.org) o plan Pro.
+- ✅ VERIFICADO (12 jul 2026): el cron de Vercel SÍ se dispara solo en plan Hobby. Corrió a las 12:10am Colombia sin intervención y escribió las reflexiones del día. Si en el futuro falla la puntualidad, las opciones siguen siendo: disparador externo (cron-job.org) o plan Pro.
 
 ## Archivos clave
 - src/App.jsx — código principal (caché de lecturas, rastro de luz de Conec✝2, tarjetas de Inicio)
@@ -76,6 +76,7 @@
 - **Contador de Avemarías — "la luz que crece":** anillo de 10 cuentas alrededor del círculo central (ringRadius 104px). Rezadas en Alba sólido, pendientes al 22%. El círculo central se enciende progresivamente: alpha 0.55 → 1.0, halo 14px → 40px, transición CSS 0.4s ease. La décima cuenta culmina en resplandor pleno (aprovecha la pausa de 400ms del auto-avance).
 - **Sin contadores de pasos en texto** — solo la barra de progreso silenciosa y la insignia "✦ Hoy rezamos los: [misterios]".
 - **Textos litúrgicos: copiados LITERAL** de la Santa Sede (comillas angulares «», espaciado exacto de referencias — la fuente varía entre "Lc 1,26-27" y "Lc 1, 39-42"). No normalizar, no "mejorar".
+- NOTA: La Biblia SÍ conserva su estado de navegación entre visitas (9 estados: bibleView, bibleSelectedBook, etc.). Es deliberado — funciona como marcador de lectura: si estás en Juan 15 y sales un momento, al volver sigues en Juan 15. Es lo contrario del caso de Devocional, donde volver a entrar no cuesta nada.
 
 ## Diseño (brand book — Fases 1, 2 y 3 aplicadas)
 - Modo oscuro permanente
@@ -137,11 +138,11 @@
 - Migración a firebase-admin — cron de reflexión diaria FUNCIONANDO (bug histórico)
 - Rosario: misterios oficiales Santa Sede + pantalla de meditación + anillo "luz que crece" + zona horaria Bogotá
 - Inicio: bloque "Hoy" con Santo del Día
+- Navegación: goToTab() centralizado resetea sub-estados; Rosario persiste en localStorage y ofrece retomar
 
 ## Pendiente
 ### Inmediato
-- **Verificar que el cron se dispare solo** (plan Hobby). Si no: cron-job.org o plan Pro.
-- **Navegación: reiniciar estado al volver a una sección.** Hoy si entras a Oración → Devocional, sales y vuelves, te deja en Devocional. Debe arrancar limpio. EXCEPCIÓN: el Rosario en curso debe OFRECER retomar ("¿Continuar donde lo dejaste?"), no retomar en silencio. OJO: un Rosario a medias de ayer NO debe ofrecerse hoy (los misterios cambian cada día).
+
 
 ### Contenido
 - Devocional — Novenas (días 2-9 de las 4 restantes). El texto debe venir de fuente católica confiable, NO generado.
@@ -156,6 +157,18 @@
 - Notificaciones push REALES del sistema (app cerrada) — fase 2 del rastro de luz. Compleja: permisos, tokens, iOS PWA.
 - Aviso "están orando por tu intención" — señal DISTINTA al rastro actual, diseñarla como fase propia
 - Monetización — **Fase 0 pendiente: definir modelo.** Dirección elegida: productos con nombre propio (Cumbre = retiros, Aurora = música), no "premium de la app". Lo esencial siempre gratis. ANTES de cobrar: cerrar reglas de Firestore (ver Seguridad).
+
+### Distribución — pendiente estratégico
+- Hoy Lumora es PWA instalable, pero SIN presencia en tiendas.
+- **Problema real:** en iPhone, instalar una PWA requiere 5 pasos ocultos en Safari (Compartir → Añadir a pantalla de inicio). Apple NO permite botón de instalación. La mayoría de usuarios iOS probablemente nunca la instalan.
+- En Android sí se puede: evento `beforeinstallprompt` permite un botón propio de "Instalar Lumora".
+- **Paso intermedio posible:** guía de instalación in-app que detecte el dispositivo y muestre los pasos correctos (con el ícono de Compartir dibujado, no descrito). Mostrarla a usuarios recurrentes, no a recién llegados.
+- **Solución de raíz:** empaquetar la PWA para tiendas (Bubblewrap para Android, Capacitor para ambos). Reutiliza el código React actual.
+  - Costos: cuenta Apple ~$99/año, Google Play ~$25 una vez.
+  - Apple rechaza "webs envueltas" — hay que agregar valor nativo (push, funciones del dispositivo).
+  - OJO MONETIZACIÓN: si se vende contenido dentro de la app, Apple/Google cobran 15-30% de comisión. Afecta la economía del premium.
+- **Orden recomendado:** terminar contenido → cerrar seguridad Firestore → validar con usuarios por PWA → entonces empaquetar.
+- Ventaja actual de la PWA: el despliegue es instantáneo (push → Vercel → usuarios). En tiendas, cada actualización pasa por revisión.
 
 ### Técnico / mejoras defensivas
 - Caché lecturas: reconsiderar sessionStorage; evaluar localStorage por fecha
@@ -176,6 +189,7 @@
 - Fix salmos + fallback + validación de caché
 - Versículo del día (banco 365 + cron)
 - Conec✝2 rastro de luz
-- Migración firebase-admin — cron funcionando
+- - Migración firebase-admin — cron funcionando y VERIFICADO en producción (se dispara solo)
 - Rosario alineado a Santa Sede (misterios, meditación, anillo, zona horaria)
 - Santo del Día en Inicio + bloque "Hoy"
+- Navegación: reset de estado al cambiar de sección + retomar Rosario en curso (localStorage, anclado a Bogotá, no ofrece rosarios de otro día)
