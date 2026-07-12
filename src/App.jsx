@@ -1027,7 +1027,7 @@ export default function App() {
           }}
         >
           <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
-          <div style={{ fontSize: 11, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: "bold" }}>✦ {lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+          <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
           <div style={{ fontSize: 15, fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
           <div style={{ fontSize: "0.8rem", color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {formatRef(dailyVerse.ref)}</div>
         </div>
@@ -1106,7 +1106,7 @@ export default function App() {
           <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: GOLD, boxShadow: `0 0 8px 2px ${GOLD}99` }} />
 
           <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 11, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: "bold" }}>✦ {lang === 'es' ? 'Santo del Día' : 'Saint of the Day'}</div>
+            <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Santo del Día' : 'Saint of the Day'}</div>
             <div style={{ fontSize: 19, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", marginBottom: 6 }}>{santo.nombre}</div>
             <div style={{ fontSize: 12.5, color: CREAM_DARK, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{santo.bio}</div>
             <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", marginTop: 10 }}>{lang === 'es' ? 'Conocer su vida' : "Learn about the saint"} ›</div>
@@ -1123,7 +1123,7 @@ export default function App() {
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(139,105,20,0.2) 0%, rgba(139,105,20,0.55) 100%)" }} />
           <div style={{ position: "relative", padding: "20px 20px 18px", color: WHITE, display: "flex", flexDirection: "column", minHeight: 140, justifyContent: "space-between", boxSizing: "border-box" }}>
             <div>
-              <div style={{ fontWeight: "bold", fontSize: 17, fontFamily: "'Cormorant', serif", marginBottom: 5, lineHeight: 1.2 }}>{oracionCard.title}</div>
+              <div style={{ fontWeight: 700, fontSize: 16, color: GOLD, marginBottom: 5, lineHeight: 1.2 }}>{oracionCard.title}</div>
               <div style={{ fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>{oracionCard.desc}</div>
             </div>
             <div style={{ marginTop: 14 }}>

@@ -21,148 +21,161 @@
 ## Flujo de traducción de lecturas (importante)
 - Universalis entrega TODO en inglés: evangelio, primera lectura, segunda lectura y salmo.
 - Inglés (lang=en): usa el texto y referencia de Universalis directo.
-- Español (lang=es): toma la referencia inglesa, la convierte a ID de pasaje con parseRef(), y pide la traducción a API.Bible. Las 4 secciones dependen de que parseRef() traduzca bien la referencia.
+- Español (lang=es): toma la referencia inglesa, la convierte a ID de pasaje con parseRef(), y pide la traducción a API.Bible.
 - parseRef() maneja numeración alterna de salmos con paréntesis y letra de capítulo (ej. "Psalm 113B(115)" → Salmo 115, numeración hebrea de LBLA). El número entre paréntesis es el correcto para API.Bible.
-- Fallback: si parseRef() no logra traducir, se muestra mensaje sereno "Esta lectura aún no está disponible en español" + toggle opcional "Ver en inglés" (no inglés crudo por defecto).
+- Fallback: si parseRef() no logra traducir, mensaje sereno "Esta lectura aún no está disponible en español" + toggle "Ver en inglés".
 
 ## Cron de reflexión diaria — arquitectura (IMPORTANTE)
 - api/cron-reflexion.js y api/spiritual-guide.js usan **firebase-admin** (SDK de servidor), NO el SDK de cliente.
-- Motivo: el SDK de cliente corre anónimo en funciones serverless y Firestore lo rechaza (las reglas exigen request.auth). El SDK admin omite las reglas por diseño — es código de confianza en el servidor.
-- Credencial: `FIREBASE_SERVICE_ACCOUNT_BASE64` en Vercel (cuenta de servicio de Firebase, JSON codificado en base64). NUNCA en el repo — .gitignore protege `*firebase-adminsdk*.json`, `serviceAccountKey.json`, `service-account*.json`, `*-base64.txt`.
-- Detalle de migración: en el SDK admin, `snapshot.exists` es PROPIEDAD (sin paréntesis), no función como en el SDK de cliente. Compila igual pero explota en runtime.
-- **Bug histórico resuelto (11 jul 2026):** el cron NUNCA había escrito por sí solo — fallaba con "Missing or insufficient permissions" desde siempre. El contenido que aparecía algunos días lo guardaba en realidad un usuario logueado al abrir "Ponlo en Práctica" (setDoc desde el navegador, con auth real). Eso explicaba el patrón errático de días con y sin reflexión.
-- Disparo manual (diagnóstico): `curl -i -H "Authorization: Bearer $CRON_SECRET" https://camino-de-fe-seven.vercel.app/api/cron-reflexion`
-- **PENDIENTE VERIFICAR:** si el cron de Vercel realmente se dispara solo en plan Hobby (los crons de Hobby no garantizan puntualidad ni confiabilidad). Si no corre solo: opciones son disparador externo gratuito (cron-job.org llamando al endpoint con el CRON_SECRET) o subir a plan Pro.
+- Motivo: el SDK de cliente corre anónimo en funciones serverless y Firestore lo rechaza. El SDK admin omite las reglas por diseño.
+- Credencial: `FIREBASE_SERVICE_ACCOUNT_BASE64` en Vercel. NUNCA en el repo (.gitignore protege `*firebase-adminsdk*.json`, `serviceAccountKey.json`, `service-account*.json`, `*-base64.txt`).
+- Detalle de migración: en el SDK admin, `snapshot.exists` es PROPIEDAD (sin paréntesis), no función.
+- **Bug histórico resuelto (11 jul 2026):** el cron NUNCA había escrito por sí solo. El contenido que aparecía algunos días lo guardaba un usuario logueado al abrir "Ponlo en Práctica" (setDoc desde el navegador).
+- Disparo manual: `curl -i -H "Authorization: Bearer $CRON_SECRET" https://camino-de-fe-seven.vercel.app/api/cron-reflexion`
+- **PENDIENTE VERIFICAR:** si el cron de Vercel se dispara solo en plan Hobby. Si no: disparador externo (cron-job.org) o plan Pro.
 
 ## Archivos clave
-- src/App.jsx — código principal (incluye caché de lecturas en sessionStorage y la lógica del rastro de luz de Conec✝2)
-- src/theme.js — paleta de colores centralizada (única fuente de verdad)
-- src/index.css — variables CSS globales de la paleta
-- src/VerticeDeLuz.jsx — componente SVG del vértice de luz (motivo de marca; usado en splash, íconos y "Ponlo en Práctica")
-- src/Rosario.jsx — Santo Rosario completo
-- src/Devocional.jsx — Devocional: oraciones clásicas, novenas, santo del día
-- src/santos.js — calendario de 365 santos
-- src/versiculos.js — banco de 365 versículos bíblicos
+- src/App.jsx — código principal (caché de lecturas, rastro de luz de Conec✝2, tarjetas de Inicio)
+- src/theme.js — paleta centralizada (única fuente de verdad)
+- src/index.css — variables CSS globales
+- src/VerticeDeLuz.jsx — componente SVG del vértice de luz (motivo de marca)
+- src/Rosario.jsx — Santo Rosario (alineado a fuente oficial Santa Sede)
+- src/Devocional.jsx — oraciones clásicas, novenas, santo del día (exporta getSantoHoy, acepta prop initialTab)
+- src/santos.js — 366 santos, cada uno con campo `bio` (62-133 caracteres)
+- src/versiculos.js — banco de 365 versículos
 - src/JovenFe.jsx — sección Joven Fe
 - src/products.js — productos tienda
-- api/gospel.js — evangelio y lecturas (Universalis + traducción API.Bible + parseRef + fallback)
-- api/spiritual-guide.js — "Ponlo en Práctica" IA (sacerdote católico) + limpieza de reflexiones viejas (usa firebase-admin)
-- api/cron-reflexion.js — Cron Job diario 12:10am Colombia: genera reflexión + versículo del día (usa firebase-admin)
+- api/gospel.js — evangelio y lecturas (Universalis + API.Bible + parseRef + fallback)
+- api/spiritual-guide.js — "Ponlo en Práctica" IA + limpieza de reflexiones viejas (firebase-admin)
+- api/cron-reflexion.js — Cron diario 12:10am Colombia: reflexión + versículo (firebase-admin)
 - api/order.js — pagos Wompi
 - api/confirm-payment.js — emails Resend
 - public/sw.js — service worker v17 (network-first)
 - public/manifest.json — PWA config
-- vercel.json — configuración cron jobs (schedule: "10 5 * * *" = 5:10 UTC = 00:10 Colombia)
+- vercel.json — cron jobs (schedule "10 5 * * *" = 5:10 UTC = 00:10 Colombia)
 
 ## Secciones
-1. Inicio — versículo del día premium, saludo login, cards modo oscuro, splash screen, onboarding
-2. Oración Personal — 3 cards: Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2 con rastro de luz de intenciones nuevas), Santo Rosario, Devocional
-3. Evangelio — con "Ponlo en Práctica" (vértice de luz), skeleton loader
-4. La Biblia — LBLA, navegación por categorías + buscador
+1. **Inicio** — Bloque "Hoy": Versículo del Día → Evangelio del Día → Santo del Día. Separador. Bloque "Tu camino": Oración Personal → Joven Fe
+2. Oración Personal — Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Santo Rosario, Devocional
+3. Evangelio — "Ponlo en Práctica" (vértice de luz), skeleton loader
+4. La Biblia — LBLA, categorías + buscador
 5. Lecturas del día
-6. Santo Rosario — 4 partes, 35 pantallas, misterios del día automáticos, contador Ave Marías
-7. Devocional — Oraciones Clásicas (12), Novenas (5, contenido días 2-9 pendiente), Santo del Día (365 santos)
+6. Santo Rosario — ver sección dedicada abajo
+7. Devocional — Oraciones Clásicas (12), Novenas (5, días 2-9 pendientes), Santo del Día (366 santos)
 8. Tienda — en construcción
 9. Configuración
 10. Joven Fe — Retos de Fe (30 días), Testimonios, Quiz Bíblico
 
+## Santo Rosario — alineado a fuente oficial (Santa Sede)
+- Fuente: vatican.va — nombres oficiales de los 20 misterios + citas bíblicas
+- **Misterio del día anclado a America/Bogota** (bug corregido: antes usaba `new Date().getDay()`, la hora del dispositivo). Implementado con `Intl.DateTimeFormat('en-US', { timeZone: 'America/Bogota', weekday: 'short' })` — locale fijo en en-US para que no dependa del idioma del dispositivo.
+  - Lunes/sábado: gozosos · Martes/viernes: dolorosos · Miércoles/domingo: gloriosos · Jueves: luminosos
+- **Estructura por misterio (español), 6 pasos:** Anuncio (nombre oficial) → **Meditación (cita bíblica)** → Padre Nuestro → 10 Ave Marías → Gloria → Jaculatoria. Total: 40 pantallas.
+- **Inglés: 5 pasos, SIN meditación** — pendiente conseguir las citas bíblicas oficiales en inglés. NO inventar traducciones.
+- **Pantalla de meditación:** sin header, cita en cursiva (Work Sans, interlineado 2.0), referencia discreta al pie, VerticeDeLuz arriba, resplandor de fondo intensificado (0.06 → 0.14). Sin auto-avance ni prisa.
+- **Contador de Avemarías — "la luz que crece":** anillo de 10 cuentas alrededor del círculo central (ringRadius 104px). Rezadas en Alba sólido, pendientes al 22%. El círculo central se enciende progresivamente: alpha 0.55 → 1.0, halo 14px → 40px, transición CSS 0.4s ease. La décima cuenta culmina en resplandor pleno (aprovecha la pausa de 400ms del auto-avance).
+- **Sin contadores de pasos en texto** — solo la barra de progreso silenciosa y la insignia "✦ Hoy rezamos los: [misterios]".
+- **Textos litúrgicos: copiados LITERAL** de la Santa Sede (comillas angulares «», espaciado exacto de referencias — la fuente varía entre "Lc 1,26-27" y "Lc 1, 39-42"). No normalizar, no "mejorar".
+
 ## Diseño (brand book — Fases 1, 2 y 3 aplicadas)
 - Modo oscuro permanente
 - Paleta oficial (6 colores canónicos):
-  - Noche #1E2630 — fondo principal
-  - Card #28313D — tarjetas
-  - Luz del Alba #E8B45C — dorado principal
-  - Lino #F5F1E8 — texto
-  - Cielo #7E97AB — textos secundarios, subtítulos, iconos inactivos
-  - Piedra #B8AE9C — bordes, divisores, estados neutros
-- Tonos derivados (no oficiales del brand book): ALBA_LIGHT #EEC785, ALBA_DARK #A0711F, NOCHE_DARK #151B22
-- Header: fundido con el fondo (sólido Noche) + borde inferior 1px Piedra al 20%
-- Colores centralizados: src/theme.js (JS) + :root en src/index.css (CSS) — todo cambio de paleta se hace SOLO ahí
-- Tipografía: Cormorant 500/600 (títulos), Work Sans 400/500 (textos e interfaz)
-- theme-color: #1E2630 (index.html y manifest.json)
-- background_color del manifest: #1E2630 (arranque oscuro sin flash)
-- Motivo de marca "vértice de luz": punto cálido en Alba con halo radial (src/VerticeDeLuz.jsx, IDs de gradiente únicos vía useId)
-- Íconos PWA: vértice de luz sobre degradado noche ascendente (favicon.svg, icon-192.png, icon-512.png), sin cruz ni texto
-- Splash: degradado tres paradas (resplandor cálido → Noche → Noche oscuro) + fade-in del vértice, "Lumora" en Cormorant
-- Tono de textos: tuteo, invitar sin ordenar, español neutro, sin emojis pictóricos en interfaz (se conservan símbolos minimalistas ✦ ✝ ♡ ✓)
-- Íconos SVG minimalistas católicos
-- Micro-animaciones entre secciones
-- Skeleton loader en Evangelio
+  - Noche #1E2630 · Card #28313D · Luz del Alba #E8B45C · Lino #F5F1E8 · Cielo #7E97AB · Piedra #B8AE9C
+- Derivados (no oficiales): ALBA_LIGHT #EEC785, ALBA_DARK #A0711F, NOCHE_DARK #151B22
+- Header: fundido con el fondo + borde inferior 1px Piedra al 20%
+- Colores centralizados: src/theme.js (JS) + :root en src/index.css (CSS)
+- Tipografía: Cormorant 500/600 (títulos), Work Sans 400/500 (interfaz)
+- theme-color y background_color: #1E2630
+- Motivo "vértice de luz": punto cálido en Alba con halo radial (VerticeDeLuz.jsx, IDs únicos vía useId)
+- Íconos PWA y splash con el vértice de luz
+- Tono: tuteo, invitar sin ordenar, español neutro, sin emojis pictóricos (símbolos ✦ ✝ ♡ ✓ sí)
+
+## Inicio — estructura de tarjetas
+- **Bloque "Hoy"** (contenido diario, agrupado): Versículo del Día → Evangelio del Día → Santo del Día
+- **Separador**: línea 1px Piedra al 12%
+- **Bloque "Tu camino"**: Oración Personal → Joven Fe
+- **Tarjeta Santo del Día** (nueva): SIN imagen de fondo — usa el motivo del vértice de luz (círculos concéntricos difusos en Alba, esquina superior derecha). Decisión deliberada: evita necesitar 366 imágenes con derechos, y es coherente con el brand book ("el peso simbólico lo lleva la luz, no el catálogo religioso"). Muestra nombre + bio (line-clamp 2 líneas) + "Conocer su vida ›"
+- Al tocar la tarjeta, abre Devocional con el tab "Santo del Día" ya activo (prop `initialTab`). El Santo del Día **sigue existiendo en Devocional** — es una segunda puerta, no un traslado. Verificado: no hay fuga de estado entre las dos rutas.
+- Evangelio, Oración Personal y Joven Fe conservan sus imágenes de fondo
 
 ## Conec✝2 — Rastro de luz (avisos in-app de intenciones nuevas)
-- Notificación DENTRO de la app (no push del sistema, no permisos, no service worker).
-- Un punto de luz cálido (Alba, estilo vértice de luz — LightDot, un <span> con glow) se enciende guiando al usuario hasta la novedad, en 4 niveles continuos: Inicio ("Oración") → Oración Personal (tarjeta "Mi Oración") → Conec✝2 → círculo específico.
-- Variante elegida: solo punto, sin número (más sereno; además es un booleano simple "¿hay algo nuevo?").
-- Regla honesta: el rastro se apaga SOLO al abrir el círculo con la novedad (no antes, aunque el usuario entre a la sección o a la lista). Intenciones propias nunca encienden el punto.
+- Notificación DENTRO de la app (no push, no permisos, no service worker)
+- Punto de luz (LightDot) en 4 niveles: Inicio ("Oración") → Oración Personal ("Mi Oración") → Conec✝2 → círculo específico
+- Sin número, solo punto (booleano "¿hay algo nuevo?")
+- **Regla honesta:** se apaga SOLO al abrir el círculo con la novedad. Intenciones propias nunca lo encienden.
 - Modelo de datos:
-  - usuarios/{uid}.circleLastSeen: { [circleId]: Timestamp } — última visita por círculo (mapa; se lee entero en 1 sola lectura)
-  - circulos/{id}.ultimaIntencionFecha + ultimaIntencionAutorId — para el chequeo barato sin consultar cada círculo (se escriben en addIntencion)
-  - Backfill: círculos sin lastSeen se marcan "vistos ahora" al cargar (no inunda con intenciones viejas)
-  - markCircleSeen(circleId) conectado en openCircle, createCircle, joinCircleByCode, joinPublicCircle
-- Costo: 1 lectura extra al cargar (el doc usuarios/{uid}); las lecturas de círculos ya ocurrían, solo se adelantan.
-- Segunda pasada condicional: al entrar a la lista de círculos, para círculos marcados "sospechosos" por el chequeo barato, consulta chica (fecha > lastSeen, limit 3, sin índice compuesto) para cerrar el hueco donde la intención propia podría "tapar" una ajena sin ver. En día sin actividad: cero lecturas extra.
-- Auto-refresco: al volver la app a primer plano (visibilitychange → visible), con throttle de 3 min (useRef). Sin onSnapshot, sin temporizador de fondo.
-- Helpers en App.jsx: toMillisSafe, circleLooksNew, LightDot; estado circleLastSeen / circleLastSeenLoaded / confirmedNewCircles; hasAnyNewCircleActivity (useMemo).
-- Reglas de Firestore: se agregó match explícito para el documento usuarios/{userId} (el wildcard /{document=**} NO cubre el doc raíz).
+  - usuarios/{uid}.circleLastSeen: { [circleId]: Timestamp } — mapa, 1 sola lectura
+  - circulos/{id}.ultimaIntencionFecha + ultimaIntencionAutorId — chequeo barato sin consultar cada círculo
+  - Backfill: círculos sin lastSeen se marcan "vistos ahora" al cargar
+- Costo: 1 lectura extra al cargar
+- Segunda pasada condicional: al entrar a la lista, para círculos "sospechosos", consulta chica (fecha > lastSeen, limit 3, sin índice compuesto) — cierra el hueco donde la intención propia podría tapar una ajena
+- Auto-refresco: visibilitychange → visible, throttle 3 min. Sin onSnapshot.
+- Reglas de Firestore: match explícito para el doc usuarios/{userId} (el wildcard /{document=**} NO cubre el doc raíz)
 
 ## Brand book — plan de ejecución
-- ✅ Fase 1 — paleta nueva + tipografía (Cormorant/Work Sans) + centralización en theme.js
-- ✅ Fase 2 — degradado noche→alba en splash, vértice de luz como motivo e ícono PWA, background_color del manifest a #1E2630
-- ✅ Fase 3 — revisión de textos y tono (tutear, invitar sin ordenar), corderito 🐑 → vértice de luz, retiro de emojis pictóricos, service worker a v17
-- ⬜ Fase 4 (opcional) — reemplazar emojis ilustrativos grandes de pantallas vacías (📖 🙏 🌍 🔑 🕯️ ✝️ 👥) por SVG minimalistas propios
+- ✅ Fase 1 — paleta + tipografía + centralización en theme.js
+- ✅ Fase 2 — splash, vértice de luz, íconos PWA
+- ✅ Fase 3 — textos y tono, retiro de emojis pictóricos, sw v17
+- ⬜ Fase 4 (opcional) — emojis ilustrativos de pantallas vacías (📖 🙏 🌍 🔑 🕯️ ✝️ 👥) → SVG propios
 
 ## Variables de entorno en Vercel
-- ANTHROPIC_API_KEY — API de Anthropic
-- CRON_SECRET — autenticación del cron job (rotar periódicamente)
-- FIREBASE_SERVICE_ACCOUNT_BASE64 — cuenta de servicio de Firebase en base64 (credencial privilegiada, acceso total al proyecto)
+- ANTHROPIC_API_KEY
+- CRON_SECRET — autenticación del cron (rotado 11 jul 2026)
+- FIREBASE_SERVICE_ACCOUNT_BASE64 — cuenta de servicio (credencial privilegiada, acceso total)
+- IMPORTANTE: cambios en env vars requieren REDEPLOY para tomar efecto
 
 ## Contexto
 - Carlos, Colombia, católico
 - Claude Code para modificaciones directas
-- Git + GitHub para versiones
-- Deploy automático en Vercel con cada push
-- IMPORTANTE: cambios en variables de entorno de Vercel requieren REDEPLOY para tomar efecto
+- Git + GitHub · Deploy automático en Vercel con cada push
+- Buena práctica: `git diff` antes del push para revisar qué se sube
 
 ## Historial de cambios relevantes
-- Brand book Fases 1-3 aplicadas (paleta, tipografía, vértice de luz, tono, emojis)
-- Fix salmos con capítulo-letra (ej. "Psalm 113B(115)" → Salmo 115) en parseRef() — el bug era de parseRef() en general, afectaba a las 4 lecturas
-- Fallback sereno + "Ver en inglés" cuando parseRef() no traduce
-- Validación de caché: solo se cachea en sessionStorage si la traducción al español es válida (looksSpanish). Clave gospel_v3 → gospel_v4
-- Conec✝2 rastro de luz: avisos in-app de intenciones nuevas en 4 niveles. Reglas de Firestore ajustadas (match explícito de usuarios/{userId})
-- Migración a firebase-admin en cron-reflexion.js y spiritual-guide.js — resuelve que el cron NUNCA había funcionado (ver sección dedicada arriba)
+- Brand book Fases 1-3
+- Fix salmos con capítulo-letra en parseRef() + fallback sereno + validación de caché (gospel_v4)
+- Conec✝2 rastro de luz (4 niveles)
+- Migración a firebase-admin — cron de reflexión diaria FUNCIONANDO (bug histórico)
+- Rosario: misterios oficiales Santa Sede + pantalla de meditación + anillo "luz que crece" + zona horaria Bogotá
+- Inicio: bloque "Hoy" con Santo del Día
 
 ## Pendiente
-### Verificar (inmediato)
-- ¿El cron de Vercel se dispara solo en plan Hobby? Confirmar mañana que reflexiones/{fecha}_es y _en aparezcan sin intervención manual. Si no: disparador externo (cron-job.org) o plan Pro.
-- Rotar CRON_SECRET (quedó expuesto en texto plano durante el diagnóstico)
+### Inmediato
+- **Verificar que el cron se dispare solo** (plan Hobby). Si no: cron-job.org o plan Pro.
+- **Navegación: reiniciar estado al volver a una sección.** Hoy si entras a Oración → Devocional, sales y vuelves, te deja en Devocional. Debe arrancar limpio. EXCEPCIÓN: el Rosario en curso debe OFRECER retomar ("¿Continuar donde lo dejaste?"), no retomar en silencio. OJO: un Rosario a medias de ayer NO debe ofrecerse hoy (los misterios cambian cada día).
 
 ### Contenido
-- Devocional — Novenas (contenido días 2-9 de las 4 novenas restantes). IMPORTANTE: el texto debe venir de fuente católica confiable, no generado — es oración litúrgica que la gente reza palabra por palabra.
+- Devocional — Novenas (días 2-9 de las 4 restantes). El texto debe venir de fuente católica confiable, NO generado.
 - Joven Fe — Testimonios y Quiz Bíblico
 - Diario de Gracias
 - Compartir reflexión en redes sociales
+- Rosario: citas bíblicas oficiales en INGLÉS (fuente: vatican.va en inglés)
+- Rosario: evaluar agregar "Dios mío, ven en mi auxilio" al inicio (la fuente lo incluye, la app no)
+- Rosario: evaluar letanías lauretanas al final (la fuente las incluye, la app no)
 
 ### Funcionalidad — ideas a futuro
-- Notificaciones push REALES del sistema (app cerrada) — la "fase 2" del rastro de luz. Más compleja: permisos, tokens por dispositivo, service worker, limitaciones en iOS PWA.
-- Aviso "están orando por tu intención": notificar al autor cuando otros marcan "estoy orando". Señal de naturaleza DISTINTA al rastro actual (avisa "algo bueno pasó con lo tuyo", no "hay algo que ver") — diseñarla como fase propia con su propio indicador. Requiere modelo de datos aparte.
+- Notificaciones push REALES del sistema (app cerrada) — fase 2 del rastro de luz. Compleja: permisos, tokens, iOS PWA.
+- Aviso "están orando por tu intención" — señal DISTINTA al rastro actual, diseñarla como fase propia
+- Monetización — **Fase 0 pendiente: definir modelo.** Dirección elegida: productos con nombre propio (Cumbre = retiros, Aurora = música), no "premium de la app". Lo esencial siempre gratis. ANTES de cobrar: cerrar reglas de Firestore (ver Seguridad).
 
 ### Técnico / mejoras defensivas
-- Caché lecturas (reforma de fondo, baja prioridad): reconsiderar sessionStorage; evaluar localStorage por fecha con lógica de refresco.
-- Consistencia fallback Evangelio: hoy lanza error 500 si falla su traducción, en vez del fallback sereno "Ver en inglés" que ya tienen las otras 3 lecturas.
-- Limpieza (baja prioridad): código muerto en translations.es/en (rosary, prayers parcial, home.greeting/reminder).
+- Caché lecturas: reconsiderar sessionStorage; evaluar localStorage por fecha
+- Consistencia fallback Evangelio: hoy lanza error 500 si falla su traducción, las otras 3 lecturas tienen fallback sereno
+- Limpieza (baja prioridad): código muerto en translations.es/en
 
-### Seguridad Firestore (no urgente)
-- Reglas de circulos e intenciones son abiertas (circulos: allow read: if true, update: if request.auth != null; intenciones: allow read: if true, write: if request.auth != null). Cualquier usuario autenticado puede editar/borrar intenciones de cualquier círculo, sea miembro o no. NO lo introdujo el rastro de luz (ya era así). Endurecer cuando se aborde seguridad a fondo.
-- reflexiones: allow read/write: if true — también abierto, revisar en el mismo pase.
-- Nota: el SDK admin del cron NO depende de estas reglas, así que endurecerlas no rompería el cron.
+### Seguridad Firestore (no urgente, pero OBLIGATORIO antes de monetizar)
+- Reglas de circulos e intenciones abiertas: cualquier usuario autenticado puede editar/borrar intenciones de cualquier círculo, sea miembro o no
+- reflexiones: allow read/write: if true — abierto
+- El SDK admin del cron NO depende de estas reglas, así que endurecerlas no lo rompería
 
 ### Infraestructura
-- Wompi producción (hoy en modo test)
+- Wompi producción (hoy en test)
 - Dominio propio (candidato: amorae.org)
 
 ### Hecho ✅
 - Brand book Fases 1-3
-- Fix salmos capítulo-letra + fallback + validación de caché
-- Versículo del día — banco 365 conectado + cron genera versículo desde evangelio
-- Conec✝2 rastro de luz (avisos in-app de intenciones nuevas)
-- Migración a firebase-admin — cron de reflexión diaria FUNCIONANDO (arreglo de bug histórico)
+- Fix salmos + fallback + validación de caché
+- Versículo del día (banco 365 + cron)
+- Conec✝2 rastro de luz
+- Migración firebase-admin — cron funcionando
+- Rosario alineado a Santa Sede (misterios, meditación, anillo, zona horaria)
+- Santo del Día en Inicio + bloque "Hoy"
