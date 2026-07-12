@@ -11,6 +11,7 @@ import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
 import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK } from "./theme";
 import VerticeDeLuz from "./VerticeDeLuz";
+import { generateLambShareImage, gospelExcerpt } from "./shareImage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -444,6 +445,7 @@ export default function App() {
   const [lambLoading, setLambLoading] = useState(false);
   const [lambText, setLambText] = useState("");
   const [lambCopied, setLambCopied] = useState(false);
+  const [lambImageSaved, setLambImageSaved] = useState(false);
   const [lambPos, setLambPos] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('lambPosition'));
@@ -848,6 +850,42 @@ export default function App() {
   };
 
   const handleShareLamb = async () => {
+    const { body } = gospelData ? cleanGospelText(gospelData.text) : { body: '' };
+    const quoteText = gospelExcerpt(body);
+    const quoteRef = gospelData?.reference ? formatRef(gospelData.reference) : '';
+
+    let blob = null;
+    try {
+      blob = await generateLambShareImage({ reflectionMarkdown: lambText, quoteText, quoteRef });
+    } catch (e) {
+      console.log('[lamb] no se pudo generar la imagen, comparto como texto:', e.message);
+    }
+
+    if (blob) {
+      const file = new File([blob], 'lumora-ponlo-en-practica.png', { type: 'image/png' });
+      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Ponlo en Práctica — Lumora' });
+          return;
+        } catch (e) {
+          if (e?.name === 'AbortError') return;
+        }
+      }
+      // El dispositivo no soporta compartir archivos: descarga serena de la imagen.
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lumora-ponlo-en-practica.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      setLambImageSaved(true);
+      setTimeout(() => setLambImageSaved(false), 2600);
+      return;
+    }
+
+    // La imagen no pudo generarse: comportamiento anterior, compartir/copiar texto.
     const shareData = {
       title: 'Ponlo en Práctica — Lumora',
       text: lambText,
@@ -3124,11 +3162,11 @@ export default function App() {
                 onClick={handleShareLamb}
                 style={{ marginTop: 18, width: "100%", padding: "11px", background: "none", color: GOLD, border: `1.5px solid ${GOLD}`, borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
               >
-                {lambCopied
+                {lambImageSaved
+                  ? (lang === 'es' ? '✓ Imagen guardada' : '✓ Image saved')
+                  : lambCopied
                   ? (lang === 'es' ? '✓ Copiado' : '✓ Copied')
-                  : (typeof navigator !== 'undefined' && navigator.share
-                      ? (lang === 'es' ? '↗ Compartir' : '↗ Share')
-                      : (lang === 'es' ? '⧉ Copiar' : '⧉ Copy'))}
+                  : (lang === 'es' ? '↗ Compartir' : '↗ Share')}
               </button>
             )}
             <button
