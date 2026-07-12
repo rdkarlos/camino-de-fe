@@ -175,10 +175,15 @@
 - Consistencia fallback Evangelio: hoy lanza error 500 si falla su traducción, las otras 3 lecturas tienen fallback sereno
 - Limpieza (baja prioridad): código muerto en translations.es/en
 
-### Seguridad Firestore (no urgente, pero OBLIGATORIO antes de monetizar)
-- Reglas de circulos e intenciones abiertas: cualquier usuario autenticado puede editar/borrar intenciones de cualquier círculo, sea miembro o no
-- reflexiones: allow read/write: if true — abierto
-- El SDK admin del cron NO depende de estas reglas, así que endurecerlas no lo rompería
+## Seguridad Firestore — reglas endurecidas (12 jul 2026) ✅
+- **usuarios/{uid} y subcolecciones:** solo el propio usuario (read/write si request.auth.uid == userId)
+- **reflexiones y versiculos:** lectura pública (contenido devocional, visible sin cuenta), **escritura BLOQUEADA** (`allow write: if false`). Solo el servidor escribe, vía firebase-admin (que omite las reglas por diseño).
+  - Nota: el fallback donde un visitante anónimo guardaba la reflexión tras apretar el corderito ya no funciona. No importa: el cron la pre-genera cada noche (verificado).
+- **circulos:** lectura pública (necesaria para unirse por código y ver públicos). Create solo si el creador se incluye a sí mismo. Update limitado a `hasOnly(['miembros', 'ultimaIntencionFecha', 'ultimaIntencionAutorId'])` y solo para miembros o quien se está uniendo. Delete solo el creador.
+- **circulos/{id}/intenciones:** SOLO miembros del círculo pueden leer/escribir. Create requiere que `autorId == request.auth.uid`. Delete: el autor, o el creador del círculo (modera).
+- Funciones auxiliares en las reglas: `estaAutenticado()`, `esMiembro(circuloId)`, `esCreador(circuloId)` — estas dos últimas hacen una lectura extra del doc del círculo (costo despreciable a estos volúmenes).
+- **Verificado en producción:** sin cuenta se ve versículo/evangelio/lecturas; con cuenta funcionan círculos, intenciones, rastro de luz y moderación del creador.
+- **Cimiento listo para parroquias** — el modelo de permisos por membresía ya está probado.
 
 ### Infraestructura
 - Wompi producción (hoy en test)
