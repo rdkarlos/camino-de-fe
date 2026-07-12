@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NOCHE, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, NOCHE_DARK } from "./theme";
+import VerticeDeLuz from "./VerticeDeLuz";
 
 const BG_MAIN = NOCHE;
 const GOLD = ALBA;
@@ -32,16 +33,53 @@ const OPENING_PRAYERS = {
 
 const MYSTERY_SETS = {
   es: {
-    gozosos:   { label: "Misterios Gozosos",   items: ["La Anunciación", "La Visitación", "El Nacimiento", "La Presentación", "El Niño Jesús en el Templo"] },
-    dolorosos: { label: "Misterios Dolorosos", items: ["La Oración en el Huerto", "La Flagelación", "La Coronación de Espinas", "Jesús con la Cruz", "La Crucifixión"] },
-    gloriosos: { label: "Misterios Gloriosos", items: ["La Resurrección", "La Ascensión", "Pentecostés", "La Asunción", "La Coronación de María"] },
-    luminosos: { label: "Misterios Luminosos", items: ["El Bautismo de Jesús", "Las Bodas de Caná", "El Anuncio del Reino", "La Transfiguración", "La Eucaristía"] },
+    gozosos:   { label: "Misterios Gozosos",   items: ["La Encarnación del Hijo de Dios", "La Visitación de Nuestra Señora a su prima Santa Isabel", "El Nacimiento del Hijo de Dios en el portal de Belén", "La presentación de Jesús en el Templo", "El Niño Jesús perdido y hallado en el Templo"] },
+    dolorosos: { label: "Misterios Dolorosos", items: ["La oración en el Huerto", "La flagelación de Jesús atado a la columna", "La coronación de espinas", "Jesús con la Cruz a cuestas camino del Calvario", "La crucifixión y muerte de Jesús"] },
+    gloriosos: { label: "Misterios Gloriosos", items: ["La resurrección del Hijo de Dios", "La Ascensión del Señor al cielo", "La venida del Espíritu Santo", "La Asunción de María al cielo", "La coronación de María como Reina y Señora de todo lo creado"] },
+    luminosos: { label: "Misterios Luminosos", items: ["El Bautismo en el Jordán", "Las bodas de Caná", "El anuncio del Reino de Dios", "La Transfiguración", "La institución de la Eucaristía"] },
   },
   en: {
     gozosos:   { label: "Joyful Mysteries",    items: ["The Annunciation", "The Visitation", "The Nativity", "The Presentation", "The Finding in the Temple"] },
     dolorosos: { label: "Sorrowful Mysteries", items: ["The Agony in the Garden", "The Scourging at the Pillar", "The Crowning with Thorns", "The Carrying of the Cross", "The Crucifixion"] },
     gloriosos: { label: "Glorious Mysteries",  items: ["The Resurrection", "The Ascension", "Pentecost", "The Assumption", "The Coronation of Mary"] },
     luminosos: { label: "Luminous Mysteries",  items: ["The Baptism of Jesus", "The Wedding at Cana", "The Proclamation of the Kingdom", "The Transfiguration", "The Institution of the Eucharist"] },
+  },
+};
+
+// Citas bíblicas de meditación por misterio — fuente oficial de la Santa Sede,
+// copiadas literal. Solo español por ahora (Opción A: sin traducción no oficial
+// en inglés hasta contar con el texto oficial). Las referencias conservan el
+// espaciado exacto de la fuente (algunas usan "Lc 1,26-27", otras "Lc 1, 39-42").
+const MYSTERY_MEDITATIONS = {
+  es: {
+    gozosos: [
+      { quote: '«Al sexto mes el ángel Gabriel fue enviado por Dios a una ciudad de Galilea, llamada Nazaret, a una virgen desposada con un hombre llamado José, de la estirpe de David; el nombre de la virgen era María»', ref: 'Lc 1,26-27' },
+      { quote: '«En aquellos días María se puso en camino y fue aprisa a la región montañosa, a una ciudad de Judá; entró en casa de Zacarías y saludó a Isabel. Y sucedió que, en cuanto Isabel oyó el saludo de María, saltó de gozo el niño en su seno, e Isabel quedó llena de Espíritu Santo; y exclamando a voz en grito, dijo: "Bendita tú entre las mujeres y bendito el fruto de tu seno"»', ref: 'Lc 1, 39-42' },
+      { quote: '«Sucedió que por aquellos días salió un edicto de César Augusto ordenando que se empadronase todo el mundo. Este primer empadronamiento tuvo lugar siendo Cirino gobernador de Siria. Iban todos a empadronarse, cada uno a su ciudad. Subió también José desde Galilea, de la ciudad de Nazaret, a Judea, a la ciudad de David, que se llama Belén, por ser él de la casa y familia de David, para empadronarse con María, su esposa, que estaba encinta. Y sucedió que, mientras ellos estaban allí, se le cumplieron los días del alumbramiento, y dio a luz a su hijo primogénito, le envolvió en pañales y le acostó en un pesebre, porque no tenían sitio en el alojamiento»', ref: 'Lc 2,1-7' },
+      { quote: '«Cuando se cumplieron los ocho días para circuncidarle, se le dio el nombre de Jesús, como lo había llamado el ángel antes de ser concebido en el seno. Cuando se cumplieron los días de la purificación de ellos, según la Ley de Moisés, llevaron a Jesús a Jerusalén para presentarle al Señor, como está escrito en la Ley del Señor: Todo varón primogénito será consagrado al Señor y para ofrecer en sacrificio un par de tórtolas o dos pichones, conforme a lo que se dice en la Ley del Señor»', ref: 'Lc 2, 21-24' },
+      { quote: '«Sus padres iban todos los años a Jerusalén a la fiesta de la Pascua. Cuando tuvo doce años, subieron ellos como de costumbre a la fiesta y, al volverse, pasados los días, el niño Jesús se quedó en Jerusalén, sin saberlo sus padres... Y sucedió que al cabo de tres días, le encontraron en el Templo sentado en medio de los maestros, escuchándoles y preguntándoles; todos los que le oían, estaban estupefactos por su inteligencia y sus respuestas»', ref: 'Lc 2, 41-47' },
+    ],
+    luminosos: [
+      { quote: '«Bautizado Jesús, salió luego del agua; y en esto se abrieron los cielos y vio al Espíritu de Dios que bajaba en forma de paloma y venía sobre él. Y una voz que salía de los cielos decía: "Este es mi Hijo amado, en quien me complazco"»', ref: 'Mt 3,16-17' },
+      { quote: '«Tres días después se celebraba una boda en Caná de Galilea y estaba allí la madre de Jesús. Fue invitado también a la boda Jesús con sus discípulos. Y, como faltara vino, porque se había acabado el vino de la boda, le dice a Jesús su madre: "No tienen vino". Jesús le responde: "¿Qué tengo yo contigo, mujer? Todavía no ha llegado mi hora". Dice su madre a los sirvientes: "Haced lo que él os diga"»', ref: 'Jn 2, 1-5' },
+      { quote: '«El tiempo se ha cumplido y el Reino de Dios está cerca; convertíos y creed en el Evangelio»', ref: 'Mc 1, 15' },
+      { quote: '«Seis días después, Jesús tomó consigo a Pedro, a Santiago y a su hermano Juan, y los llevó aparte, a un monte alto. Y se transfiguró delante de ellos: su rostro se puso brillante como el sol y sus vestidos se volvieron blancos como la luz»', ref: 'Mt 17, 1-2' },
+      { quote: '«Mientras estaban comiendo, tomó Jesús pan y lo bendijo, lo partió y, dándoselo a sus discípulos, dijo: "Tomad, comed, éste es mi cuerpo"»', ref: 'Mt 26, 26' },
+    ],
+    dolorosos: [
+      { quote: '«Entonces Jesús fue con ellos a un huerto, llamado Getsemaní, y dijo a sus discípulos: "Sentaos aquí mientras voy a orar". Y tomando consigo a Pedro y a los dos hijos de Zebedeo, comenzó a sentir tristeza y angustia. Entonces les dijo: "Mi alma está triste hasta el punto de morir; quedaos aquí y velad conmigo". Y adelantándose un poco, cayó rostro en tierra, y suplicaba así: "Padre mío, si es posible, que pase de mí esta copa, pero no sea como yo quiero, sino como quieras tú"»', ref: 'Mt 26, 36-39' },
+      { quote: '«Pilato puso en libertad a Barrabás; y a Jesús, después de haberlo hecho azotar, lo entregó para que fuera crucificado»', ref: 'Mt 27, 26' },
+      { quote: '«Entonces los soldados del procurador llevaron consigo a Jesús al pretorio y reunieron alrededor de él a toda la cohorte. Lo desnudaron y le echaron encima un manto de púrpura y, trenzando una corona de espinas, se la pusieron sobre la cabeza, y en su mano derecha una caña, y doblando la rodilla delante de él, le hacían burla diciendo: "Salve, Rey de los judíos"»', ref: 'Mt 27, 27-29' },
+      { quote: '«Y obligaron a uno que pasaba, a Simón de Cirene, que volvía del campo, el padre de Alejandro y de Rufo, a que llevara su cruz. Lo condujeron al lugar del Gólgota, que quiere decir de la "Calavera"»', ref: 'Mc 15, 21-22' },
+      { quote: '«Llegados al lugar llamado "La Calavera", le crucificaron allí a él y a los dos malhechores, uno a la derecha y otro a la izquierda. Jesús decía: "Padre, perdónales, porque no saben lo que hacen"... Era ya eso de mediodía cuando, al eclipsarse el sol, hubo oscuridad sobre toda la tierra hasta la media tarde. El velo del Santuario se rasgó por medio y Jesús, dando un fuerte grito dijo: "Padre, en tus manos pongo mi espíritu" y, dicho esto, expiró»', ref: 'Lc 23, 33-46' },
+    ],
+    gloriosos: [
+      { quote: '«El primer día de la semana, muy de mañana, fueron al sepulcro llevando los aromas que habían preparado. Pero encontraron que la piedra había sido retirada del sepulcro, y entraron, pero no hallaron el cuerpo del Señor Jesús. No sabían qué pensar de esto, cuando se presentaron ante ellas dos hombres con vestidos resplandecientes. Ellas, despavoridas, miraban al suelo, y ellos les dijeron: "¿Por qué buscáis entre los muertos al que está vivo? No está aquí, ha resucitado"»', ref: 'Lc 24, 1-6' },
+      { quote: '«El Señor Jesús, después de hablarles, ascendió al cielo y se sentó a la derecha de Dios»', ref: 'Mc 16, 19' },
+      { quote: '«Al llegar el día de Pentecostés, estaban todos reunidos en un mismo lugar. De repente vino del cielo un ruido como el de una ráfaga de viento impetuoso, que llenó toda la casa en la que se encontraban. Se les aparecieron unas lenguas como de fuego que se repartieron y se posaron sobre cada uno de ellos; quedaron todos llenos del Espíritu Santo y se pusieron a hablar en otras lenguas, según el Espíritu les concedía expresarse»', ref: 'Hch 2, 1-4' },
+      { quote: '«Todas las generaciones me llamarán bienaventurada porque el Señor ha hecho obras grandes en mí»', ref: 'Lc 1, 48-49' },
+      { quote: '«Una gran señal apareció en el cielo: una mujer, vestida de sol, con la luna bajo sus pies, y una corona de doce estrellas sobre su cabeza»', ref: 'Ap 12, 1' },
+    ],
   },
 };
 
@@ -89,13 +127,21 @@ const SALVE_REGINA = {
 
 function buildMysteryPages(lang, mysteryKey) {
   const set = MYSTERY_SETS[lang][mysteryKey];
+  // La meditación (cita bíblica) solo existe en español por ahora — Opción A:
+  // en inglés el rosario se queda en 5 pasos por misterio hasta tener el texto oficial.
+  const meditations = lang === "es" ? MYSTERY_MEDITATIONS.es[mysteryKey] : null;
+  const stepCount = meditations ? 6 : 5;
   const pages = [];
   set.items.forEach((name, mi) => {
-    pages.push({ part: 1, stepIndex: 0, stepCount: 5, mysteryIndex: mi, mysteryStepIndex: 0, kind: "title", title: `${lang === "es" ? "Misterio" : "Mystery"} ${mi + 1}: ${name}`, text: null });
-    pages.push({ part: 1, stepIndex: 1, stepCount: 5, mysteryIndex: mi, mysteryStepIndex: 1, kind: "ourFather", title: lang === "es" ? "Padre Nuestro" : "Our Father", text: OUR_FATHER[lang] });
-    pages.push({ part: 1, stepIndex: 2, stepCount: 5, mysteryIndex: mi, mysteryStepIndex: 2, kind: "aveMaria", counterId: `myst-${mi}`, total: 10, title: lang === "es" ? "10 Ave Marías" : "10 Hail Marys", text: HAIL_MARY[lang] });
-    pages.push({ part: 1, stepIndex: 3, stepCount: 5, mysteryIndex: mi, mysteryStepIndex: 3, kind: "glory", title: lang === "es" ? "Gloria" : "Glory Be", text: GLORY_BE[lang] });
-    pages.push({ part: 1, stepIndex: 4, stepCount: 5, mysteryIndex: mi, mysteryStepIndex: 4, kind: "jaculatoria", title: lang === "es" ? "Jaculatoria" : "Ejaculatory Prayer", text: JACULATORIA[lang] });
+    let step = 0;
+    pages.push({ part: 1, stepIndex: step, stepCount, mysteryIndex: mi, mysteryStepIndex: step++, kind: "title", title: `${lang === "es" ? "Misterio" : "Mystery"} ${mi + 1}: ${name}`, text: null });
+    if (meditations) {
+      pages.push({ part: 1, stepIndex: step, stepCount, mysteryIndex: mi, mysteryStepIndex: step++, kind: "meditation", title: null, text: meditations[mi].quote, ref: meditations[mi].ref });
+    }
+    pages.push({ part: 1, stepIndex: step, stepCount, mysteryIndex: mi, mysteryStepIndex: step++, kind: "ourFather", title: lang === "es" ? "Padre Nuestro" : "Our Father", text: OUR_FATHER[lang] });
+    pages.push({ part: 1, stepIndex: step, stepCount, mysteryIndex: mi, mysteryStepIndex: step++, kind: "aveMaria", counterId: `myst-${mi}`, total: 10, title: lang === "es" ? "10 Ave Marías" : "10 Hail Marys", text: HAIL_MARY[lang] });
+    pages.push({ part: 1, stepIndex: step, stepCount, mysteryIndex: mi, mysteryStepIndex: step++, kind: "glory", title: lang === "es" ? "Gloria" : "Glory Be", text: GLORY_BE[lang] });
+    pages.push({ part: 1, stepIndex: step, stepCount, mysteryIndex: mi, mysteryStepIndex: step++, kind: "jaculatoria", title: lang === "es" ? "Jaculatoria" : "Ejaculatory Prayer", text: JACULATORIA[lang] });
   });
   return pages;
 }
@@ -151,8 +197,8 @@ export default function Rosario({ lang = "es", onHome }) {
   let subLabel = null;
   if (page.part === 1) {
     subLabel = lang === "es"
-      ? `Misterio ${page.mysteryIndex + 1} de 5 · Paso ${page.mysteryStepIndex + 1} de 5`
-      : `Mystery ${page.mysteryIndex + 1} of 5 · Step ${page.mysteryStepIndex + 1} of 5`;
+      ? `Misterio ${page.mysteryIndex + 1} de 5 · Paso ${page.mysteryStepIndex + 1} de ${page.stepCount}`
+      : `Mystery ${page.mysteryIndex + 1} of 5 · Step ${page.mysteryStepIndex + 1} of ${page.stepCount}`;
   } else if (page.stepCount > 1) {
     subLabel = lang === "es" ? `Paso ${page.stepIndex + 1} de ${page.stepCount}` : `Step ${page.stepIndex + 1} of ${page.stepCount}`;
   }
@@ -163,7 +209,7 @@ export default function Rosario({ lang = "es", onHome }) {
     <div style={{ position: "relative", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {/* Resplandor de fondo */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", pointerEvents: "none" }}>
-        <div style={{ width: 300, height: 500, borderRadius: "50%", background: "rgba(232,180,92,0.06)", filter: "blur(60px)" }} />
+        <div style={{ width: 300, height: 500, borderRadius: "50%", background: `rgba(232,180,92,${page.kind === "meditation" ? 0.14 : 0.06})`, filter: "blur(60px)", transition: "background 0.4s ease" }} />
       </div>
 
       {/* Barra de progreso */}
@@ -208,6 +254,18 @@ export default function Rosario({ lang = "es", onHome }) {
               >
                 {lang === "es" ? "Rezar de nuevo" : "Pray again"}
               </button>
+            </div>
+          ) : page.kind === "meditation" ? (
+            <div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
+                <VerticeDeLuz size={40} />
+              </div>
+              <div style={{ fontSize: 19, lineHeight: 2, color: CREAM, fontFamily: "'Work Sans', sans-serif", fontStyle: "italic" }}>
+                {page.text}
+              </div>
+              <div style={{ marginTop: 28, fontSize: 13, color: MUTED, letterSpacing: 0.5 }}>
+                {page.ref}
+              </div>
             </div>
           ) : (
             <>
