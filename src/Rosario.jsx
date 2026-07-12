@@ -194,15 +194,6 @@ export default function Rosario({ lang = "es", onHome }) {
     }
   };
 
-  let subLabel = null;
-  if (page.part === 1) {
-    subLabel = lang === "es"
-      ? `Misterio ${page.mysteryIndex + 1} de 5 · Paso ${page.mysteryStepIndex + 1} de ${page.stepCount}`
-      : `Mystery ${page.mysteryIndex + 1} of 5 · Step ${page.mysteryStepIndex + 1} of ${page.stepCount}`;
-  } else if (page.stepCount > 1) {
-    subLabel = lang === "es" ? `Paso ${page.stepIndex + 1} de ${page.stepCount}` : `Step ${page.stepIndex + 1} of ${page.stepCount}`;
-  }
-
   const isComplete = page.kind === "complete";
 
   return (
@@ -229,13 +220,6 @@ export default function Rosario({ lang = "es", onHome }) {
       {/* Contenido central */}
       <div style={{ position: "relative", zIndex: 1, minHeight: "calc(100vh - 350px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflowY: "auto" }}>
         <div style={{ maxWidth: 400, width: "100%" }}>
-          {!isComplete && (
-            <div style={{ fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 10, fontFamily: "'Cormorant', serif" }}>
-              {lang === "es" ? `Parte ${page.part + 1} de ${partTitles.length}` : `Part ${page.part + 1} of ${partTitles.length}`}
-              {subLabel && ` · ${subLabel}`}
-            </div>
-          )}
-
           {isComplete ? (
             <div>
               <svg width="56" height="56" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 18 }}>
@@ -278,29 +262,56 @@ export default function Rosario({ lang = "es", onHome }) {
                   <div style={{ fontSize: 15, lineHeight: 1.7, color: CREAM, fontFamily: "'Work Sans', sans-serif", fontStyle: "italic", marginBottom: 24 }}>
                     {page.text}
                   </div>
-                  <button
-                    onClick={() => handleAveMariaTap(page.counterId, page.total)}
-                    style={{
-                      width: 140, height: 140, borderRadius: "50%", margin: "0 auto",
-                      background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", userSelect: "none",
-                      border: "none", outline: "none", padding: 0, WebkitTapHighlightColor: "transparent",
-                    }}
-                  >
-                    <span style={{ fontSize: 46, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cormorant', serif" }}>
-                      {aveCounts[page.counterId] || 0}
-                    </span>
-                  </button>
-                  <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 8, maxWidth: 220, margin: "18px auto 0" }}>
-                    {Array.from({ length: page.total }).map((_, i) => (
-                      <div key={i} style={{
-                        width: 14, height: 14, borderRadius: "50%",
-                        background: i < (aveCounts[page.counterId] || 0) ? GOLD : "transparent",
-                        border: `2px solid ${GOLD}`, transition: "background 0.2s",
-                      }} />
-                    ))}
-                  </div>
+                  {(() => {
+                    const count = aveCounts[page.counterId] || 0;
+                    const progress = count / page.total;
+                    // "La luz que crece": el relleno pasa de 0.55 a 1.0 de opacidad,
+                    // y el halo crece en radio y opacidad en paralelo — transición CSS
+                    // suave (no escalonada) entre cada tap.
+                    const fillAlpha = 0.55 + progress * 0.45;
+                    const glowBlur = 14 + progress * 26;
+                    const glowAlpha = 0.3 + progress * 0.5;
+                    const ringRadius = 104;
+                    const beadSize = 14;
+                    return (
+                      <div style={{ position: "relative", width: 240, height: 240, margin: "0 auto" }}>
+                        {/* Anillo de cuentas, como un rosario físico */}
+                        {Array.from({ length: page.total }).map((_, i) => {
+                          const angle = (2 * Math.PI * i) / page.total - Math.PI / 2;
+                          const x = 120 + ringRadius * Math.cos(angle) - beadSize / 2;
+                          const y = 120 + ringRadius * Math.sin(angle) - beadSize / 2;
+                          const filled = i < count;
+                          return (
+                            <div key={i} style={{
+                              position: "absolute", left: x, top: y,
+                              width: beadSize, height: beadSize, borderRadius: "50%",
+                              background: GOLD,
+                              opacity: filled ? 1 : 0.22,
+                              transition: "opacity 0.4s ease",
+                            }} />
+                          );
+                        })}
+                        {/* Círculo central — se enciende progresivamente con cada Ave María */}
+                        <button
+                          onClick={() => handleAveMariaTap(page.counterId, page.total)}
+                          style={{
+                            position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                            width: 140, height: 140, borderRadius: "50%",
+                            background: `linear-gradient(135deg, rgba(232,180,92,${fillAlpha}), rgba(238,199,133,${fillAlpha}))`,
+                            boxShadow: `0 0 ${glowBlur}px rgba(232,180,92,${glowAlpha}), 0 0 ${glowBlur * 2}px rgba(232,180,92,${glowAlpha * 0.4})`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            cursor: "pointer", userSelect: "none",
+                            border: "none", outline: "none", padding: 0, WebkitTapHighlightColor: "transparent",
+                            transition: "background 0.4s ease, box-shadow 0.4s ease",
+                          }}
+                        >
+                          <span style={{ fontSize: 46, fontWeight: "bold", color: NAVY_DARK, fontFamily: "'Cormorant', serif" }}>
+                            {count}
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })()}
                   <div style={{ fontSize: 11, color: MUTED, marginTop: 14 }}>
                     {lang === "es" ? "Toca el círculo para contar" : "Tap the circle to count"}
                   </div>
