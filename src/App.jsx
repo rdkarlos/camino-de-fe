@@ -337,6 +337,48 @@ const cleanGospelText = (text) => {
   return { reference, body };
 };
 
+// Horarios de misa por parroquia — días de la semana en orden fijo, sin acentos
+// en las claves (evita cualquier problema de codificación en Firestore/JS).
+const DAY_KEYS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+const DAY_LABELS = {
+  es: { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miércoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sábado', domingo: 'Domingo' },
+  en: { lunes: 'Monday', martes: 'Tuesday', miercoles: 'Wednesday', jueves: 'Thursday', viernes: 'Friday', sabado: 'Saturday', domingo: 'Sunday' },
+};
+
+// Ancla el día de hoy a America/Bogota — mismo patrón que Rosario.jsx
+// (Intl.DateTimeFormat con locale fijo 'en-US' y weekday:'short', mapeado
+// explícitamente para evitar cualquier ambigüedad de índice/idioma).
+const todayParishDayKey = () => {
+  const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Bogota', weekday: 'short' }).format(new Date());
+  const map = { Mon: 'lunes', Tue: 'martes', Wed: 'miercoles', Thu: 'jueves', Fri: 'viernes', Sat: 'sabado', Sun: 'domingo' };
+  return map[weekday];
+};
+
+const misasSignature = (misas) => (misas || []).map(m => `${m.hora}|${m.lugar || ''}`).join(';');
+
+// Agrupa días consecutivos (en el orden fijo lunes→domingo) que tengan
+// exactamente el mismo horario, para mostrar "Lunes a viernes" en vez de
+// repetir 5 veces la misma lista de misas.
+const groupWeekSchedule = (horarioMisas) => {
+  const groups = [];
+  let i = 0;
+  while (i < DAY_KEYS.length) {
+    const sig = misasSignature(horarioMisas?.[DAY_KEYS[i]]);
+    let j = i;
+    while (j + 1 < DAY_KEYS.length && misasSignature(horarioMisas?.[DAY_KEYS[j + 1]]) === sig) j++;
+    groups.push({ days: DAY_KEYS.slice(i, j + 1), misas: horarioMisas?.[DAY_KEYS[i]] || [] });
+    i = j + 1;
+  }
+  return groups;
+};
+
+const groupDayLabel = (days, lang) => {
+  const labels = days.map(d => DAY_LABELS[lang][d]);
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} ${lang === 'es' ? 'y' : 'and'} ${labels[1]}`;
+  return `${labels[0]} ${lang === 'es' ? 'a' : 'to'} ${labels[labels.length - 1]}`;
+};
+
 export default function App() {
   const [lang, setLang] = useState("es");
   const [tab, setTab] = useState(0);
@@ -371,6 +413,9 @@ export default function App() {
   const [personalTab, setPersonalTab] = useState("builder");
   const [personalSection, setPersonalSection] = useState(null);
   const [devocionalInitialTab, setDevocionalInitialTab] = useState(null);
+  const [parroquias, setParroquias] = useState([]);
+  const [userParroquiaId, setUserParroquiaId] = useState(null);
+  const [parroquiaExpanded, setParroquiaExpanded] = useState(false);
 
   // Entrada "limpia" a una sección desde fuera de ella (menú, accesos rápidos,
   // tarjetas de Inicio): resetea la memoria de sub-navegación de Oración Personal
@@ -538,6 +583,13 @@ export default function App() {
       .catch(() => {});
   }, []);
 
+  // Lista de parroquias — lectura pública, no depende de sesión.
+  useEffect(() => {
+    getDocs(collection(db, "parroquias"))
+      .then(snap => setParroquias(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -581,6 +633,7 @@ export default function App() {
   useEffect(() => {
     if (!user) {
       setMyCircles([]); setCircleLastSeen({}); setCircleLastSeenLoaded(false); setConfirmedNewCircles({});
+      setUserParroquiaId(null);
       return;
     }
 
@@ -589,8 +642,13 @@ export default function App() {
       getDocs(query(collection(db, "circulos"), where("miembros", "array-contains", user.uid)))
         .then(snap => setMyCircles(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
         .catch(() => {});
+      // Mismo doc de usuario que ya se leía para circleLastSeen — se
+      // aprovecha la lectura para tomar también parroquiaId, sin duplicarla.
       getDoc(doc(db, "usuarios", user.uid))
-        .then(snap => setCircleLastSeen(snap.exists() ? (snap.data().circleLastSeen || {}) : {}))
+        .then(snap => {
+          setCircleLastSeen(snap.exists() ? (snap.data().circleLastSeen || {}) : {});
+          setUserParroquiaId(snap.exists() ? (snap.data().parroquiaId || null) : null);
+        })
         .catch(() => setCircleLastSeen({}))
         .finally(() => setCircleLastSeenLoaded(true));
     };
@@ -684,6 +742,14 @@ export default function App() {
       return next;
     });
     setDoc(doc(db, "usuarios", user.uid), { circleLastSeen: { [circleId]: serverTimestamp() } }, { merge: true }).catch(() => {});
+  };
+
+  // Fija (o cambia) la parroquia del usuario — un usuario tiene una sola,
+  // y puede cambiarla en cualquier momento desde Configuración.
+  const chooseParroquia = (parroquiaId) => {
+    if (!user) return;
+    setUserParroquiaId(parroquiaId);
+    setDoc(doc(db, "usuarios", user.uid), { parroquiaId }, { merge: true }).catch(() => {});
   };
 
   const handleGoogle = async () => {
@@ -1025,6 +1091,10 @@ export default function App() {
     const { santo } = getSantoHoy();
     const oracionCard = t.home.cards[0];
     const evangelioCard = t.home.cards[1];
+    const parroquiaActual = parroquias.find(p => p.id === userParroquiaId) || null;
+    const parroquiaTodayKey = todayParishDayKey();
+    const parroquiaTodayMisas = parroquiaActual ? (parroquiaActual.horarioMisas?.[parroquiaTodayKey] || []) : [];
+    const parroquiaWeekGroups = parroquiaActual ? groupWeekSchedule(parroquiaActual.horarioMisas) : [];
     return (
       <div>
         {/* Tarjeta versículo — ancho completo, clickeable */}
@@ -1123,6 +1193,79 @@ export default function App() {
             <div style={{ fontSize: 12.5, color: CREAM_DARK, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{santo.bio}</div>
             <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", marginTop: 10 }}>{lang === 'es' ? 'Conocer su vida' : "Learn about the saint"} ›</div>
           </div>
+        </div>
+
+        {/* Tu parroquia — misas de hoy, o invitación a elegirla */}
+        <div style={{ position: "relative", background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 16, padding: "16px 18px", marginBottom: 16, overflow: "hidden" }}>
+          {!parroquiaActual ? (
+            <div onClick={() => goToTab(8)} style={{ position: "relative", cursor: "pointer" }}>
+              <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(232,180,92,0.11)" }} />
+              <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(232,180,92,0.13)" }} />
+              <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: GOLD, boxShadow: `0 0 8px 2px ${GOLD}99` }} />
+              <div style={{ position: "relative" }}>
+                <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Tu parroquia' : 'Your parish'}</div>
+                <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5, marginBottom: 10 }}>
+                  {lang === 'es'
+                    ? 'La misa es la fuente y la cumbre. Elige tu parroquia y que el camino al altar nunca te quede lejos.'
+                    : 'The Mass is the source and summit. Choose your parish so the way to the altar is never far.'}
+                </div>
+                <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif" }}>
+                  {lang === 'es' ? 'Elegir mi parroquia' : 'Choose my parish'} ›
+                </div>
+              </div>
+            </div>
+          ) : !parroquiaExpanded ? (
+            <div>
+              <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Misas de hoy' : "Today's Masses"}</div>
+              <div style={{ fontSize: 13, color: CREAM_DARK, marginBottom: 12 }}>
+                {parroquiaActual.nombre} · {DAY_LABELS[lang][parroquiaTodayKey]}
+              </div>
+              {parroquiaTodayMisas.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                  {parroquiaTodayMisas.map((m, i) => (
+                    <div key={i} style={{ background: `${GOLD}1F`, border: `1px solid ${GOLD}59`, color: CREAM, borderRadius: 20, padding: "6px 12px", fontSize: 13, fontFamily: "'Work Sans', sans-serif" }}>
+                      {m.hora}{m.lugar ? ` · ${m.lugar}` : ""}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ fontSize: 13, color: MUTED, marginBottom: 12, fontStyle: "italic" }}>
+                  {lang === 'es' ? 'Sin misas programadas hoy.' : 'No Masses scheduled today.'}
+                </div>
+              )}
+              <div onClick={() => setParroquiaExpanded(true)} style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", cursor: "pointer" }}>
+                {lang === 'es' ? 'Ver la semana' : 'See the week'} ›
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", fontWeight: 700 }}>✦ {lang === 'es' ? 'Misas de hoy' : "Today's Masses"}</div>
+                <div onClick={() => setParroquiaExpanded(false)} style={{ fontSize: 12, color: MUTED, cursor: "pointer", flexShrink: 0, marginLeft: 10 }}>
+                  ‹ {lang === 'es' ? 'Ver menos' : 'See less'}
+                </div>
+              </div>
+              <div style={{ fontSize: 13, color: CREAM_DARK, marginBottom: 14 }}>{parroquiaActual.nombre}</div>
+              {parroquiaWeekGroups.map((g, i) => {
+                const isToday = g.days.includes(parroquiaTodayKey);
+                return (
+                  <div key={i} style={{ background: isToday ? `${GOLD}14` : "transparent", borderRadius: 10, padding: "8px 10px", marginBottom: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: "bold", color: isToday ? GOLD : CREAM, fontFamily: "'Cormorant', serif", marginBottom: 4 }}>
+                      {groupDayLabel(g.days, lang)}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: CREAM_DARK, lineHeight: 1.6 }}>
+                      {g.misas.length > 0
+                        ? g.misas.map((m) => `${m.hora}${m.lugar ? ` (${m.lugar})` : ""}`).join(' · ')
+                        : (lang === 'es' ? 'Sin misa' : 'No Mass')}
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{ fontSize: 11, color: MUTED, marginTop: 14 }}>
+                {parroquiaActual.fuente}{parroquiaActual.fuenteFecha ? ` · ${parroquiaActual.fuenteFecha}` : ""}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Separador — cierre silencioso del bloque "Hoy" */}
@@ -2288,6 +2431,47 @@ export default function App() {
 
     return (
       <div>
+        <div style={{ background: BG_CARD, borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: "0 2px 12px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
+          <div style={{ fontWeight: "bold", color: CREAM, fontSize: 16, fontFamily: "'Cormorant', serif", marginBottom: 4 }}>
+            {lang === 'es' ? 'Tu parroquia' : 'Your Parish'}
+          </div>
+          {!user ? (
+            <div style={{ textAlign: "center", padding: "20px 10px" }}>
+              <div style={{ fontSize: 13, color: CREAM, marginBottom: 14, fontFamily: "'Work Sans', sans-serif" }}>
+                {lang === 'es' ? 'Inicia sesión para elegir tu parroquia' : 'Sign in to choose your parish'}
+              </div>
+              <button onClick={() => setAuthMode('login')} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
+                {lang === 'es' ? 'Iniciar sesión' : 'Sign in'}
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: 12, color: MUTED, marginBottom: 12 }}>
+                {lang === 'es' ? 'Puedes cambiarla cuando quieras.' : 'You can change it anytime.'}
+              </div>
+              {parroquias.length === 0 ? (
+                <div style={{ fontSize: 13, color: MUTED, fontStyle: "italic" }}>
+                  {lang === 'es' ? 'Cargando parroquias…' : 'Loading parishes…'}
+                </div>
+              ) : parroquias.map(p => {
+                const selected = p.id === userParroquiaId;
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => chooseParroquia(p.id)}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, marginBottom: 8, cursor: "pointer", background: selected ? `${GOLD}1F` : NAVY, border: `1px solid ${selected ? GOLD : CREAM_DARK}` }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif" }}>{p.nombre}</div>
+                      <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{p.municipio}</div>
+                    </div>
+                    {selected && <span style={{ color: GOLD, fontSize: 16, flexShrink: 0, marginLeft: 10 }}>✓</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
         {Notification.permission !== 'granted' && (
           <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 16, padding: 20, marginBottom: 16, color: WHITE, textAlign: "center" }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
