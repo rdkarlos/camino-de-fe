@@ -46,10 +46,14 @@ const MYSTERY_SETS = {
 };
 
 function todayMysteryKey() {
-  const day = new Date().getDay(); // 0=domingo ... 6=sábado
-  if (day === 1 || day === 6) return "gozosos";
-  if (day === 2 || day === 5) return "dolorosos";
-  if (day === 3 || day === 0) return "gloriosos";
+  // Ancla el día de la semana a America/Bogota (no al huso horario del
+  // dispositivo), mismo patrón que el resto del proyecto. Se usa el nombre
+  // del día en vez del índice numérico de getDay() (0=domingo) para evitar
+  // cualquier ambigüedad de mapeo.
+  const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Bogota', weekday: 'short' }).format(new Date());
+  if (weekday === 'Mon' || weekday === 'Sat') return "gozosos";
+  if (weekday === 'Tue' || weekday === 'Fri') return "dolorosos";
+  if (weekday === 'Wed' || weekday === 'Sun') return "gloriosos";
   return "luminosos"; // jueves
 }
 
