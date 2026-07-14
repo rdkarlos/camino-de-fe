@@ -11,7 +11,7 @@ import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
 import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba } from "./theme";
 import Horeb from "./Horeb";
-import { generateLambShareImage, gospelExcerpt } from "./shareImage";
+import { generateLambShareImage, generateVerseShareImage, gospelExcerpt } from "./shareImage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -262,6 +262,8 @@ const ONBOARDING_SCREENS = {
 
 const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1, $2') : r;
 
+const SITE_URL = 'https://somoshoreb.com';
+
 const LAMB_BTN_SIZE = 50;
 const clampLambPos = ({ x, y }) => ({
   x: Math.min(Math.max(x, 0), Math.max(window.innerWidth - LAMB_BTN_SIZE, 0)),
@@ -446,6 +448,8 @@ export default function App() {
   const [lambText, setLambText] = useState("");
   const [lambCopied, setLambCopied] = useState(false);
   const [lambImageSaved, setLambImageSaved] = useState(false);
+  const [verseCopied, setVerseCopied] = useState(false);
+  const [verseImageSaved, setVerseImageSaved] = useState(false);
   const [lambPos, setLambPos] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('lambPosition'));
@@ -853,6 +857,9 @@ export default function App() {
     const { body } = gospelData ? cleanGospelText(gospelData.text) : { body: '' };
     const quoteText = gospelExcerpt(body);
     const quoteRef = gospelData?.reference ? formatRef(gospelData.reference) : '';
+    const shareText = lang === 'es'
+      ? 'Una idea para vivir el Evangelio hoy. Hay más camino en Horeb.'
+      : 'An idea to live the Gospel today. There is more to walk in Horeb.';
 
     let blob = null;
     try {
@@ -865,7 +872,7 @@ export default function App() {
       const file = new File([blob], 'horeb-ponlo-en-practica.png', { type: 'image/png' });
       if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: 'Ponlo en Práctica — Horeb' });
+          await navigator.share({ files: [file], title: 'Ponlo en Práctica — Horeb', text: `${shareText}\n\n${SITE_URL}` });
           return;
         } catch (e) {
           if (e?.name === 'AbortError') return;
@@ -888,8 +895,8 @@ export default function App() {
     // La imagen no pudo generarse: comportamiento anterior, compartir/copiar texto.
     const shareData = {
       title: 'Ponlo en Práctica — Horeb',
-      text: lambText,
-      url: 'https://camino-de-fe-seven.vercel.app',
+      text: `${shareText}\n\n${lambText}`,
+      url: SITE_URL,
     };
     if (navigator.share) {
       try { await navigator.share(shareData); } catch (e) {}
@@ -899,6 +906,59 @@ export default function App() {
       await navigator.clipboard.writeText(`${shareData.text}\n\n${shareData.url}`);
       setLambCopied(true);
       setTimeout(() => setLambCopied(false), 2000);
+    } catch (e) {}
+  };
+
+  const handleShareVerse = async () => {
+    const versiculoBanco = getVersiculoHoy();
+    const versiculoActivo = cronVerse || versiculoBanco;
+    const verseText = versiculoActivo.texto;
+    const verseRef = formatRef(versiculoActivo.referencia);
+    const shareText = lang === 'es' ? 'Algo de luz para tu día.' : 'A little light for your day.';
+
+    let blob = null;
+    try {
+      blob = await generateVerseShareImage({ verseText, verseRef });
+    } catch (e) {
+      console.log('[verse] no se pudo generar la imagen, comparto como texto:', e.message);
+    }
+
+    if (blob) {
+      const file = new File([blob], 'horeb-versiculo-del-dia.png', { type: 'image/png' });
+      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: lang === 'es' ? 'Versículo del Día — Horeb' : 'Verse of the Day — Horeb', text: `${shareText}\n\n${SITE_URL}` });
+          return;
+        } catch (e) {
+          if (e?.name === 'AbortError') return;
+        }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'horeb-versiculo-del-dia.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      setVerseImageSaved(true);
+      setTimeout(() => setVerseImageSaved(false), 2600);
+      return;
+    }
+
+    const shareData = {
+      title: lang === 'es' ? 'Versículo del Día — Horeb' : 'Verse of the Day — Horeb',
+      text: `${shareText}\n\n"${verseText}" — ${verseRef}`,
+      url: SITE_URL,
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch (e) {}
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareData.text}\n\n${shareData.url}`);
+      setVerseCopied(true);
+      setTimeout(() => setVerseCopied(false), 2000);
     } catch (e) {}
   };
 
@@ -1194,6 +1254,16 @@ export default function App() {
               <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, fontWeight: "bold", marginBottom: 14 }}>{lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
               <div style={{ fontSize: "1.4rem", fontStyle: "italic", color: CREAM, fontWeight: 600, lineHeight: 1.7, fontFamily: "'Work Sans', sans-serif", marginBottom: 18 }}>"{dailyVerse.text}"</div>
               <div style={{ fontSize: 14, color: ALBA_DARK, fontWeight: "bold", fontFamily: "'Cormorant', serif", letterSpacing: 0.5 }}>— {formatRef(dailyVerse.ref)}</div>
+              <button
+                onClick={handleShareVerse}
+                style={{ marginTop: 20, width: "100%", padding: "11px", background: "none", color: GOLD, border: `1.5px solid ${GOLD}`, borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+              >
+                {verseImageSaved
+                  ? (lang === 'es' ? '✓ Imagen guardada' : '✓ Image saved')
+                  : verseCopied
+                  ? (lang === 'es' ? '✓ Copiado' : '✓ Copied')
+                  : (lang === 'es' ? '↗ Comparte esta luz' : '↗ Share this light')}
+              </button>
               </div>
             </div>
           </>
@@ -3166,7 +3236,7 @@ export default function App() {
                   ? (lang === 'es' ? '✓ Imagen guardada' : '✓ Image saved')
                   : lambCopied
                   ? (lang === 'es' ? '✓ Copiado' : '✓ Copied')
-                  : (lang === 'es' ? '↗ Compartir' : '↗ Share')}
+                  : (lang === 'es' ? '↗ Comparte esta luz' : '↗ Share this light')}
               </button>
             )}
             <button

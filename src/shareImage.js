@@ -1,9 +1,15 @@
-// Genera la imagen "historia" (1080x1920) para compartir la reflexión de
-// "Ponlo en Práctica". Todo en Canvas 2D, sin dependencias nuevas.
+// Genera las imágenes "historia" (1080x1920) para compartir desde Horeb:
+// el primer consejo de "Ponlo en Práctica" y el Versículo del Día.
+// Todo en Canvas 2D, sin dependencias nuevas.
 import { ALBA, NOCHE, NOCHE_DARK, LINO, CIELO, PIEDRA, BRISA_ALBA, CIELO_ALTURA, SOL_NUCLEO, SOL_MEDIO, SOL_BORDE, rgba as hexToRgba } from "./theme";
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
+
+// Encabezado compartido por ambas imágenes: dónde empieza el contenido y
+// termina el resplandor del signo de Horeb.
+const CONTENT_TOP = 692;
+const CONTENT_MAX_HEIGHT = 780;
 
 function mixColor(hexA, hexB, t) {
   const a = parseInt(hexA.slice(1), 16);
@@ -16,16 +22,31 @@ function mixColor(hexA, hexB, t) {
   return `rgb(${r}, ${g}, ${bl})`;
 }
 
-// Las reflexiones llegan en markdown (títulos en negrita, a veces encabezados).
-// Para la imagen las aplanamos a un único bloque de texto corrido.
+// Limpia marcas de markdown (negritas, encabezados, viñetas) de un fragmento
+// de texto ya aislado, dejando prosa simple.
 function stripMarkdown(md) {
-  return md
+  return (md || '')
     .replace(/^#{1,6}\s*/gm, '')
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
     .replace(/^[-•]\s*/gm, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+// "Ponlo en Práctica" entrega varios consejos separados por línea en blanco,
+// cada uno como "**Título**: explicación". La imagen muestra solo el
+// primero — meter los tres aplanados los pegaba sin separación y obligaba
+// a una fuente diminuta. Si no hay título en negrita reconocible (contenido
+// viejo o con otro formato), se muestra todo como cuerpo, sin título.
+function extractFirstTip(markdown) {
+  const text = (markdown || '').trim();
+  const firstBlock = text.split(/\n\s*\n/)[0]?.trim() || '';
+  const match = firstBlock.match(/^\*\*(.+?)\*\*[:\s]*([\s\S]*)$/);
+  if (match) {
+    return { title: stripMarkdown(match[1]), body: stripMarkdown(match[2]) };
+  }
+  return { title: '', body: stripMarkdown(firstBlock) };
 }
 
 function wrapLine(ctx, text, maxWidth) {
@@ -70,9 +91,9 @@ function wrapAndClamp(ctx, text, maxWidth, maxLines) {
   return clamped;
 }
 
-// Reduce el tamaño de la reflexión dentro de [minSize, maxSize] hasta que el
-// bloque quepa en maxHeight. Si ni con minSize cabe, recorta con elegancia.
-function fitReflection(ctx, text, { maxWidth, maxHeight, maxSize, minSize, lineHeight, font }) {
+// Reduce el tamaño de un bloque de texto dentro de [minSize, maxSize] hasta
+// que quepa en maxHeight. Si ni con minSize cabe, recorta con elegancia.
+function fitText(ctx, text, { maxWidth, maxHeight, maxSize, minSize, lineHeight, font }) {
   for (let size = maxSize; size >= minSize; size -= 1) {
     ctx.font = font(size);
     const lines = wrapLine(ctx, text, maxWidth);
@@ -88,6 +109,47 @@ function fitReflection(ctx, text, { maxWidth, maxHeight, maxSize, minSize, lineH
   const lines = allLines.slice(0, maxLines);
   lines[maxLines - 1] = forceEllipsis(ctx, lines[maxLines - 1], maxWidth);
   return { size, lines };
+}
+
+// Como fitText, pero para un título (negrita) seguido de un cuerpo
+// (cursiva) — el título va a `titleScale` veces el tamaño del cuerpo, y
+// solo el cuerpo se recorta si ni con el mínimo cabe todo.
+function fitTitleAndBody(ctx, { title, body, maxWidth, maxHeight, maxBodySize, minBodySize, titleScale, lineHeight, gap }) {
+  const titleFont = size => `600 ${size}px 'Cormorant', serif`;
+  const bodyFont = size => `italic 500 ${size}px 'Cormorant', serif`;
+
+  for (let bodySize = maxBodySize; bodySize >= minBodySize; bodySize -= 1) {
+    const titleSize = Math.round(bodySize * titleScale);
+    ctx.font = titleFont(titleSize);
+    const titleLines = title ? wrapLine(ctx, title, maxWidth) : [];
+    ctx.font = bodyFont(bodySize);
+    const bodyLines = wrapLine(ctx, body, maxWidth);
+    const titleHeight = titleLines.length * titleSize * lineHeight;
+    const bodyHeight = bodyLines.length * bodySize * lineHeight;
+    const usedGap = titleLines.length ? gap : 0;
+    if (titleHeight + usedGap + bodyHeight <= maxHeight) {
+      return { titleSize, bodySize, titleLines, bodyLines, titleHeight, bodyHeight, gap: usedGap };
+    }
+  }
+
+  const bodySize = minBodySize;
+  const titleSize = Math.round(bodySize * titleScale);
+  ctx.font = titleFont(titleSize);
+  const titleLines = title ? wrapLine(ctx, title, maxWidth) : [];
+  const titleHeight = titleLines.length * titleSize * lineHeight;
+  const usedGap = titleLines.length ? gap : 0;
+
+  ctx.font = bodyFont(bodySize);
+  const availableForBody = Math.max(bodySize * lineHeight, maxHeight - titleHeight - usedGap);
+  const maxBodyLines = Math.max(1, Math.floor(availableForBody / (bodySize * lineHeight)));
+  const allBodyLines = wrapLine(ctx, body, maxWidth);
+  let bodyLines = allBodyLines;
+  if (allBodyLines.length > maxBodyLines) {
+    bodyLines = allBodyLines.slice(0, maxBodyLines);
+    bodyLines[maxBodyLines - 1] = forceEllipsis(ctx, bodyLines[maxBodyLines - 1], maxWidth);
+  }
+  const bodyHeight = bodyLines.length * bodySize * lineHeight;
+  return { titleSize, bodySize, titleLines, bodyLines, titleHeight, bodyHeight, gap: usedGap };
 }
 
 function trackedTextWidth(ctx, text, font, letterSpacing) {
@@ -156,25 +218,26 @@ async function ensureFontsReady() {
   }
 }
 
-// Genera la imagen "historia" de Ponlo en Práctica y devuelve un Blob PNG.
-export async function generateLambShareImage({ reflectionMarkdown, quoteText, quoteRef }) {
-  await ensureFontsReady();
-
+function createStoryCanvas() {
   const canvas = document.createElement('canvas');
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
-  const ctx = canvas.getContext('2d');
+  return canvas;
+}
 
-  // Fondo: degradado del alba (arriba) a la noche (abajo).
+// Fondo: degradado del alba (arriba) a la noche (abajo).
+function drawBackground(ctx) {
   const bg = ctx.createLinearGradient(0, 0, 0, HEIGHT);
   bg.addColorStop(0, mixColor(NOCHE, ALBA, 0.4));
   bg.addColorStop(0.4, NOCHE);
   bg.addColorStop(1, NOCHE_DARK);
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+}
 
-  // Horeb — el sol que asoma tras el monte, mismo diseño que Horeb.jsx
-  // (viewBox nativo 400x320), escalado y centrado en el encabezado.
+// Horeb — el sol que asoma tras el monte, mismo diseño que Horeb.jsx
+// (viewBox nativo 400x320), escalado y centrado en el encabezado.
+function drawHeader(ctx) {
   const vertexX = WIDTH / 2;
   const sunCanvasY = 260;
   const scale = 2.3;
@@ -224,40 +287,94 @@ export async function generateLambShareImage({ reflectionMarkdown, quoteText, qu
   ctx.lineTo(sx(275), sy(260));
   ctx.stroke();
 
-  ctx.textAlign = 'center';
+  return vertexX;
+}
 
-  // Reflexión — protagonista, Cormorant cursiva, Lino.
-  const reflectionPlain = stripMarkdown(reflectionMarkdown || '');
-  const reflectionMaxWidth = 860;
-  const reflectionTop = 692;
-  const reflectionMaxHeight = 780;
-  const lineHeight = 1.75;
-  const { size: reflectionSize, lines: reflectionLines } = fitReflection(ctx, reflectionPlain, {
-    maxWidth: reflectionMaxWidth,
-    maxHeight: reflectionMaxHeight,
-    maxSize: 58,
-    minSize: 34,
-    lineHeight,
-    font: size => `italic 500 ${size}px 'Cormorant', serif`,
-  });
-  const lineHeightPx = reflectionSize * lineHeight;
-  const blockHeight = reflectionLines.length * lineHeightPx;
-  let cursorY = reflectionTop + Math.max(0, (reflectionMaxHeight - blockHeight) / 2) + reflectionSize * 0.78;
-  ctx.font = `italic 500 ${reflectionSize}px 'Cormorant', serif`;
-  ctx.fillStyle = LINO;
-  for (const line of reflectionLines) {
-    ctx.fillText(line, vertexX, cursorY);
-    cursorY += lineHeightPx;
-  }
-
-  // Separador — línea corta y tenue en Alba.
-  const sepY = reflectionTop + reflectionMaxHeight + 20;
+function drawSeparator(ctx, vertexX, y) {
   ctx.strokeStyle = hexToRgba(ALBA, 0.4);
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(vertexX - 70, sepY);
-  ctx.lineTo(vertexX + 70, sepY);
+  ctx.moveTo(vertexX - 70, y);
+  ctx.lineTo(vertexX + 70, y);
   ctx.stroke();
+}
+
+// Firma — el signo compacto de Horeb junto a la palabra "Horeb", discreta,
+// con tracking amplio. Centrada como un solo grupo (ícono + texto).
+function drawSignature(ctx, vertexX) {
+  const signatureFont = "600 28px 'Cormorant', serif";
+  const signatureLetterSpacing = 28 * 0.28;
+  const signatureText = 'HOREB';
+  const signatureBaselineY = HEIGHT - 130;
+  const markHeight = 30;
+  const markTextGap = 16;
+
+  const textWidth = trackedTextWidth(ctx, signatureText, signatureFont, signatureLetterSpacing);
+  const groupWidth = markHeight + markTextGap + textWidth;
+  const groupStartX = vertexX - groupWidth / 2;
+
+  drawSignatureMark(ctx, groupStartX, signatureBaselineY - markHeight * 0.78, markHeight);
+  drawTrackedTextAt(ctx, signatureText, groupStartX + markHeight + markTextGap, signatureBaselineY, {
+    font: signatureFont,
+    color: ALBA,
+    letterSpacing: signatureLetterSpacing,
+  });
+}
+
+// Genera la imagen "historia" del primer consejo de "Ponlo en Práctica" y
+// devuelve un Blob PNG. Solo el primer consejo: mostrar los tres aplanados
+// los pegaba sin separación entre título y explicación, y obligaba a una
+// fuente diminuta para que entraran.
+export async function generateLambShareImage({ reflectionMarkdown, quoteText, quoteRef }) {
+  await ensureFontsReady();
+
+  const canvas = createStoryCanvas();
+  const ctx = canvas.getContext('2d');
+  drawBackground(ctx);
+  const vertexX = drawHeader(ctx);
+  ctx.textAlign = 'center';
+
+  // Consejo — título destacado (Brisa de Alba) + explicación (Lino, cursiva).
+  const { title, body } = extractFirstTip(reflectionMarkdown);
+  const contentMaxWidth = 860;
+  const lineHeight = 1.75;
+  const titleBodyGap = 26;
+  const fit = fitTitleAndBody(ctx, {
+    title, body,
+    maxWidth: contentMaxWidth,
+    maxHeight: CONTENT_MAX_HEIGHT,
+    maxBodySize: 52,
+    minBodySize: 44,
+    titleScale: 1.25,
+    lineHeight,
+    gap: titleBodyGap,
+  });
+
+  const totalHeight = fit.titleHeight + fit.gap + fit.bodyHeight;
+  let blockTop = CONTENT_TOP + Math.max(0, (CONTENT_MAX_HEIGHT - totalHeight) / 2);
+
+  if (fit.titleLines.length) {
+    ctx.font = `600 ${fit.titleSize}px 'Cormorant', serif`;
+    ctx.fillStyle = ALBA;
+    let titleY = blockTop + fit.titleSize * 0.78;
+    for (const line of fit.titleLines) {
+      ctx.fillText(line, vertexX, titleY);
+      titleY += fit.titleSize * lineHeight;
+    }
+    blockTop += fit.titleHeight + fit.gap;
+  }
+
+  ctx.font = `italic 500 ${fit.bodySize}px 'Cormorant', serif`;
+  ctx.fillStyle = LINO;
+  let bodyY = blockTop + fit.bodySize * 0.78;
+  for (const line of fit.bodyLines) {
+    ctx.fillText(line, vertexX, bodyY);
+    bodyY += fit.bodySize * lineHeight;
+  }
+
+  // Separador — línea corta y tenue en Alba.
+  const sepY = CONTENT_TOP + CONTENT_MAX_HEIGHT + 20;
+  drawSeparator(ctx, vertexX, sepY);
 
   // Cita del evangelio + referencia.
   let quoteY = sepY + 76;
@@ -276,25 +393,63 @@ export async function generateLambShareImage({ reflectionMarkdown, quoteText, qu
     ctx.fillText(quoteRef, vertexX, quoteY + 12);
   }
 
-  // Firma — el signo compacto de Horeb junto a la palabra "Horeb", discreta,
-  // con tracking amplio. Centrada como un solo grupo (ícono + texto).
-  const signatureFont = "600 28px 'Cormorant', serif";
-  const signatureLetterSpacing = 28 * 0.28;
-  const signatureText = 'HOREB';
-  const signatureBaselineY = HEIGHT - 130;
-  const markHeight = 30;
-  const markTextGap = 16;
+  drawSignature(ctx, vertexX);
 
-  const textWidth = trackedTextWidth(ctx, signatureText, signatureFont, signatureLetterSpacing);
-  const groupWidth = markHeight + markTextGap + textWidth;
-  const groupStartX = vertexX - groupWidth / 2;
-
-  drawSignatureMark(ctx, groupStartX, signatureBaselineY - markHeight * 0.78, markHeight);
-  drawTrackedTextAt(ctx, signatureText, groupStartX + markHeight + markTextGap, signatureBaselineY, {
-    font: signatureFont,
-    color: ALBA,
-    letterSpacing: signatureLetterSpacing,
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => (blob ? resolve(blob) : reject(new Error('toBlob devolvió null'))), 'image/png', 0.95);
   });
+}
+
+// Genera la imagen "historia" del Versículo del Día y devuelve un Blob PNG.
+// Mismo lenguaje visual que "Ponlo en Práctica" pero más simple: el
+// contenido es corto, así que la letra es generosa y no hay bloque de cita
+// aparte (el versículo mismo es el protagonista).
+export async function generateVerseShareImage({ verseText, verseRef }) {
+  await ensureFontsReady();
+
+  const canvas = createStoryCanvas();
+  const ctx = canvas.getContext('2d');
+  drawBackground(ctx);
+  const vertexX = drawHeader(ctx);
+  ctx.textAlign = 'center';
+
+  // Versículo — protagonista, con mucho aire.
+  const verseMaxWidth = 860;
+  const lineHeight = 2;
+  const { size: verseSize, lines: verseLines } = fitText(ctx, verseText || '', {
+    maxWidth: verseMaxWidth,
+    maxHeight: CONTENT_MAX_HEIGHT,
+    maxSize: 72,
+    minSize: 44,
+    lineHeight,
+    font: size => `italic 500 ${size}px 'Cormorant', serif`,
+  });
+  const blockHeight = verseLines.length * verseSize * lineHeight;
+  let cursorY = CONTENT_TOP + Math.max(0, (CONTENT_MAX_HEIGHT - blockHeight) / 2) + verseSize * 0.78;
+  ctx.font = `italic 500 ${verseSize}px 'Cormorant', serif`;
+  ctx.fillStyle = LINO;
+  for (const line of verseLines) {
+    ctx.fillText(line, vertexX, cursorY);
+    cursorY += verseSize * lineHeight;
+  }
+
+  // Separador — línea corta y tenue en Alba.
+  const sepY = CONTENT_TOP + CONTENT_MAX_HEIGHT + 20;
+  drawSeparator(ctx, vertexX, sepY);
+
+  // Referencia — Arena del Monte.
+  if (verseRef) {
+    ctx.font = "600 30px 'Cormorant', serif";
+    ctx.fillStyle = PIEDRA;
+    const refLines = wrapAndClamp(ctx, verseRef, 760, 2);
+    let refY = sepY + 64;
+    for (const line of refLines) {
+      ctx.fillText(line, vertexX, refY);
+      refY += 40;
+    }
+  }
+
+  drawSignature(ctx, vertexX);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => (blob ? resolve(blob) : reject(new Error('toBlob devolvió null'))), 'image/png', 0.95);
