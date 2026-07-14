@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { NOCHE, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, NOCHE_DARK } from "./theme";
-import VerticeDeLuz from "./VerticeDeLuz";
+import { NOCHE, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, NOCHE_DARK, rgba } from "./theme";
+import Horeb from "./Horeb";
 
 const BG_MAIN = NOCHE;
 const GOLD = ALBA;
@@ -20,7 +20,7 @@ const OPENING_PRAYERS = {
   es: [
     { title: "Señal de la Cruz", text: "En el nombre del Padre, del Hijo y del Espíritu Santo. Amén." },
     { title: "Persignarse", text: "Por la señal de la Santa Cruz, de nuestros enemigos líbranos, Señor Dios nuestro. En el nombre del Padre, del Hijo y del Espíritu Santo. Amén." },
-    { title: "Acto de Contrición", text: "Señor mío Jesucristo, Dios y hombre verdadero, me pesa de todo corazón haberte ofendido, porque eres infinitamente bueno y porque el pecado te desagrada. Propongo firmemente, con tu gracia, confesarme, cumplir la penitencia, enmendarme y apartarme de las ocasiones de pecado. Amén." },
+    { title: "Acto de Contrición", text: "Jesús, mi Señor y Redentor, yo me arrepiento de todos los pecados que he cometido hasta hoy y me pesa de todo corazón, porque con ellos he ofendido a un Dios tan bueno.\n\nPropongo firmemente no volver a pecar y confío que por tu infinita misericordia me has de conceder el perdón de mis culpas y me has de llevar a la vida eterna.\n\nAmén." },
     { title: "Credo de los Apóstoles", text: "Creo en Dios Padre todopoderoso, Creador del cielo y de la tierra. Creo en Jesucristo, su único Hijo, Nuestro Señor, que fue concebido por obra y gracia del Espíritu Santo, nació de Santa María Virgen, padeció bajo el poder de Poncio Pilato, fue crucificado, muerto y sepultado, descendió a los infiernos, al tercer día resucitó de entre los muertos, subió a los cielos y está sentado a la derecha de Dios Padre todopoderoso. Desde allí ha de venir a juzgar a vivos y muertos. Creo en el Espíritu Santo, la santa Iglesia católica, la comunión de los santos, el perdón de los pecados, la resurrección de la carne y la vida eterna. Amén." },
   ],
   en: [
@@ -265,11 +265,11 @@ export default function Rosario({ lang = "es", onHome }) {
     return (
       <div style={{ position: "relative", background: BG_MAIN, color: CREAM, minHeight: "100vh", padding: "20px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", pointerEvents: "none" }}>
-          <div style={{ width: 300, height: 500, borderRadius: "50%", background: "rgba(232,180,92,0.08)", filter: "blur(60px)" }} />
+          <div style={{ width: 300, height: 500, borderRadius: "50%", background: rgba(GOLD, 0.08), filter: "blur(60px)" }} />
         </div>
         <div style={{ position: "relative", zIndex: 1, maxWidth: 340 }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-            <VerticeDeLuz size={40} />
+            <Horeb size={40} />
           </div>
           <div style={{ fontSize: 19, lineHeight: 1.6, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold", marginBottom: 32 }}>
             {lang === "es" ? "Dejaste el Rosario en" : "You left off at"} {describeSavedPage(savedPage, lang, mysteryKey)}.
@@ -297,7 +297,7 @@ export default function Rosario({ lang = "es", onHome }) {
     <div style={{ position: "relative", background: BG_MAIN, color: CREAM, padding: "20px 20px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       {/* Resplandor de fondo */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", pointerEvents: "none" }}>
-        <div style={{ width: 300, height: 500, borderRadius: "50%", background: `rgba(232,180,92,${page.kind === "meditation" ? 0.14 : 0.06})`, filter: "blur(60px)", transition: "background 0.4s ease" }} />
+        <div style={{ width: 300, height: 500, borderRadius: "50%", background: rgba(GOLD, page.kind === "meditation" ? 0.14 : 0.06), filter: "blur(60px)", transition: "background 0.4s ease" }} />
       </div>
 
       {/* Barra de progreso */}
@@ -339,7 +339,7 @@ export default function Rosario({ lang = "es", onHome }) {
           ) : page.kind === "meditation" ? (
             <div>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
-                <VerticeDeLuz size={40} />
+                <Horeb size={40} />
               </div>
               <div style={{ fontSize: 19, lineHeight: 2, color: CREAM, fontFamily: "'Work Sans', sans-serif", fontStyle: "italic" }}>
                 {page.text}
@@ -394,8 +394,8 @@ export default function Rosario({ lang = "es", onHome }) {
                           style={{
                             position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
                             width: 140, height: 140, borderRadius: "50%",
-                            background: `linear-gradient(135deg, rgba(232,180,92,${fillAlpha}), rgba(238,199,133,${fillAlpha}))`,
-                            boxShadow: `0 0 ${glowBlur}px rgba(232,180,92,${glowAlpha}), 0 0 ${glowBlur * 2}px rgba(232,180,92,${glowAlpha * 0.4})`,
+                            background: `linear-gradient(135deg, ${rgba(GOLD, fillAlpha)}, ${rgba(GOLD_LIGHT, fillAlpha)})`,
+                            boxShadow: `0 0 ${glowBlur}px ${rgba(GOLD, glowAlpha)}, 0 0 ${glowBlur * 2}px ${rgba(GOLD, glowAlpha * 0.4)}`,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             cursor: "pointer", userSelect: "none",
                             border: "none", outline: "none", padding: 0, WebkitTapHighlightColor: "transparent",

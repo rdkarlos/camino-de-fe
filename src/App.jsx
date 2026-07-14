@@ -9,8 +9,8 @@ import Rosario from "./Rosario";
 import Devocional, { getSantoHoy } from "./Devocional";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
-import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK } from "./theme";
-import VerticeDeLuz from "./VerticeDeLuz";
+import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba } from "./theme";
+import Horeb from "./Horeb";
 import { generateLambShareImage, gospelExcerpt } from "./shareImage";
 
 const firebaseConfig = {
@@ -35,7 +35,7 @@ if ('serviceWorker' in navigator) {
 
 const translations = {
   es: {
-    appName: "Lumora",
+    appName: "Horeb",
     tagline: "Luz que guía, amor que une",
     nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Tienda", "Configuración", "Joven Fe"],
     home: {
@@ -67,7 +67,7 @@ const translations = {
     },
   },
   en: {
-    appName: "Lumora",
+    appName: "Horeb",
     tagline: "Light that guides, love that unites",
     nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Shop", "Settings", "Youth Faith"],
     home: {
@@ -247,13 +247,13 @@ const ONBOARDING_ICONS = {
 
 const ONBOARDING_SCREENS = {
   es: [
-    { title: "Bienvenido a Lumora", text: "Tu compañero espiritual diario. Fe, oración y comunidad, siempre contigo.", icon: "logo" },
+    { title: "Bienvenido a Horeb", text: "Tu compañero espiritual diario. Fe, oración y comunidad, siempre contigo.", icon: "logo" },
     { title: "El Evangelio cada día", text: "Lee el Evangelio de cada día y encuentra una reflexión para vivirlo.", icon: "book" },
     { title: "Reza y crece", text: "Crea oraciones, reza el rosario y únete a círculos con tu familia.", icon: "cross" },
     { title: "Fe viva para jóvenes", text: "Retos de fe, testimonios y quiz bíblico para vivir tu fe con otros jóvenes.", icon: "star" },
   ],
   en: [
-    { title: "Welcome to Lumora", text: "Your daily spiritual companion. Faith, prayer, and community in your pocket.", icon: "logo" },
+    { title: "Welcome to Horeb", text: "Your daily spiritual companion. Faith, prayer, and community in your pocket.", icon: "logo" },
     { title: "The Gospel every day", text: "Read today's gospel and receive reflections that transform your life.", icon: "book" },
     { title: "Pray, grow, believe", text: "Create prayers, pray the rosary, and join circles with your family.", icon: "cross" },
     { title: "Living faith for youth", text: "Faith challenges, testimonies, and Bible quiz. Faith is the greatest adventure!", icon: "star" },
@@ -862,10 +862,10 @@ export default function App() {
     }
 
     if (blob) {
-      const file = new File([blob], 'lumora-ponlo-en-practica.png', { type: 'image/png' });
+      const file = new File([blob], 'horeb-ponlo-en-practica.png', { type: 'image/png' });
       if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: 'Ponlo en Práctica — Lumora' });
+          await navigator.share({ files: [file], title: 'Ponlo en Práctica — Horeb' });
           return;
         } catch (e) {
           if (e?.name === 'AbortError') return;
@@ -875,7 +875,7 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'lumora-ponlo-en-practica.png';
+      a.download = 'horeb-ponlo-en-practica.png';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -887,7 +887,7 @@ export default function App() {
 
     // La imagen no pudo generarse: comportamiento anterior, compartir/copiar texto.
     const shareData = {
-      title: 'Ponlo en Práctica — Lumora',
+      title: 'Ponlo en Práctica — Horeb',
       text: lambText,
       url: 'https://camino-de-fe-seven.vercel.app',
     };
@@ -1228,10 +1228,10 @@ export default function App() {
             overflow: "hidden", cursor: "pointer",
           }}
         >
-          {/* Motivo vértice de luz — esquina superior derecha, mismo lenguaje del splash y los íconos PWA */}
-          <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(232,180,92,0.11)" }} />
-          <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(232,180,92,0.13)" }} />
-          <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: GOLD, boxShadow: `0 0 8px 2px ${GOLD}99` }} />
+          {/* Resplandor atmosférico — esquina superior derecha, motivo decorativo (no la marca) */}
+          <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(228,199,155,0.11)" }} />
+          <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(228,199,155,0.13)" }} />
+          <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: BRISA_ALBA, boxShadow: `0 0 8px 2px ${BRISA_ALBA}99` }} />
 
           <div style={{ position: "relative" }}>
             <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Santo del Día' : 'Saint of the Day'}</div>
@@ -1245,9 +1245,9 @@ export default function App() {
         <div style={{ position: "relative", background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 16, padding: "16px 18px", marginBottom: 16, overflow: "hidden" }}>
           {!parroquiaActual ? (
             <div onClick={() => goToTab(8)} style={{ position: "relative", cursor: "pointer" }}>
-              <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(232,180,92,0.11)" }} />
-              <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(232,180,92,0.13)" }} />
-              <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: GOLD, boxShadow: `0 0 8px 2px ${GOLD}99` }} />
+              <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(228,199,155,0.11)" }} />
+              <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(228,199,155,0.13)" }} />
+              <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: BRISA_ALBA, boxShadow: `0 0 8px 2px ${BRISA_ALBA}99` }} />
               <div style={{ position: "relative" }}>
                 <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Tu parroquia' : 'Your parish'}</div>
                 <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5, marginBottom: 10 }}>
@@ -1333,9 +1333,9 @@ export default function App() {
         {/* Card especial Joven Fe */}
         <style>{`
           @keyframes goldPulse {
-            0% { box-shadow: 0 0 0 0 rgba(232,180,92,0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(232,180,92,0); }
-            100% { box-shadow: 0 0 0 0 rgba(232,180,92,0); }
+            0% { box-shadow: 0 0 0 0 ${rgba(GOLD, 0.4)}; }
+            70% { box-shadow: 0 0 0 10px ${rgba(GOLD, 0)}; }
+            100% { box-shadow: 0 0 0 0 ${rgba(GOLD, 0)}; }
           }
         `}</style>
         <div
@@ -1360,13 +1360,13 @@ export default function App() {
                 {lang === 'es' ? 'Fe viva para jóvenes' : 'Living faith for young people'}
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: rgba(GOLD, 0.1), border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
                   ✦ {lang === 'es' ? 'Retos' : 'Challenges'}
                 </span>
-                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: rgba(GOLD, 0.1), border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
                   ✦ {lang === 'es' ? 'Testimonios' : 'Testimonies'}
                 </span>
-                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: "rgba(232,180,92,0.1)", border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
+                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: rgba(GOLD, 0.1), border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
                   ✦ Quiz
                 </span>
               </div>
@@ -2396,7 +2396,7 @@ export default function App() {
                             <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.8, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap", marginBottom: 12 }}>
                               {before}
                             </div>
-                            <div style={{ background: "rgba(232,180,92,0.1)", borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 12, fontStyle: "italic", color: CREAM, fontSize: 14, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.7 }}>
+                            <div style={{ background: rgba(GOLD, 0.1), borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 12, fontStyle: "italic", color: CREAM, fontSize: 14, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.7 }}>
                               {line}
                             </div>
                           </>
@@ -2428,7 +2428,7 @@ export default function App() {
           <line x1="10" y1="14.5" x2="14" y2="14.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
         <div style={{ fontFamily: "'Cormorant', serif", fontSize: 22, fontWeight: 700, color: GOLD, marginBottom: 14 }}>
-          {lang === 'es' ? 'Tienda Lumora' : 'Lumora Shop'}
+          {lang === 'es' ? 'Tienda Horeb' : 'Horeb Shop'}
         </div>
         <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.7, fontFamily: "'Work Sans', sans-serif", marginBottom: 18 }}>
           {lang === 'es'
@@ -2951,7 +2951,7 @@ export default function App() {
             transform: splashIn ? "translateY(0)" : "translateY(-10px)",
             transition: "opacity 1s ease 0.25s, transform 1s ease 0.25s",
           }}>
-            <VerticeDeLuz size={120} />
+            <Horeb size={120} />
           </div>
 
           {/* App name */}
@@ -2960,7 +2960,7 @@ export default function App() {
             fontSize: 42,
             fontWeight: 600,
             color: LINO,
-            letterSpacing: 12,
+            letterSpacing: 14,
             marginTop: 18,
             textTransform: "uppercase",
           }}>{t.appName}</div>
@@ -3054,8 +3054,8 @@ export default function App() {
       <style>{`
         body { background: ${BG_MAIN}; }
         @keyframes lambPulse {
-          0%, 100% { box-shadow: 0 4px 14px rgba(232,180,92,0.5), 0 0 0 0 rgba(232,180,92,0.35); }
-          50%       { box-shadow: 0 4px 18px rgba(232,180,92,0.7), 0 0 0 9px rgba(232,180,92,0); }
+          0%, 100% { box-shadow: 0 4px 14px ${rgba(GOLD, 0.5)}, 0 0 0 0 ${rgba(GOLD, 0.35)}; }
+          50%       { box-shadow: 0 4px 18px ${rgba(GOLD, 0.7)}, 0 0 0 9px ${rgba(GOLD, 0)}; }
         }
         @keyframes sectionFadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -3075,7 +3075,7 @@ export default function App() {
         }
         .skeleton-shimmer {
           background-color: ${BG_CARD};
-          background-image: linear-gradient(90deg, rgba(232,180,92,0) 0%, rgba(232,180,92,0.15) 50%, rgba(232,180,92,0) 100%);
+          background-image: linear-gradient(90deg, ${rgba(GOLD, 0)} 0%, ${rgba(GOLD, 0.15)} 50%, ${rgba(GOLD, 0)} 100%);
           background-repeat: no-repeat;
           background-size: 400px 100%;
           animation: shimmer 1.4s ease-in-out infinite;
@@ -3103,7 +3103,7 @@ export default function App() {
             fontSize: 24, animation: lambDragging ? "none" : "lambPulse 2.5s ease-in-out infinite",
             boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
           }}
-        ><VerticeDeLuz size={24} /></button>
+        ><Horeb size={24} /></button>
       )}
 
       {/* Modal Ponlo en Práctica */}
@@ -3118,7 +3118,7 @@ export default function App() {
           >
             {/* Título centrado */}
             <div style={{ textAlign: "center", marginBottom: 4 }}>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}><VerticeDeLuz size={28} /></div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}><Horeb size={28} /></div>
               <div style={{ fontSize: 20, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", letterSpacing: 1 }}>
                 {lang === 'es' ? 'Ponlo en Práctica' : 'Put It Into Practice'}
               </div>
@@ -3281,11 +3281,11 @@ export default function App() {
             const iconColor = isActive ? GOLD : MUTED;
             const bibleStyle = {
               background: isActive
-                ? "rgba(232,180,92,0.28)"
+                ? rgba(GOLD, 0.28)
                 : isHovered
                   ? "rgba(255,255,255,0.22)"
                   : "rgba(255,255,255,0.12)",
-              border: `1px solid ${isActive ? "rgba(232,180,92,0.5)" : "rgba(255,255,255,0.2)"}`,
+              border: `1px solid ${isActive ? rgba(GOLD, 0.5) : "rgba(255,255,255,0.2)"}`,
               color: isActive ? GOLD : "rgba(255,255,255,0.75)",
             };
             const transform = isPressed ? "scale(0.95)" : isHovered ? "translateY(-2px)" : "none";
@@ -3368,7 +3368,7 @@ export default function App() {
             </div>
             {t.nav.map((n, i) => (
               (i === 4 || i === 5) ? null :
-              <button key={i} onClick={() => { goToTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? "rgba(232,180,92,0.1)" : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", textAlign: "left" }}>
+              <button key={i} onClick={() => { goToTab(i); setMenuOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "11px 20px", background: tab === i ? rgba(GOLD, 0.1) : "none", border: "none", borderLeft: tab === i ? `3px solid ${GOLD}` : "3px solid transparent", color: tab === i ? GOLD : "rgba(255,255,255,0.75)", fontSize: 15, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", textAlign: "left" }}>
                 <span style={{ display: "flex", alignItems: "center" }}>{navIcons[i](tab === i ? GOLD : "rgba(255,255,255,0.75)")}</span>
                 <span>{n}</span>
               </button>

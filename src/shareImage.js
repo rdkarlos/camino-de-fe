@@ -1,6 +1,6 @@
 // Genera la imagen "historia" (1080x1920) para compartir la reflexión de
 // "Ponlo en Práctica". Todo en Canvas 2D, sin dependencias nuevas.
-import { ALBA, NOCHE, NOCHE_DARK, LINO, CIELO, PIEDRA } from "./theme";
+import { ALBA, NOCHE, NOCHE_DARK, LINO, CIELO, PIEDRA, BRISA_ALBA, CIELO_ALTURA, SOL_NUCLEO, SOL_MEDIO, SOL_BORDE, rgba as hexToRgba } from "./theme";
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
@@ -14,12 +14,6 @@ function mixColor(hexA, hexB, t) {
   const g = Math.round(ag + (bg - ag) * t);
   const bl = Math.round(ab + (bb - ab) * t);
   return `rgb(${r}, ${g}, ${bl})`;
-}
-
-function hexToRgba(hex, alpha) {
-  const n = parseInt(hex.slice(1), 16);
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 // Las reflexiones llegan en markdown (títulos en negrita, a veces encabezados).
@@ -96,19 +90,56 @@ function fitReflection(ctx, text, { maxWidth, maxHeight, maxSize, minSize, lineH
   return { size, lines };
 }
 
-function drawTrackedText(ctx, text, centerX, y, { font, color, letterSpacing }) {
+function trackedTextWidth(ctx, text, font, letterSpacing) {
   ctx.font = font;
-  const chars = text.split('');
-  const widths = chars.map(c => ctx.measureText(c).width);
-  const totalWidth = widths.reduce((sum, w) => sum + w, 0) + letterSpacing * (chars.length - 1);
-  let cursorX = centerX - totalWidth / 2;
+  const widths = text.split('').map(c => ctx.measureText(c).width);
+  return widths.reduce((sum, w) => sum + w, 0) + letterSpacing * (text.length - 1);
+}
+
+// Dibuja texto con tracking empezando en x (alineado a la izquierda), no centrado.
+function drawTrackedTextAt(ctx, text, x, y, { font, color, letterSpacing }) {
+  ctx.font = font;
   ctx.fillStyle = color;
   ctx.textAlign = 'left';
-  chars.forEach((c, i) => {
+  let cursorX = x;
+  for (const c of text) {
+    const w = ctx.measureText(c).width;
     ctx.fillText(c, cursorX, y);
-    cursorX += widths[i] + letterSpacing;
-  });
+    cursorX += w + letterSpacing;
+  }
   ctx.textAlign = 'center';
+}
+
+// Mini signo de Horeb (sol + monte, versión simplificada) para la firma —
+// mismas proporciones que el arte nativo de Horeb.jsx (viewBox 400x320).
+// `height` es la altura del ícono en px; devuelve su ancho.
+function drawSignatureMark(ctx, x, top, height) {
+  const scale = height / 320;
+  const width = 400 * scale;
+  const cx = x + 200 * scale;
+  const sunY = top + 85 * scale;
+
+  const haloR = 90 * scale;
+  const halo = ctx.createRadialGradient(cx, sunY, 0, cx, sunY, haloR);
+  halo.addColorStop(0, hexToRgba(SOL_NUCLEO, 0.85));
+  halo.addColorStop(0.4, hexToRgba(SOL_MEDIO, 0.3));
+  halo.addColorStop(1, hexToRgba(NOCHE_DARK, 0));
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(cx, sunY, haloR, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = BRISA_ALBA;
+  ctx.lineWidth = 22 * scale;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x + 45 * scale, top + 260 * scale);
+  ctx.lineTo(cx, top + 105 * scale);
+  ctx.lineTo(x + 355 * scale, top + 260 * scale);
+  ctx.stroke();
+
+  return width;
 }
 
 async function ensureFontsReady() {
@@ -120,7 +151,7 @@ async function ensureFontsReady() {
       document.fonts.load("italic 600 60px 'Cormorant'"),
     ]);
     await document.fonts.ready;
-  } catch (e) {
+  } catch {
     // Si la carga de fuentes falla, seguimos con lo que el navegador tenga disponible.
   }
 }
@@ -142,30 +173,63 @@ export async function generateLambShareImage({ reflectionMarkdown, quoteText, qu
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  // Vértice de luz — mismo lenguaje visual que VerticeDeLuz.jsx.
+  // Horeb — el sol que asoma tras el monte, mismo diseño que Horeb.jsx
+  // (viewBox nativo 400x320), escalado y centrado en el encabezado.
   const vertexX = WIDTH / 2;
-  const vertexY = 300;
-  const haloRadius = 420;
-  const halo = ctx.createRadialGradient(vertexX, vertexY, 0, vertexX, vertexY, haloRadius);
-  halo.addColorStop(0, hexToRgba(ALBA, 0.95));
-  halo.addColorStop(0.28, hexToRgba(ALBA, 0.4));
-  halo.addColorStop(0.65, hexToRgba(ALBA, 0.08));
-  halo.addColorStop(1, hexToRgba(ALBA, 0));
+  const sunCanvasY = 260;
+  const scale = 2.3;
+  const sx = x => vertexX + (x - 200) * scale;
+  const sy = y => sunCanvasY + (y - 85) * scale;
+
+  const haloRadius = 95 * scale;
+  const halo = ctx.createRadialGradient(vertexX, sunCanvasY, 0, vertexX, sunCanvasY, haloRadius);
+  halo.addColorStop(0, hexToRgba(SOL_NUCLEO, 0.7));
+  halo.addColorStop(0.3, hexToRgba(SOL_MEDIO, 0.3));
+  halo.addColorStop(0.65, hexToRgba(SOL_BORDE, 0.05));
+  halo.addColorStop(1, hexToRgba(NOCHE_DARK, 0));
   ctx.fillStyle = halo;
   ctx.beginPath();
-  ctx.arc(vertexX, vertexY, haloRadius, 0, Math.PI * 2);
+  ctx.arc(vertexX, sunCanvasY, haloRadius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = ALBA;
+
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'miter';
+
+  // La brisa en la cima — tres líneas finas que cruzan el resplandor.
+  ctx.strokeStyle = BRISA_ALBA;
+  ctx.lineWidth = 3 * scale;
+  [65, 85, 105].forEach((lineY, i) => {
+    const half = 80 - i * 20; // 120–280, 140–260, 160–240
+    ctx.beginPath();
+    ctx.moveTo(sx(200 - half), sy(lineY));
+    ctx.lineTo(sx(200 + half), sy(lineY));
+    ctx.stroke();
+  });
+
+  // Monte principal — dos trazos que ascienden y se encuentran en la cima.
+  ctx.strokeStyle = BRISA_ALBA;
+  ctx.lineWidth = 4 * scale;
   ctx.beginPath();
-  ctx.arc(vertexX, vertexY, 34, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.moveTo(sx(45), sy(260));
+  ctx.lineTo(sx(200), sy(105));
+  ctx.lineTo(sx(355), sy(260));
+  ctx.stroke();
+
+  // Monte interior — más pequeño y tenue: nadie sube solo.
+  ctx.strokeStyle = CIELO_ALTURA;
+  ctx.lineWidth = 3 * scale;
+  ctx.beginPath();
+  ctx.moveTo(sx(125), sy(260));
+  ctx.lineTo(sx(200), sy(185));
+  ctx.lineTo(sx(275), sy(260));
+  ctx.stroke();
 
   ctx.textAlign = 'center';
 
   // Reflexión — protagonista, Cormorant cursiva, Lino.
   const reflectionPlain = stripMarkdown(reflectionMarkdown || '');
   const reflectionMaxWidth = 860;
-  const reflectionTop = 620;
+  const reflectionTop = 692;
   const reflectionMaxHeight = 780;
   const lineHeight = 1.75;
   const { size: reflectionSize, lines: reflectionLines } = fitReflection(ctx, reflectionPlain, {
@@ -212,11 +276,24 @@ export async function generateLambShareImage({ reflectionMarkdown, quoteText, qu
     ctx.fillText(quoteRef, vertexX, quoteY + 12);
   }
 
-  // Firma — LUMORA, discreta, con tracking amplio.
-  drawTrackedText(ctx, 'LUMORA', vertexX, HEIGHT - 130, {
-    font: "600 28px 'Cormorant', serif",
+  // Firma — el signo compacto de Horeb junto a la palabra "Horeb", discreta,
+  // con tracking amplio. Centrada como un solo grupo (ícono + texto).
+  const signatureFont = "600 28px 'Cormorant', serif";
+  const signatureLetterSpacing = 28 * 0.28;
+  const signatureText = 'HOREB';
+  const signatureBaselineY = HEIGHT - 130;
+  const markHeight = 30;
+  const markTextGap = 16;
+
+  const textWidth = trackedTextWidth(ctx, signatureText, signatureFont, signatureLetterSpacing);
+  const groupWidth = markHeight + markTextGap + textWidth;
+  const groupStartX = vertexX - groupWidth / 2;
+
+  drawSignatureMark(ctx, groupStartX, signatureBaselineY - markHeight * 0.78, markHeight);
+  drawTrackedTextAt(ctx, signatureText, groupStartX + markHeight + markTextGap, signatureBaselineY, {
+    font: signatureFont,
     color: ALBA,
-    letterSpacing: 28 * 0.28,
+    letterSpacing: signatureLetterSpacing,
   });
 
   return new Promise((resolve, reject) => {
