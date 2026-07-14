@@ -9,7 +9,7 @@ import Rosario from "./Rosario";
 import Devocional, { getSantoHoy } from "./Devocional";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
-import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba } from "./theme";
+import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba, mix } from "./theme";
 import Horeb from "./Horeb";
 import { generateLambShareImage, generateVerseShareImage, gospelExcerpt } from "./shareImage";
 
@@ -108,8 +108,6 @@ const CREAM = LINO;
 const CREAM_DARK = PIEDRA;
 const MUTED = CIELO;
 const WHITE = "#FFFFFF";
-const BLUE_DARK = "#1A3A5C";
-const BLUE = "#2C5F8A";
 const BG_MAIN = NOCHE;
 const BG_CARD = CARD;
 
@@ -1105,7 +1103,7 @@ export default function App() {
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,28,50,0.75)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setAuthMode(null)}>
       <div style={{ background: BG_CARD, borderRadius: 24, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 20px 60px rgba(0,0,0,0.6)", border: `1px solid ${CREAM_DARK}` }} onClick={e => e.stopPropagation()}>
         <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>✝️</div>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}><Horeb size={40} /></div>
           <div style={{ fontSize: 22, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif" }}>
             {authMode === 'register' ? (lang === 'es' ? 'Crear cuenta' : 'Create account') : (lang === 'es' ? 'Iniciar sesión' : 'Sign in')}
           </div>
@@ -1417,7 +1415,7 @@ export default function App() {
             backgroundSize: "cover", backgroundPosition: "center",
           }}
         >
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(45,27,78,0.65), rgba(30,38,48,0.65))" }} />
+          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${rgba(NOCHE_DARK, 0.7)}, ${rgba(NOCHE, 0.65)})` }} />
           <div style={{ position: "relative", padding: "22px 20px 20px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minHeight: 180, justifyContent: "space-between", boxSizing: "border-box" }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 8 }}>
@@ -3008,7 +3006,7 @@ export default function App() {
       {showSplash && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: `linear-gradient(180deg, #4B453A 0%, ${NOCHE} 34%, ${NOCHE_DARK} 100%)`,
+          background: `linear-gradient(180deg, ${mix(NOCHE, GOLD, 0.4)} 0%, ${NOCHE} 34%, ${NOCHE_DARK} 100%)`,
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center",
           opacity: splashIn && !splashOut ? 1 : 0,

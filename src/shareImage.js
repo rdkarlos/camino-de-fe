@@ -1,7 +1,7 @@
 // Genera las imágenes "historia" (1080x1920) para compartir desde Horeb:
 // el primer consejo de "Ponlo en Práctica" y el Versículo del Día.
 // Todo en Canvas 2D, sin dependencias nuevas.
-import { ALBA, NOCHE, NOCHE_DARK, LINO, CIELO, PIEDRA, BRISA_ALBA, CIELO_ALTURA, SOL_NUCLEO, SOL_MEDIO, SOL_BORDE, rgba as hexToRgba } from "./theme";
+import { ALBA, NOCHE, NOCHE_DARK, LINO, CIELO, PIEDRA, BRISA_ALBA, CIELO_ALTURA, SOL_NUCLEO, SOL_MEDIO, SOL_BORDE, rgba as hexToRgba, mix as mixColor } from "./theme";
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
@@ -10,17 +10,6 @@ const HEIGHT = 1920;
 // termina el resplandor del signo de Horeb.
 const CONTENT_TOP = 692;
 const CONTENT_MAX_HEIGHT = 780;
-
-function mixColor(hexA, hexB, t) {
-  const a = parseInt(hexA.slice(1), 16);
-  const b = parseInt(hexB.slice(1), 16);
-  const ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
-  const br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
-  const r = Math.round(ar + (br - ar) * t);
-  const g = Math.round(ag + (bg - ag) * t);
-  const bl = Math.round(ab + (bb - ab) * t);
-  return `rgb(${r}, ${g}, ${bl})`;
-}
 
 // Limpia marcas de markdown (negritas, encabezados, viñetas) de un fragmento
 // de texto ya aislado, dejando prosa simple.

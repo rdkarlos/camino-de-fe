@@ -30,3 +30,16 @@ export function rgba(hex, alpha) {
   const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+// Mezcla dos colores de la paleta (t=0 → hexA, t=1 → hexB) — para degradados
+// de dos tonos que antes se resolvían con un tercer hex suelto e inventado.
+export function mix(hexA, hexB, t) {
+  const a = parseInt(hexA.slice(1), 16);
+  const b = parseInt(hexB.slice(1), 16);
+  const ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+  const br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+  const r = Math.round(ar + (br - ar) * t);
+  const g = Math.round(ag + (bg - ag) * t);
+  const bl = Math.round(ab + (bb - ab) * t);
+  return `rgb(${r}, ${g}, ${bl})`;
+}
