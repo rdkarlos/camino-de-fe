@@ -620,13 +620,46 @@ export default function App() {
     } catch (_) {}
   }, []);
 
+  // Carga Mis Oraciones desde Firestore. Antes de leer, migra (una sola vez
+  // por dispositivo) cualquier oración heredada en localStorage de versiones
+  // anteriores de la app: se sube la que no exista ya en Firestore (comparando
+  // el texto completo de la oración) y luego se limpia localStorage, para no
+  // volver a intentarlo ni duplicar en la próxima visita.
   useEffect(() => {
     if (personalTab !== "book" || !user) return;
-    setPrayerBookLoading(true);
-    getDocs(query(collection(db, "usuarios", user.uid, "oraciones"), orderBy("fecha", "desc")))
-      .then(snap => setPrayerBook(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
-      .catch(() => {})
-      .finally(() => setPrayerBookLoading(false));
+    let cancelled = false;
+    const loadBook = async () => {
+      setPrayerBookLoading(true);
+      try {
+        let legacy = [];
+        try {
+          legacy = JSON.parse(localStorage.getItem("personal_prayers") || "[]");
+        } catch (_) {}
+        if (legacy.length) {
+          const existingSnap = await getDocs(collection(db, "usuarios", user.uid, "oraciones"));
+          const existingTexts = new Set(existingSnap.docs.map(d => (d.data().oracion || "").trim()));
+          const toUpload = legacy.filter(p => !existingTexts.has((p.oracion || "").trim()));
+          await Promise.all(toUpload.map(p => addDoc(collection(db, "usuarios", user.uid, "oraciones"), {
+            estado: p.moodLabel,
+            intencion: p.intention,
+            oracion: p.oracion,
+            fecha: new Date(p.id),
+            respondida: !!p.received,
+            ...(p.received ? { fechaRespuesta: serverTimestamp() } : {}),
+          })));
+          localStorage.removeItem("personal_prayers");
+          if (!cancelled) setSavedPrayers([]);
+        }
+        const snap = await getDocs(query(collection(db, "usuarios", user.uid, "oraciones"), orderBy("fecha", "desc")));
+        if (!cancelled) setPrayerBook(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error("[firestore] error cargando/migrando oraciones:", e.message);
+      } finally {
+        if (!cancelled) setPrayerBookLoading(false);
+      }
+    };
+    loadBook();
+    return () => { cancelled = true; };
   }, [personalTab, user]);
 
   // Carga temprana de "mis círculos" + su lastSeen, en cuanto haya sesión —
@@ -1617,40 +1650,30 @@ export default function App() {
     };
 
     const savePrayer = async () => {
-      if (!mood || !generatedPrayer) return;
-      const entry = {
-        id: Date.now(),
-        date: new Date().toLocaleDateString(lang === "es" ? "es-ES" : "en-US", { day: "numeric", month: "long", year: "numeric" }),
-        moodId: mood.id,
-        moodLabel: mood.label,
-        moodIcon: mood.icon,
-        intention: prayerIntention.trim(),
-        oracion: generatedPrayer,
-        received: false,
-      };
-      const updated = [entry, ...savedPrayers];
-      setSavedPrayers(updated);
-      localStorage.setItem("personal_prayers", JSON.stringify(updated));
-      if (user) {
-        try {
-          await addDoc(collection(db, "usuarios", user.uid, "oraciones"), {
-            estado: mood.label,
-            intencion: prayerIntention.trim(),
-            oracion: generatedPrayer,
-            fecha: serverTimestamp(),
-          });
-        } catch (e) {
-          console.error("[firestore] error guardando oración:", e.message);
-        }
+      if (!mood || !generatedPrayer || !user) return;
+      try {
+        await addDoc(collection(db, "usuarios", user.uid, "oraciones"), {
+          estado: mood.label,
+          intencion: prayerIntention.trim(),
+          oracion: generatedPrayer,
+          fecha: serverTimestamp(),
+          respondida: false,
+        });
+      } catch (e) {
+        console.error("[firestore] error guardando oración:", e.message);
+        return;
       }
       setPrayerIntention("");
       setSelectedMood(null);
       setGeneratedPrayer(null);
-      setPersonalTab("journal");
+      setPersonalTab("book");
     };
 
-    const toggleReceived = (id) => {
-      const updated = savedPrayers.map(p => p.id === id ? { ...p, received: !p.received } : p);
+    // Solo para oraciones heredadas de localStorage (versiones anteriores) —
+    // se unifica a "de un solo sentido" como en Firestore: una vez marcada,
+    // no se puede desmarcar.
+    const markLocalAnswered = (id) => {
+      const updated = savedPrayers.map(p => p.id === id ? { ...p, received: true } : p);
       setSavedPrayers(updated);
       localStorage.setItem("personal_prayers", JSON.stringify(updated));
     };
@@ -1683,6 +1706,16 @@ export default function App() {
       const updated = savedPrayers.filter(p => p.id !== id);
       setSavedPrayers(updated);
       localStorage.setItem("personal_prayers", JSON.stringify(updated));
+    };
+
+    const deletePrayerDoc = async (docId) => {
+      if (!user) return;
+      try {
+        await deleteDoc(doc(db, "usuarios", user.uid, "oraciones", docId));
+        setPrayerBook(prev => prev.filter(p => p.id !== docId));
+      } catch (e) {
+        console.error("[firestore] error borrando oración:", e.message);
+      }
     };
 
     // Shared style for the gold cross in the brand name
@@ -1946,23 +1979,6 @@ export default function App() {
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
           {[
             ["builder", "✝", lang === "es" ? "Crear Oración" : "Crear"],
-            ["journal", (() => {
-                const sel = personalTab === "journal";
-                const c = sel ? CREAM : MUTED;
-                const cr = sel ? GOLD : MUTED;
-                return (
-                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                    <rect x="3" y="2" width="14" height="18" rx="2" stroke={c} strokeWidth="1.3"/>
-                    <line x1="6.5" y1="2" x2="6.5" y2="20" stroke={c} strokeWidth="0.9"/>
-                    <line x1="8.5" y1="6"    x2="16" y2="6"    stroke={c} strokeWidth="0.8"/>
-                    <line x1="8.5" y1="8.5"  x2="16" y2="8.5"  stroke={c} strokeWidth="0.8"/>
-                    <line x1="8.5" y1="11"   x2="16" y2="11"   stroke={c} strokeWidth="0.8"/>
-                    <line x1="8.5" y1="13.5" x2="16" y2="13.5" stroke={c} strokeWidth="0.8"/>
-                    <line x1="11" y1="16" x2="11" y2="19.5" stroke={cr} strokeWidth="1.3" strokeLinecap="round"/>
-                    <line x1="9.2" y1="17.8" x2="12.8" y2="17.8" stroke={cr} strokeWidth="1.3" strokeLinecap="round"/>
-                  </svg>
-                );
-              })(), lang === "es" ? "Diario" : "Journal"],
             ["book", (() => {
                 const sel = personalTab === "book";
                 const c = sel ? CREAM : MUTED;
@@ -2071,11 +2087,15 @@ export default function App() {
                 ) : (
                   <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "16px", marginBottom: 10, textAlign: "center" }}>
                     <div style={{ fontSize: 14, color: CREAM, marginBottom: 10, fontFamily: "'Work Sans', sans-serif" }}>
-                      {lang === "es" ? "Inicia sesión para guardar tus oraciones" : "Sign in to save your prayers"}
+                      {lang === "es" ? "Crea una cuenta para guardar tus oraciones y llevarlas contigo." : "Create an account to save your prayers and carry them with you."}
                     </div>
-                    <button onClick={() => setAuthMode("login")} style={{ padding: "9px 24px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                      {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                    <button onClick={() => setAuthMode("register")} style={{ padding: "9px 24px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", marginBottom: 8 }}>
+                      {lang === "es" ? "Crear cuenta" : "Create account"}
                     </button>
+                    <div onClick={() => setAuthMode("login")} style={{ fontSize: 12, color: MUTED, cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
+                      {lang === "es" ? "¿Ya tienes cuenta? " : "Already have an account? "}
+                      <span style={{ color: GOLD, fontWeight: "bold" }}>{lang === "es" ? "Inicia sesión" : "Sign in"}</span>
+                    </div>
                   </div>
                 )}
 
@@ -2084,46 +2104,6 @@ export default function App() {
                 </button>
               </div>
             )}
-          </div>
-        ) : personalTab === "journal" ? (
-          <div>
-            {savedPrayers.length === 0 ? (
-              <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>📔</div>
-                <div style={{ fontSize: 14, marginBottom: 6 }}>{lang === "es" ? "Aún no tienes oraciones guardadas." : "No saved prayers yet."}</div>
-                <div style={{ fontSize: 13, color: MUTED }}>{lang === "es" ? "Usa Crear Oración para empezar ↑" : "Use Create Prayer to get started ↑"}</div>
-              </div>
-            ) : savedPrayers.map(p => (
-              <div key={p.id} style={{ background: BG_CARD, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${p.received ? GOLD + "66" : CREAM_DARK}`, boxShadow: p.received ? `0 2px 16px ${GOLD}22` : "0 2px 8px rgba(15,28,50,0.05)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 22 }}>{p.moodIcon}</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{p.moodLabel}</div>
-                      <div style={{ fontSize: 11, color: MUTED }}>{p.date}</div>
-                    </div>
-                  </div>
-                  {p.received && (
-                    <span style={{ fontSize: 11, background: `${GOLD}22`, color: ALBA_DARK, padding: "3px 10px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
-                      {lang === "es" ? "Recibida" : "Received"}
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ fontSize: 13, color: CREAM, lineHeight: 1.65, marginBottom: 12, fontStyle: "italic", borderLeft: `3px solid ${CREAM_DARK}`, paddingLeft: 10 }}>
-                  {p.intention.length > 140 ? p.intention.substring(0, 140) + "…" : p.intention}
-                </div>
-
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => toggleReceived(p.id)} style={{ flex: 1, padding: "7px 10px", borderRadius: 20, border: `1px solid ${p.received ? GOLD : CREAM_DARK}`, background: p.received ? `${GOLD}18` : BG_CARD, color: p.received ? GOLD : MUTED, fontSize: 12, cursor: "pointer", fontWeight: "bold" }}>
-                    {p.received ? (lang === "es" ? "Gracia recibida" : "Grace received") : `○ ${lang === "es" ? "Marcar como recibida" : "Mark as received"}`}
-                  </button>
-                  <button onClick={() => deletePrayer(p.id)} style={{ padding: "7px 12px", borderRadius: 20, border: `1px solid ${CREAM_DARK}`, background: BG_CARD, color: MUTED, fontSize: 12, cursor: "pointer" }}>
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
         ) : personalTab === "circles" ? (
           /* Círculos de Oración */
@@ -2371,117 +2351,175 @@ export default function App() {
               </div>
             )}
           </div>
-        ) : (
-          /* Pestaña: Mi Libro de Oraciones (Firestore) */
+        ) : personalTab === "book" ? (
+          /* Pestaña: Mis Oraciones — Firestore con sesión; localStorage heredado sin sesión */
           <div>
-            {!user ? (
-              <div style={{ textAlign: "center", padding: "48px 20px" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
-                <div style={{ fontSize: 14, color: CREAM, marginBottom: 16, fontFamily: "'Work Sans', sans-serif" }}>
-                  {lang === "es" ? "Inicia sesión para ver tu libro de oraciones" : "Sign in to see your prayer book"}
-                </div>
-                <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                  {lang === "es" ? "Iniciar sesión" : "Sign in"}
-                </button>
-              </div>
-            ) : prayerBookLoading ? (
-              <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
-                <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tus oraciones..." : "Loading your prayers..."}</div>
-              </div>
-            ) : prayerBook.length === 0 ? (
-              <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
-                <div style={{ fontSize: 14, marginBottom: 6 }}>{lang === "es" ? "Aún no tienes oraciones guardadas." : "No prayers saved yet."}</div>
-                <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea tu primera oración ↑" : "Create your first prayer ↑"}</div>
-              </div>
-            ) : prayerBook.map(p => {
-              const isOpen = expandedPrayerId === p.id;
-              const previewText = p.intencion
-                ? p.intencion
-                : p.oracion.split('\n').filter(l => l.trim()).slice(0, 2).join(' ');
-              return (
-                <div key={p.id} style={{ background: BG_CARD, borderRadius: 16, marginBottom: 14, overflow: "hidden", border: `1px solid ${p.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: p.respondida ? `0 4px 20px ${GOLD}28` : "0 2px 10px rgba(15,28,50,0.06)" }}>
-                  {/* Header — clic para expandir/colapsar */}
-                  <div onClick={() => setExpandedPrayerId(isOpen ? null : p.id)} style={{ background: p.respondida ? `linear-gradient(135deg, ${NAVY_DARK}, #432B00)` : `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                      <span style={{ fontSize: 24, flexShrink: 0 }}>{getMoodIcon(p.estado)}</span>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: "bold", color: WHITE, fontFamily: "'Work Sans', sans-serif" }}>{p.estado}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>{formatFirestoreDate(p.fecha)}</div>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                      {p.respondida && (
-                        <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: CREAM, fontSize: 11, fontWeight: "bold", padding: "4px 10px", borderRadius: 20 }}>
-                          {lang === "es" ? "Respondida" : "Answered"}
-                        </span>
-                      )}
-                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{isOpen ? "▲" : "▼"}</span>
-                    </div>
-                  </div>
+            {(() => {
+              const list = user
+                ? prayerBook.map(p => ({
+                    source: "firestore",
+                    id: p.id,
+                    moodIcon: getMoodIcon(p.estado),
+                    moodLabel: p.estado,
+                    intencion: p.intencion,
+                    oracion: p.oracion,
+                    respondida: !!p.respondida,
+                    fechaLabel: formatFirestoreDate(p.fecha),
+                  }))
+                : savedPrayers.map(p => ({
+                    source: "local",
+                    id: p.id,
+                    moodIcon: p.moodIcon,
+                    moodLabel: p.moodLabel,
+                    intencion: p.intention,
+                    oracion: p.oracion,
+                    respondida: !!p.received,
+                    fechaLabel: p.date,
+                  }));
 
-                  {/* Vista colapsada: intención o primeras 2 líneas */}
-                  {!isOpen && (
-                    <div className="expand-fade" style={{ padding: "12px 16px", borderTop: `1px solid ${CREAM_DARK}` }}>
-                      <div style={{ fontSize: 13, color: p.intencion ? CREAM : MUTED, lineHeight: 1.6, fontStyle: p.intencion ? "italic" : "normal" }}>
-                        {previewText.length > 120 ? previewText.substring(0, 120) + "…" : previewText}
+              if (user && prayerBookLoading) {
+                return (
+                  <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+                    <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
+                    <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tus oraciones..." : "Loading your prayers..."}</div>
+                  </div>
+                );
+              }
+
+              if (list.length === 0) {
+                return (
+                  <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                    <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
+                    <div style={{ fontSize: 14, color: CREAM, marginBottom: 6, fontFamily: "'Work Sans', sans-serif" }}>
+                      {lang === "es" ? "Aún no tienes oraciones guardadas." : "No prayers saved yet."}
+                    </div>
+                    {user ? (
+                      <div style={{ fontSize: 13, color: MUTED }}>{lang === "es" ? "Crea tu primera oración ↑" : "Create your first prayer ↑"}</div>
+                    ) : (
+                      <div style={{ marginTop: 14 }}>
+                        <div style={{ fontSize: 14, color: CREAM, marginBottom: 10, fontFamily: "'Work Sans', sans-serif" }}>
+                          {lang === "es" ? "Crea una cuenta para guardar tus oraciones y llevarlas contigo." : "Create an account to save your prayers and carry them with you."}
+                        </div>
+                        <button onClick={() => setAuthMode("register")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", marginBottom: 8 }}>
+                          {lang === "es" ? "Crear cuenta" : "Create account"}
+                        </button>
+                        <div onClick={() => setAuthMode("login")} style={{ fontSize: 12, color: MUTED, cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
+                          {lang === "es" ? "¿Ya tienes cuenta? " : "Already have an account? "}
+                          <span style={{ color: GOLD, fontWeight: "bold" }}>{lang === "es" ? "Inicia sesión" : "Sign in"}</span>
+                        </div>
                       </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  {!user && (
+                    <div style={{ background: `${GOLD}14`, border: `1px solid ${GOLD}55`, borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 13, color: CREAM, fontFamily: "'Work Sans', sans-serif", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      <span>{lang === "es" ? "Estas oraciones quedaron guardadas solo en este dispositivo. Crea una cuenta para conservarlas y llevarlas contigo." : "These prayers are saved only on this device. Create an account to keep them and carry them with you."}</span>
+                      <button onClick={() => setAuthMode("register")} style={{ padding: "7px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", flexShrink: 0 }}>
+                        {lang === "es" ? "Crear cuenta" : "Create account"}
+                      </button>
                     </div>
                   )}
-
-                  {/* Vista expandida: intención resaltada + oración completa */}
-                  {isOpen && (
-                    <div className="expand-fade" style={{ padding: "16px 16px 14px" }}>
-                      {p.intencion && (
-                        <div style={{ background: `${GOLD}18`, borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 14 }}>
-                          <div style={{ fontSize: 11, color: ALBA_DARK, fontWeight: "bold", marginBottom: 4, letterSpacing: 0.5 }}>
-                            {lang === "es" ? "Tu intención" : "Your intention"}
+                  {list.map(p => {
+                    const isOpen = expandedPrayerId === p.id;
+                    const previewText = p.intencion
+                      ? p.intencion
+                      : p.oracion.split('\n').filter(l => l.trim()).slice(0, 2).join(' ');
+                    const onMarkAnswered = () => p.source === "firestore" ? markAnswered(p.id) : markLocalAnswered(p.id);
+                    const onDelete = () => p.source === "firestore" ? deletePrayerDoc(p.id) : deletePrayer(p.id);
+                    return (
+                      <div key={p.id} style={{ background: BG_CARD, borderRadius: 16, marginBottom: 14, overflow: "hidden", border: `1px solid ${p.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: p.respondida ? `0 4px 20px ${GOLD}28` : "0 2px 10px rgba(15,28,50,0.06)" }}>
+                        {/* Header — clic para expandir/colapsar */}
+                        <div onClick={() => setExpandedPrayerId(isOpen ? null : p.id)} style={{ background: p.respondida ? `linear-gradient(135deg, ${NAVY_DARK}, #432B00)` : `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                            <span style={{ fontSize: 24, flexShrink: 0 }}>{p.moodIcon}</span>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 14, fontWeight: "bold", color: WHITE, fontFamily: "'Work Sans', sans-serif" }}>{p.moodLabel}</div>
+                              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>{p.fechaLabel}</div>
+                            </div>
                           </div>
-                          <div style={{ fontSize: 14, color: CREAM, fontStyle: "italic", lineHeight: 1.65, fontFamily: "'Work Sans', sans-serif" }}>
-                            {p.intencion}
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                            {p.respondida && (
+                              <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: CREAM, fontSize: 11, fontWeight: "bold", padding: "4px 10px", borderRadius: 20 }}>
+                                {lang === "es" ? "Respondida" : "Answered"}
+                              </span>
+                            )}
+                            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{isOpen ? "▲" : "▼"}</span>
                           </div>
                         </div>
-                      )}
-                      {(() => {
-                        const moodId = [...PRAYER_MOODS.es, ...PRAYER_MOODS.en].find(m => m.label === p.estado)?.id;
-                        const prefixEs = PRAYER_INTENTION_PREFIX.es[moodId] || PRAYER_INTENTION_PREFIX.es.otra;
-                        const prefixEn = PRAYER_INTENTION_PREFIX.en[moodId] || PRAYER_INTENTION_PREFIX.en.otra;
-                        const legacyMarker = lang === "es" ? "Te lo pido especialmente por" : "I especially pray for";
-                        const marker = [prefixEs, prefixEn, legacyMarker].find(m => p.oracion.includes(m)) || legacyMarker;
-                        const idx = p.oracion.indexOf(marker);
-                        if (idx === -1) {
-                          return (
-                            <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.8, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
-                              {p.oracion}
+
+                        {/* Vista colapsada: intención o primeras 2 líneas */}
+                        {!isOpen && (
+                          <div className="expand-fade" style={{ padding: "12px 16px", borderTop: `1px solid ${CREAM_DARK}` }}>
+                            <div style={{ fontSize: 13, color: p.intencion ? CREAM : MUTED, lineHeight: 1.6, fontStyle: p.intencion ? "italic" : "normal" }}>
+                              {previewText.length > 120 ? previewText.substring(0, 120) + "…" : previewText}
                             </div>
-                          );
-                        }
-                        const before = p.oracion.substring(0, idx).trimEnd();
-                        const line = p.oracion.substring(idx).trim();
-                        return (
-                          <>
-                            <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.8, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap", marginBottom: 12 }}>
-                              {before}
+                          </div>
+                        )}
+
+                        {/* Vista expandida: intención resaltada + oración completa */}
+                        {isOpen && (
+                          <div className="expand-fade" style={{ padding: "16px 16px 14px" }}>
+                            {p.intencion && (
+                              <div style={{ background: `${GOLD}18`, borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 14 }}>
+                                <div style={{ fontSize: 11, color: ALBA_DARK, fontWeight: "bold", marginBottom: 4, letterSpacing: 0.5 }}>
+                                  {lang === "es" ? "Tu intención" : "Your intention"}
+                                </div>
+                                <div style={{ fontSize: 14, color: CREAM, fontStyle: "italic", lineHeight: 1.65, fontFamily: "'Work Sans', sans-serif" }}>
+                                  {p.intencion}
+                                </div>
+                              </div>
+                            )}
+                            {(() => {
+                              const moodId = [...PRAYER_MOODS.es, ...PRAYER_MOODS.en].find(m => m.label === p.moodLabel)?.id;
+                              const prefixEs = PRAYER_INTENTION_PREFIX.es[moodId] || PRAYER_INTENTION_PREFIX.es.otra;
+                              const prefixEn = PRAYER_INTENTION_PREFIX.en[moodId] || PRAYER_INTENTION_PREFIX.en.otra;
+                              const legacyMarker = lang === "es" ? "Te lo pido especialmente por" : "I especially pray for";
+                              const marker = [prefixEs, prefixEn, legacyMarker].find(m => p.oracion.includes(m)) || legacyMarker;
+                              const idx = p.oracion.indexOf(marker);
+                              if (idx === -1) {
+                                return (
+                                  <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.8, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
+                                    {p.oracion}
+                                  </div>
+                                );
+                              }
+                              const before = p.oracion.substring(0, idx).trimEnd();
+                              const line = p.oracion.substring(idx).trim();
+                              return (
+                                <>
+                                  <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.8, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap", marginBottom: 12 }}>
+                                    {before}
+                                  </div>
+                                  <div style={{ background: rgba(GOLD, 0.1), borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 12, fontStyle: "italic", color: CREAM, fontSize: 14, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.7 }}>
+                                    {line}
+                                  </div>
+                                </>
+                              );
+                            })()}
+                            <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+                              {!p.respondida && (
+                                <button onClick={onMarkAnswered} style={{ flex: 1, padding: "10px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
+                                  {lang === "es" ? "Respondida" : "Answered"}
+                                </button>
+                              )}
+                              <button onClick={onDelete} style={{ padding: "10px 14px", background: BG_CARD, color: MUTED, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 13, cursor: "pointer" }}>
+                                ✕
+                              </button>
                             </div>
-                            <div style={{ background: rgba(GOLD, 0.1), borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 12, fontStyle: "italic", color: CREAM, fontSize: 14, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.7 }}>
-                              {line}
-                            </div>
-                          </>
-                        );
-                      })()}
-                      {!p.respondida && (
-                        <button onClick={() => markAnswered(p.id)} style={{ marginTop: 14, width: "100%", padding: "10px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
-                          {lang === "es" ? "Respondida" : "Answered"}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
               );
-            })}
+            })()}
           </div>
-        )}
+        ) : null}
       </div>
     );
   };
