@@ -1,17 +1,18 @@
 # Horeb (antes Lumora / Camino de Fe)
 
-> **Migración de marca — nombre completado (13 jul).** El nombre visible en la app, el splash, el manifest, index.html y la firma de las imágenes compartidas ya dicen **Horeb**. Las claves de `localStorage` (`lumora_*`) se dejaron sin tocar a propósito — son internas, invisibles para el usuario, y renombrarlas perdería el progreso guardado de quien tenga un Rosario a medias. Pendiente: revisar tono/copy (eslogan "Sube. Vuelve distinto." vs. el tagline actual "Luz que guía, amor que une").
+> Migración de marca COMPLETA: nombre, signo, paleta y dominio propio.
 
 ## URLs
-- Producción: https://camino-de-fe-seven.vercel.app
-- **Dominios comprados:** somoshoreb.com (principal) y somoshoreb.app (redirige al .com)
+- Producción: https://somoshoreb.com (dominio principal, conectado)
+- www.somoshoreb.com → redirige a somoshoreb.com (308)
+- camino-de-fe-seven.vercel.app → redirige a somoshoreb.com (308) — dominio de Vercel, se mantiene vivo para no romper enlaces viejos
 - GitHub: github.com/rdkarlos/camino-de-fe
 - Local: C:\Users\rdkar\camino-de-fe
 
 ## Entorno de desarrollo
-- `npm run dev` → http://localhost:5173/ — funciona bien, usarlo para iterar rápido en vez de hacer push a Vercel
+- `npm run dev` → http://localhost:5173/ — usarlo para iterar rápido en vez de hacer push a Vercel en cada cambio
 - `npm run dev -- --host` → expone la app en la red local; abrir la IP resultante en el celular (misma WiFi) para ver en vivo
-- **Nota:** las rutas `/api/*` NO corren con vite a secas (son funciones serverless de Vercel). El evangelio y las lecturas pueden fallar en local — no es un bug.
+- **Nota:** las rutas `/api/*` no corren con vite a secas (son funciones serverless de Vercel). El evangelio y las lecturas pueden fallar en local — no es un bug.
 
 ## Stack
 - React + Vite + Vercel (plan Hobby)
@@ -21,50 +22,55 @@
 ## Marca — Somos Horeb
 - **Nombre:** Horeb. **Firma:** Somos Horeb. **Eslogan:** *Sube. Vuelve distinto.*
 - **Por qué Horeb:** el monte donde Dios no estaba en el viento, ni el terremoto, ni el fuego — sino en una brisa suave. Moisés y Elías subieron cansados, "con lo que les quedaba".
-- **El "somos" no es decorativo:** dice comunidad. Nadie sube solo. Diferencia a Horeb de Hallow y Ora, que son experiencias individuales.
-- **Nombres descartados y por qué:**
-  - **Tabor** — existe una app de citas rusa con 17M de descargas. Colisión de descubrimiento.
-  - **Lumora** — saturadísimo: media docena de apps de bienestar/belleza/skincare, incluida una de manifestación New Age. Dominios tomados.
-  - **Tabita** — marca de calzado brasileña en 45 países.
-  - Emaús, Cenáculo, Betania, Nazaret — todos tomados.
-  - **Lección:** entre más obvio y bíblico el nombre, más probable que ya lo tengan.
-- **Competencia:** Hallow (#1, millones de usuarios, tono épico y de disciplina) y **Ora** (app católica ES/EN/PT de una colombiana, mismas funciones que Horeb). Diferenciador de Horeb: **comunidad + parroquias**.
+- **El "somos" no es decorativo:** dice comunidad. Nadie sube solo. Diferencia a Horeb de Hallow y Ora (individuales).
+- **Nombres descartados:** Tabor (app de citas rusa, 17M descargas), Lumora (saturado: apps de bienestar/belleza/skincare, incluida una de manifestación New Age), Tabita (marca de calzado brasileña), Emaús/Cenáculo/Betania/Nazaret (todos tomados). Lección: entre más obvio el nombre bíblico, más probable que ya lo tengan.
+- **Competencia:** Hallow (#1, épico/disciplina) y Ora (colombiana, mismas funciones). Diferenciador de Horeb: comunidad + parroquias.
 
 ## Identidad visual
 ### El signo (logo)
-- Sol (disco claro con halo radial) asomando **detrás** del monte
-- **Tres líneas horizontales** que descienden estrechándose, convergiendo hacia la cima — la brisa
-- **Monte principal**: dos trazos que ascienden y se cruzan en la cima
-- **Monte interior**: V más pequeña, en **Cielo de Altura** (gris-azulado, no dorado) — perspectiva atmosférica, el monte de atrás se ve más lejano. Es el *somos*: nadie sube solo.
-- `src/Horeb.jsx` — componente con prop `background` (default `false` = transparente)
-  - **Sin fondo:** splash, meditación del Rosario, botón flotante, modal
-  - **Con fondo:** favicon e íconos PWA (cuadrados opacos). El viewBox es 400×320 (no cuadrado) — hay que compensar con lienzo cuadrado o quedan franjas transparentes.
-- **Umbral de simplificación: 32px.** Por debajo, se omiten las tres líneas y el monte interior (se verían como un borrón) y el monte usa trazo más grueso.
-- IDs de gradientes con `useId()` — sin esto, dos logos en la misma pantalla se pisan.
-- **El logo NO va en las tarjetas de la app.** Ahí va un motivo decorativo (círculos difusos + punto de luz en Brisa de Alba). El logo se reserva para splash, favicon/PWA y firma de imágenes compartidas. Repetirlo en cada tarjeta lo devalúa.
+- `src/Horeb.jsx` — sol asomando detrás del monte, tres líneas horizontales descendentes que se estrechan hacia la cima (la brisa), monte principal (dos trazos) y monte interior más tenue en Cielo de Altura (el *somos*, perspectiva atmosférica)
+- Prop `background` (default `false` = transparente). Con fondo: favicon e íconos PWA (viewBox no cuadrado, 400×320 — cuidado al forzar tamaño cuadrado)
+- **Umbral de simplificación: 32px.** Por debajo, se omiten las tres líneas y el monte interior
+- IDs de gradientes con `useId()`
+- **El logo NO va en las tarjetas de la app** (Santo del Día, Parroquia) — ahí va un motivo decorativo (círculos difusos + punto de luz, en Brisa de Alba). El logo se reserva para splash, favicon/PWA y firma de imágenes compartidas
+- Reemplaza también el ícono del modal de login (antes: emoji ✝️, que se veía morado en algunos dispositivos por el renderizado del sistema)
 
-### Paleta (brand book Horeb)
-| Nombre | Hex | Uso |
+### Paleta (brand book Horeb) — migrada
+| Nombre | Hex | Antes (Lumora) |
 |---|---|---|
-| Noche de Horeb | `#1E2630` | Fondo (sin cambios) |
-| Brisa de Alba | `#E4C79B` | Acento principal (antes: Luz del Alba `#E8B45C`) |
-| Lino | `#F5F1E8` | Texto (sin cambios) |
-| Cielo de Altura | `#8497A6` | UI secundaria |
-| Arena del Monte | `#C7B79C` | Neutro cálido |
-| Verde Zarza | `#7A8C6E` | **Nuevo, sin uso asignado aún** |
+| Noche de Horeb | `#1E2630` | sin cambio |
+| Brisa de Alba (ALBA) | `#E4C79B` | `#E8B45C` |
+| Lino | `#F5F1E8` | sin cambio |
+| Cielo de Altura (CIELO) | `#8497A6` | `#7E97AB` |
+| Arena del Monte (PIEDRA) | `#C7B79C` | `#B8AE9C` |
+| Verde Zarza | `#7A8C6E` | nuevo, **sin uso asignado aún** |
 
-- Deliberadamente lejos del morado/dorado oscuro de Hallow. *"La luz de Horeb es una brisa cálida de amanecer, no un vitral"*.
-- **Tipografía:** Cormorant (títulos), Work Sans (interfaz) — sin cambios, el brand book las confirma.
+- `theme.js` exporta `rgba(hex, alpha)` y `mix(colorA, colorB, ratio)` como utilidades centralizadas — **no dejar rgba/mix hardcodeados en componentes**. Se migraron 18 casos que estaban sueltos en App.jsx/Rosario.jsx.
+- Contraste verificado: Brisa de Alba tiene MÁS contraste que el dorado anterior contra Noche (9.4:1 vs 8.1:1) — lo que baja es la saturación, no la legibilidad.
+- Verdes de éxito y rojos de error son colores semánticos (no de marca) — no se tocan.
+- **Tipografía:** Cormorant (títulos), Work Sans (interfaz) — sin cambios.
+
+### Fósiles de marca encontrados y limpiados
+Durante la migración aparecieron restos de versiones anteriores que ningún grep de texto detectaba (colores hardcodeados a mano, no componentes importados):
+- Íconos PWA (`generate-icons.js`): tenían una cruz sobre azul marino `#1B2A4A` — ni siquiera era el vértice de luz viejo, sino algo anterior a eso
+- Favicon: vértice de luz viejo en `#E8B45C`
+- Tarjetas de Santo del Día y Parroquia: resplandor copiado a mano (ahora usan `rgba(ALBA,...)` del theme)
+- Overlay de "Joven Fe": morado `rgba(45,27,78,...)` sin relación con la paleta
+- Splash: degradado superior con `#4B453A` hardcodeado
+- `public/icons.svg`: sprite huérfano de un boilerplate (Bluesky, Discord, GitHub) — borrado, no se usaba
+- Constantes muertas `BLUE`/`BLUE_DARK` en App.jsx — eliminadas
+- **Lección:** si algo es un motivo de marca, debe ser un componente importado, no una copia manual — así el próximo cambio de marca no deja fósiles.
+- **Pendiente, no urgente:** `api/confirm-payment.js` (email de pago) tiene su propia paleta vieja (vino tinto + dorado antiguo). Se deja así hasta que la Tienda esté activa de verdad (hoy Wompi en test, nadie recibe esos correos).
 
 ### Tono
-- Tuteo. Español neutro (México, Madrid o Buenos Aires). Sin regionalismos ni clericalismos.
-- *"El susurro, no el grito"* — Dios estaba en la brisa. La palabra justa; si sobra, se quita.
-- Invita, no ordena. *"Sube con la fe que traigas hoy"*.
-- **Nunca:** rachas, gamificación culposa, "¡No pierdas tu racha!", emojis pictóricos.
+- Tuteo, español neutro, sin regionalismos ni clericalismos
+- *"El susurro, no el grito"* — la palabra justa, si sobra se quita
+- Invita, no ordena
+- Nunca: rachas, gamificación culposa, emojis pictóricos
 
 ## Secciones
 1. **Inicio** — Bloque "Hoy": Versículo → Evangelio → Santo del Día → Misas de tu parroquia. Separador. Bloque "Tu camino": Oración Personal → Joven Fe
-2. Oración Personal — Mi Oración (Crear, Diario, Mis Oraciones, Conec✝2), Rosario, Devocional
+2. **Oración Personal** — Mi Oración (Crear Oración, Mis Oraciones, Diario, Conec✝2), Rosario, Devocional
 3. Evangelio — "Ponlo en Práctica"
 4. La Biblia — LBLA
 5. Lecturas del día
@@ -74,144 +80,128 @@
 9. Configuración — incluye "Tu parroquia"
 10. Joven Fe
 
-## APIs activas
-- Universalis — lecturas del día (única fuente litúrgica, siempre en inglés)
-- API.Bible — LBLA español, Bible ID: `e3f420b9665abaeb-01`
-- Anthropic API — "Ponlo en Práctica"
-- Firebase — project: `camino-de-fe-4d9c2`
-- Wompi (test), Resend
+## Mi Oración — 4 pestañas (reestructurado 14 jul 2026)
 
-## Flujo de traducción de lecturas
-- Universalis entrega todo en inglés. `parseRef()` convierte la referencia a ID de pasaje y pide traducción a API.Bible.
-- Maneja numeración alterna de salmos con letra de capítulo ("Psalm 113B(115)" → Salmo 115). El número entre paréntesis es el correcto.
-- Fallback sereno + toggle "Ver en inglés" si falla.
+### Historia: por qué se unificó Diario + Mis Oraciones
+Existían dos pestañas ("Diario" y "Mis Oraciones") mostrando el mismo tipo de contenido (intenciones creadas en "Crear Oración") con capacidades partidas: Diario leía localStorage y permitía borrar pero no sincronizaba; Mis Oraciones leía Firestore y sincronizaba pero no permitía borrar. Era redundancia confusa, no dos funciones distintas. Se unificaron en una sola "Mis Oraciones", liberando el nombre "Diario" para una función nueva y genuina.
 
-## Cron de reflexión diaria (IMPORTANTE)
-- `api/cron-reflexion.js` y `api/spiritual-guide.js` usan **firebase-admin**, no el SDK de cliente.
-- Motivo: el SDK de cliente corre anónimo en serverless y Firestore lo rechaza. El admin SDK omite las reglas por diseño.
-- Credencial: `FIREBASE_SERVICE_ACCOUNT_BASE64` en Vercel. Nunca en el repo.
-- Detalle: en admin SDK, `snapshot.exists` es PROPIEDAD (sin paréntesis).
-- **Bug histórico resuelto (11 jul):** el cron nunca había escrito por sí solo; el contenido lo guardaba un usuario logueado sin saberlo.
-- ✅ **Verificado (12 jul):** el cron SÍ se dispara solo en plan Hobby.
+### Crear Oración
+- Grid de 8 estados de ánimo → versículo + santo patrono (datos estáticos) → intención en texto libre → botón "Orar" (concatena plantillas fijas, no hay IA real pese al nombre `generatePrayer`)
+- Guardar requiere sesión (ya era así). Sin sesión: invitación serena a crear cuenta, sin bloquear la creación, solo el guardado.
+- Ya no escribe doble (antes: localStorage + Firestore a la vez). Ahora solo Firestore si hay sesión.
 
-## Seguridad Firestore — endurecida ✅ (12 jul 2026)
-- **usuarios/{uid} y subcolecciones:** solo el propio usuario
-- **reflexiones, versiculos, parroquias:** lectura pública, **escritura bloqueada** (`if false`). Solo el servidor escribe vía admin.
-- **circulos:** lectura pública (para unirse por código). Update limitado a `hasOnly(['miembros','ultimaIntencionFecha','ultimaIntencionAutorId'])` y solo miembros. Delete solo el creador.
-- **circulos/{id}/intenciones:** solo miembros. Create requiere `autorId == request.auth.uid`. Delete: el autor o el creador (modera).
-- Verificado: sin cuenta se ve todo el contenido devocional; con cuenta funcionan círculos, intenciones y moderación.
+### Mis Oraciones (unificada)
+- Con sesión: Firestore como fuente única (`usuarios/{uid}/oraciones`), sincroniza entre dispositivos
+- **Ahora permite borrar** (hueco cerrado — antes no se podía desde esta pestaña)
+- **Migración automática de datos heredados:** al iniciar sesión, compara localStorage["personal_prayers"] contra Firestore por texto (trimmed); lo que no exista se sube preservando la fecha original (`new Date(id)`, no `serverTimestamp()`, para no perder el orden cronológico); al terminar, limpia localStorage
+- Sin sesión: si hay oraciones heredadas en localStorage, se muestran con banner de invitación a crear cuenta arriba (siguen visibles y editables mientras tanto)
+- Ya no es el `else` implícito del selector de tabs — ahora es un caso explícito (evita fragilidad si se agregan más tabs)
 
-## Santo Rosario — alineado a la Santa Sede
-- Fuente: vatican.va — 20 misterios oficiales + citas bíblicas
-- **Misterio del día anclado a America/Bogota** (`Intl.DateTimeFormat('en-US', {timeZone, weekday:'short'})`, locale fijo)
-  - Lunes/sábado: gozosos · Martes/viernes: dolorosos · Miércoles/domingo: gloriosos · Jueves: luminosos
-- **6 pasos (español):** Anuncio → **Meditación (cita bíblica)** → Padre Nuestro → 10 Ave Marías → Gloria → Jaculatoria. 40 pantallas.
-- **Inglés: 5 pasos, sin meditación** — faltan las citas oficiales en inglés. **NO inventar traducciones.**
-- **Contador "luz que crece":** anillo de 10 cuentas; el círculo central se enciende progresivamente (alpha 0.55→1.0, halo 14→40px, transición CSS 0.4s). La décima culmina en resplandor pleno.
-- **Sin contadores de pasos en texto** — solo la barra de progreso.
-- **Persistencia:** localStorage (`lumora_rosario_progress_v1`) con `{date, mysteryKey, pageIndex, aveCounts}`. Ofrece retomar solo si es de HOY y del misterio de hoy. Un rosario de ayer se ignora en silencio.
-- **Textos litúrgicos copiados LITERAL** (comillas angulares «», espaciado exacto de referencias). No normalizar.
-- **Acto de Contrición:** se usa la fórmula colombiana/latinoamericana (*"Jesús, mi Señor y Redentor..."*), NO la tradicional española (*"Señor mío Jesucristo..."*). Ambas son válidas; se eligió la que reza el público objetivo.
+### Diario (nuevo, 14 jul 2026)
+- **Distinto de Mis Oraciones:** no son intenciones, es gratitud y reflexión — mirar hacia atrás en el día, no pedir hacia adelante
+- `src/diarioPreguntas.js` — 30 preguntas fijas, una por día del mes, en tono Horeb (examen ignaciano + gratitud, nunca de culpa)
+- La pregunta del día se elige por el **día del mes**, anclado a `America/Bogota` (mismo patrón que el resto del proyecto). Día 31 → reutiliza la pregunta del día 30.
+- **Una entrada por día**, reforzado en la lógica (no solo en la interfaz): el ID del documento en Firestore ES la fecha de hoy (`setDoc` con ID determinístico) — Firestore mismo impide una segunda escritura el mismo día.
+- **Las entradas NO se pueden editar ni borrar** una vez guardadas — es un diario real, no una nota.
+- Se pueden releer las entradas anteriores (fecha + pregunta que respondió + texto), de más reciente a más antigua.
+- Requiere sesión — reutiliza el mismo patrón de invitación que Mis Oraciones.
+- Persistencia: `usuarios/{uid}/diario/{fecha}`. Cubierto por la regla existente `match /usuarios/{userId}/{document=**}` — no hizo falta publicar reglas nuevas.
 
-## Parroquias — misas
-- Colección `parroquias` en Firestore. Datos del directorio oficial de la Diócesis de Zipaquirá.
-- **`horarioMisas`:** objeto por día; cada misa es `{hora, lugar?}`. El `lugar` solo si NO es en la iglesia principal (ej. Santísima Trinidad tiene misa en el Cementerio los sábados y en el Salón comunal de La Palma los domingos). **Sin ese campo, mandaríamos gente al sitio equivocado.**
-- 3 parroquias cargadas (Cajicá): Virgen del Rosario de Calahorra, Inmaculada Concepción, Santísima Trinidad. Falta San José de Ríogrande.
-- `seed-parroquias.mjs` — script de carga (usa firebase-admin, requiere `FIREBASE_SERVICE_ACCOUNT_BASE64` en el entorno)
-- Parroquia del usuario: `parroquiaId` en `usuarios/{uid}`. Una sola, editable desde Configuración.
-- Tarjeta en Inicio con 3 estados: invitación / misas de hoy / semana expandida. Día anclado a Bogotá. **La agrupación de días no sobregeneraliza** (verificado: en Calahorra el lunes queda separado).
-- **La fuente no se muestra en la tarjeta** (rompía el tono). Vive en Configuración: *"Estos horarios vienen del directorio de la Diócesis de Zipaquirá, actualizado el 12 de julio de 2026. Si algo cambió, escríbenos y lo corregimos."*
+### Conec✝2 (sin cambios)
+- La más completa de las 4 pestañas originales: círculos privados/públicos, compartir intenciones, botón "Estoy orando", borrar con permisos, abandonar círculo, límite de 10 miembros, rastro de luz de actividad nueva.
 
-## Compartir como imagen
-- `src/shareImage.js` — genera imagen 1080×1920 (formato historia) en Canvas 2D
-- Diseño: degradado alba→noche descendente, signo de Horeb arriba, contenido en Cormorant cursiva, cita del evangelio, firma al pie. **Sin fecha** (para que no caduque).
-- Autoajuste de fuente según longitud; recorte elegante si no cabe
-- Espera `document.fonts.ready` antes de dibujar (si no, el canvas usa una fuente por defecto)
-- Aplana el markdown (las negritas saldrían como asteriscos literales)
-- `index.html`: se agregaron las variantes **itálicas** de Cormorant
-- Comparte vía Web Share API con `files`; fallback a descarga
-- **Canal de crecimiento orgánico clave:** cada imagen compartida lleva la marca a chats y estados de WhatsApp
-
-## Navegación
-- `goToTab(i)` centralizado resetea `personalSection`, `personalTab`, `devocionalInitialTab` al cambiar de sección. Cada entrada arranca limpia.
-- **EXCEPCIÓN — La Biblia:** conserva su estado deliberadamente. Funciona como marcador de lectura: si estás en Juan 15 y sales, vuelves a Juan 15. Lo contrario de Devocional, donde volver a entrar no cuesta nada.
-
-## Conec✝2 — Rastro de luz
-- Aviso in-app (no push, no permisos). Punto de luz en 4 niveles: Inicio → Mi Oración → Conec✝2 → círculo.
-- **Regla honesta:** se apaga solo al abrir el círculo con la novedad. Lo propio nunca lo enciende.
-- Datos: `usuarios/{uid}.circleLastSeen` (mapa) + `circulos/{id}.ultimaIntencionFecha`/`ultimaIntencionAutorId`
+## Rastro de luz — Conec✝2
+- Aviso in-app (no push). Punto de luz en 4 niveles: Inicio → Mi Oración → Conec✝2 → círculo
+- Se apaga solo al abrir el círculo con la novedad. Lo propio nunca lo enciende.
+- Datos: `usuarios/{uid}.circleLastSeen` + `circulos/{id}.ultimaIntencionFecha`/`ultimaIntencionAutorId`
 - Auto-refresco por `visibilitychange`, throttle 3 min. Sin `onSnapshot`.
 
+## Seguridad Firestore — endurecida ✅ (12 jul 2026)
+- `usuarios/{uid}` y **toda subcolección** (`{document=**}`): solo el propio usuario. Esta regla ya cubre `oraciones`, `diario`, y cualquier subcolección futura sin necesitar reglas nuevas.
+- `reflexiones`, `versiculos`, `parroquias`: lectura pública, escritura bloqueada (`if false`). Solo el servidor escribe vía admin.
+- `circulos`: lectura pública. Update limitado a campos específicos y solo miembros. Delete solo el creador.
+- `circulos/{id}/intenciones`: solo miembros. Create requiere `autorId == uid`. Delete: autor o creador (modera).
+
+## Cron de reflexión diaria (IMPORTANTE)
+- `api/cron-reflexion.js` y `api/spiritual-guide.js` usan **firebase-admin**, no el SDK de cliente
+- Credencial: `FIREBASE_SERVICE_ACCOUNT_BASE64` en Vercel (rotada 12 jul). Nunca en el repo.
+- ✅ Verificado: el cron se dispara solo en plan Hobby.
+
+## Santo Rosario — alineado a la Santa Sede
+- Fuente: vatican.va — 20 misterios oficiales + citas bíblicas, copiadas LITERAL
+- Misterio del día anclado a America/Bogota
+- 6 pasos en español (Anuncio → Meditación → Padre Nuestro → 10 Ave Marías → Gloria → Jaculatoria), 40 pantallas. Inglés: 5 pasos, sin meditación (faltan citas oficiales en inglés)
+- Contador "luz que crece": anillo de 10 cuentas, círculo central se enciende progresivamente
+- Persistencia localStorage, ofrece retomar solo si es del día y misterio de hoy
+- **Acto de Contrición: fórmula colombiana/latinoamericana** ("Jesús, mi Señor y Redentor..."), no la tradicional española. Ambas válidas; se eligió la del público objetivo.
+
+## Parroquias — misas
+- Colección `parroquias`. Datos del directorio oficial de la Diócesis de Zipaquirá.
+- `horarioMisas`: cada misa es `{hora, lugar?}` — el lugar solo si no es la iglesia principal (ej. Santísima Trinidad: Cementerio los sábados, Salón comunal de La Palma los domingos)
+- 3 parroquias cargadas (Cajicá). Falta San José de Ríogrande.
+- Tarjeta en Inicio: invitación / misas de hoy / semana expandida. Fuente citada en Configuración, no en la tarjeta.
+
+## Compartir como imagen
+- `src/shareImage.js` — 1080×1920, degradado alba→noche, signo de Horeb, Cormorant. Sin fecha (no caduca).
+- **Ponlo en Práctica:** comparte solo el PRIMER consejo (título + explicación) — antes fundía los 3 en un párrafo ilegible. Fuente subida a 44-65px.
+- **Versículo del Día:** nueva función, reutiliza header/separador/firma compartidos con la de Ponlo en Práctica.
+- Comparte imagen + texto con link a **somoshoreb.com** vía Web Share API. Copy: "Algo de luz para tu día" (versículo) / "Una idea para vivir el Evangelio hoy. Hay más camino en Horeb." (Ponlo en Práctica)
+- Botón: "Comparte esta luz" en ambos lugares
+- Firma: signo compacto de Horeb + "HOREB", centrado abajo (según brand book — "Somos Horeb" se reserva para otros usos)
+- **Canal de crecimiento orgánico clave**
+
+## Navegación
+- `goToTab(i)` centralizado resetea `personalSection`, `personalTab`, `devocionalInitialTab` al cambiar de sección
+- **Excepción — La Biblia:** conserva su estado deliberadamente (funciona como marcador de lectura)
+
 ## Archivos clave
-- `src/App.jsx` — principal
-- `src/theme.js` — paleta (única fuente de verdad)
-- `src/Horeb.jsx` — el signo de marca
-- `src/Rosario.jsx`, `src/Devocional.jsx` (exporta `getSantoHoy`, prop `initialTab`)
-- `src/santos.js` (366 santos con `bio`), `src/versiculos.js`, `src/JovenFe.jsx`
-- `src/shareImage.js`
+- `src/App.jsx`, `src/theme.js`, `src/Horeb.jsx`
+- `src/Rosario.jsx`, `src/Devocional.jsx`, `src/diarioPreguntas.js` (nuevo)
+- `src/santos.js`, `src/versiculos.js`, `src/JovenFe.jsx`, `src/shareImage.js`
 - `seed-parroquias.mjs`
 - `api/gospel.js`, `api/spiritual-guide.js`, `api/cron-reflexion.js`, `api/order.js`, `api/confirm-payment.js`
-- `public/sw.js` (v17), `public/favicon.svg`, `generate-icons.js`
-- `vercel.json` — cron `"10 5 * * *"` = 00:10 Colombia
+- `public/sw.js` (v18), `public/favicon.svg`, `generate-icons.js`
 
 ## Variables de entorno en Vercel
-- `ANTHROPIC_API_KEY`
-- `CRON_SECRET` (rotado 11 jul)
-- `FIREBASE_SERVICE_ACCOUNT_BASE64` (rotado 12 jul)
-- **Cambios en env vars requieren REDEPLOY**
+- `ANTHROPIC_API_KEY`, `CRON_SECRET` (rotado 11 jul), `FIREBASE_SERVICE_ACCOUNT_BASE64` (rotado 12 jul)
+- Cambios en env vars requieren REDEPLOY
 
 ## Pendiente
 
-### Migración de marca — casi completa
-- ✅ Logo (`Horeb.jsx`), favicon, íconos PWA, splash, firma en imágenes compartidas
-- ✅ **Paleta** — dorado migrado a Brisa de Alba `#E4C79B` en theme.js e index.css, más los 18 `rgba(...)` hardcodeados que dependían de él (glows, pulsos, badges). Contraste contra Noche verificado (9.4:1, mejor que el dorado viejo) — se ve más pálido pero no menos legible.
-- ✅ **Textos** — Lumora → Horeb en app, manifest, index.html, firma de shareImage y el email de confirmación de pago. Las claves de `localStorage` (`lumora_*`) se dejaron igual a propósito.
-- ⬜ **Dominio** — conectar somoshoreb.com a Vercel
-- ⬜ Decidir el uso del Verde Zarza (declarado en la paleta, sin trabajo asignado)
-- **Splash: una vez por día** (no en cada carga) — es intencional, confirmado. Si un usuario prueba varias veces el mismo día no lo va a volver a ver hasta el día siguiente; no es un bug.
-
 ### Parroquias — siguiente fase
-- **HABLAR CON EL PÁRROCO.** No venderle: preguntarle si los horarios están correctos y escuchar. Señal real de interés = que cuente un problema sin que se lo pregunten.
-- **Aprendizaje clave:** WhatsApp es la competencia (el padre publica ahí, solo él). WhatsApp es el **flujo** (lo que pasó); Horeb es el **estado** (lo que ES, siempre visible). No competir con el flujo — dar permanencia y estructura.
-- Canal para "escríbenos" (el copy lo promete, no existe)
-- San José de Ríogrande (faltan horarios) · Más parroquias de la diócesis
-- Panel del párroco — **solo si el padre lo pide.** Modelo: invitación (tú creas la parroquia y le das un código), no registro abierto.
-- Permiso de la diócesis para usar sus datos
+- **HABLAR CON EL PÁRROCO.** No vender: preguntar si los horarios están correctos y escuchar. Mensajes ya redactados para enviar (a usuarios de Lumora y al padre).
+- WhatsApp es el flujo (lo que pasó); Horeb es el estado (lo que ES, siempre visible)
+- San José de Ríogrande (faltan horarios) · Canal "escríbenos" (el copy lo promete, no existe) · Panel del párroco solo si lo pide
 
 ### Contenido
-- Novenas días 2-9 (4 restantes). **Texto de fuente católica confiable, NO generado.**
+- Novenas días 2-9 (4 restantes) — fuente católica confiable, NO generado
 - Joven Fe — Testimonios y Quiz Bíblico
-- Diario de Gracias
-- Rosario: citas bíblicas oficiales **en inglés**
-- Rosario: evaluar "Dios mío, ven en mi auxilio" al inicio y letanías lauretanas al final
-- Extender compartir-como-imagen al Santo del Día y las meditaciones del Rosario
+- Rosario: citas bíblicas oficiales en inglés · evaluar "Dios mío, ven en mi auxilio" y letanías lauretanas
+- Extender compartir-como-imagen al Santo del Día
 
-### Funcionalidad — futuro
-- Push notifications reales (compleja: permisos, tokens, iOS PWA)
-- Aviso "están orando por tu intención" (señal distinta al rastro actual)
-- **Monetización — Fase 0: definir modelo.** Dirección: productos con nombre propio, no "premium de la app". El brand book ya los nombra: **Cordada** (comunidad), **Brisa** (música), **Semilla** (niños), **Cumbre** (retiros). Lo esencial siempre gratis.
+### Funcionalidad futura
+- Push notifications reales
+- Aviso "están orando por tu intención" (distinto al rastro actual)
+- **Monetización — Fase 0: definir modelo.** Productos con nombre propio ya definidos en el brand book: Cordada (comunidad), Brisa (música), Semilla (niños), Cumbre (retiros)
+- Decidir uso del Verde Zarza (declarado, sin trabajo asignado)
 
 ### Distribución
-- PWA instalable, sin tiendas. **En iPhone instalar requiere 5 pasos ocultos en Safari** — Apple no permite botón. La mayoría de usuarios iOS probablemente nunca la instalan.
+- PWA sin tiendas. iPhone: instalar requiere 5 pasos ocultos en Safari, sin botón posible
 - Android sí permite botón (`beforeinstallprompt`)
-- Paso intermedio: guía de instalación in-app que detecte el dispositivo
-- Raíz: empaquetar (Bubblewrap/Capacitor). Apple ~$99/año, Google ~$25.
-- **OJO:** Apple/Google cobran 15-30% de comisión si se vende dentro de la app.
+- Empaquetar (Bubblewrap/Capacitor) cuando el contenido esté más completo. Ojo: comisión 15-30% si se vende dentro de la app
 
 ### Técnico
-- Fallback Evangelio: lanza 500 si falla su traducción (las otras 3 lecturas tienen fallback sereno)
-- Caché lecturas: reconsiderar sessionStorage
-- Limpieza: código muerto en translations, 2 cuentas de prueba en Authentication, 4 claves de servicio en Firebase (revocar las no usadas)
+- Fallback Evangelio: lanza 500 si falla su traducción (las otras 3 lecturas sí tienen fallback sereno)
+- Limpieza: cuentas de prueba en Authentication, claves de servicio de Firebase sin usar
+- `api/confirm-payment.js`: paleta vieja, actualizar cuando la Tienda esté activa
+- CNAME del `www` en Namecheap: Vercel recomienda actualizarlo al nuevo formato (no urgente, el viejo sigue funcionando)
 
 ### Hecho ✅
-- Brand book Fases 1-3 (Lumora)
-- Fix salmos + fallback + validación de caché
-- Conec✝2 rastro de luz
-- Migración firebase-admin — cron funcionando y verificado
-- Rosario alineado a la Santa Sede
-- Santo del Día en Inicio + bloque "Hoy"
+- Brand book Fases 1-3 (Lumora) · Fix salmos + fallback + caché
+- Conec✝2 rastro de luz · Migración firebase-admin (cron verificado)
+- Rosario alineado a la Santa Sede · Santo del Día en Inicio
 - Navegación: reset de estado + retomar Rosario
-- Seguridad Firestore endurecida
-- Parroquias: selección + horarios de misa
-- Compartir como imagen (Ponlo en Práctica)
-- **Marca Horeb: nombre, dominios, brand book, logo**
+- Seguridad Firestore endurecida · Parroquias: selección + horarios
+- Compartir como imagen (versículo + Ponlo en Práctica, con link a somoshoreb.com)
+- **Marca Horeb completa: nombre, dominio, logo, paleta, limpieza de fósiles**
+- **Mi Oración reestructurado: Diario unificado con Mis Oraciones, y Diario de gratitud nuevo con 30 preguntas**

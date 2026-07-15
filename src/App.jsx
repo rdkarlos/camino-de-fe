@@ -12,6 +12,7 @@ import VERSICULOS from "./versiculos";
 import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba, mix } from "./theme";
 import Horeb from "./Horeb";
 import { generateLambShareImage, generateVerseShareImage, gospelExcerpt } from "./shareImage";
+import { PREGUNTAS_DIARIO } from "./diarioPreguntas";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOZMcPE-9T3E8PtrIvXn4DoqgWG0J9Db0",
@@ -355,6 +356,18 @@ const todayParishDayKey = () => {
   return map[weekday];
 };
 
+// Ancla el día del Diario a America/Bogota, mismo patrón — "YYYY-MM-DD",
+// usado también como ID determinístico del documento en Firestore.
+const todayDiarioKey = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+
+// Día 31 (meses que lo tienen) reutiliza la pregunta del día 30, para que
+// el día 1 del mes siguiente siempre empiece una pregunta fresca.
+const todayPreguntaIndex = () => {
+  const day = Number(todayDiarioKey().split('-')[2]);
+  return Math.min(day, 30) - 1;
+};
+
 const misasSignature = (misas) => (misas || []).map(m => `${m.hora}|${m.lugar || ''}`).join(';');
 
 // Agrupa días consecutivos (en el orden fijo lunes→domingo) que tengan
@@ -464,6 +477,11 @@ export default function App() {
   const [prayerBook, setPrayerBook] = useState([]);
   const [prayerBookLoading, setPrayerBookLoading] = useState(false);
   const [expandedPrayerId, setExpandedPrayerId] = useState(null);
+  const [diarioHoy, setDiarioHoy] = useState(null);
+  const [diarioEntradas, setDiarioEntradas] = useState([]);
+  const [diarioLoading, setDiarioLoading] = useState(false);
+  const [diarioTexto, setDiarioTexto] = useState("");
+  const [diarioSaving, setDiarioSaving] = useState(false);
   const [hoveredQuickBtn, setHoveredQuickBtn] = useState(null);
   const [pressedQuickBtn, setPressedQuickBtn] = useState(null);
   const [bibleView, setBibleView] = useState("books");
@@ -659,6 +677,32 @@ export default function App() {
       }
     };
     loadBook();
+    return () => { cancelled = true; };
+  }, [personalTab, user]);
+
+  // Carga el Diario: una sola query ordenada por fecha; el doc de hoy se
+  // separa del resto comparando su ID (determinístico, "YYYY-MM-DD") contra
+  // todayDiarioKey(), sin necesitar una segunda lectura.
+  useEffect(() => {
+    if (personalTab !== "diario" || !user) return;
+    let cancelled = false;
+    const loadDiario = async () => {
+      setDiarioLoading(true);
+      try {
+        const todayKey = todayDiarioKey();
+        const snap = await getDocs(query(collection(db, "usuarios", user.uid, "diario"), orderBy("fecha", "desc")));
+        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (!cancelled) {
+          setDiarioHoy(docs.find(d => d.id === todayKey) || null);
+          setDiarioEntradas(docs.filter(d => d.id !== todayKey));
+        }
+      } catch (e) {
+        console.error("[firestore] error cargando diario:", e.message);
+      } finally {
+        if (!cancelled) setDiarioLoading(false);
+      }
+    };
+    loadDiario();
     return () => { cancelled = true; };
   }, [personalTab, user]);
 
@@ -1718,6 +1762,27 @@ export default function App() {
       }
     };
 
+    // Una entrada por día — si diarioHoy ya existe, no hace nada (inmutable).
+    const saveDiarioEntry = async () => {
+      if (!user || diarioHoy || !diarioTexto.trim()) return;
+      setDiarioSaving(true);
+      try {
+        const todayKey = todayDiarioKey();
+        const entry = {
+          fecha: serverTimestamp(),
+          preguntaIndex: todayPreguntaIndex(),
+          texto: diarioTexto.trim(),
+        };
+        await setDoc(doc(db, "usuarios", user.uid, "diario", todayKey), entry);
+        setDiarioHoy({ id: todayKey, ...entry, fecha: new Date() });
+        setDiarioTexto("");
+      } catch (e) {
+        console.error("[firestore] error guardando entrada de diario:", e.message);
+      } finally {
+        setDiarioSaving(false);
+      }
+    };
+
     // Shared style for the gold cross in the brand name
     const cx = {color: GOLD, fontSize: '1.2em'};
 
@@ -1992,6 +2057,18 @@ export default function App() {
                   </svg>
                 );
               })(), lang === "es" ? "Mis Oraciones" : "Mis Orac."],
+            ["diario", (() => {
+                const sel = personalTab === "diario";
+                const c = sel ? CREAM : MUTED;
+                const cr = sel ? GOLD : MUTED;
+                return (
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <path d="M4 18 L13 9 L16 12 L7 21 Z" stroke={c} strokeWidth="1.3" strokeLinejoin="round"/>
+                    <path d="M13 9 L16 6 L19 9 L16 12 Z" fill={cr}/>
+                    <line x1="3" y1="20.5" x2="8" y2="20.5" stroke={c} strokeWidth="1.3" strokeLinecap="round"/>
+                  </svg>
+                );
+              })(), lang === "es" ? "Diario" : "Journal"],
             ["circles", (() => {
                 const sel = personalTab === "circles";
                 const fg = sel ? CREAM : MUTED;
@@ -2518,6 +2595,90 @@ export default function App() {
                 </>
               );
             })()}
+          </div>
+        ) : personalTab === "diario" ? (
+          /* Pestaña: Diario — reflexión diaria, requiere sesión */
+          <div>
+            {!user ? (
+              <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
+                <div style={{ fontSize: 14, color: CREAM, marginBottom: 10, fontFamily: "'Work Sans', sans-serif" }}>
+                  {lang === "es" ? "Crea una cuenta para guardar tus oraciones y llevarlas contigo." : "Create an account to save your prayers and carry them with you."}
+                </div>
+                <button onClick={() => setAuthMode("register")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", marginBottom: 8 }}>
+                  {lang === "es" ? "Crear cuenta" : "Create account"}
+                </button>
+                <div onClick={() => setAuthMode("login")} style={{ fontSize: 12, color: MUTED, cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
+                  {lang === "es" ? "¿Ya tienes cuenta? " : "Already have an account? "}
+                  <span style={{ color: GOLD, fontWeight: "bold" }}>{lang === "es" ? "Inicia sesión" : "Sign in"}</span>
+                </div>
+              </div>
+            ) : diarioLoading ? (
+              <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
+                <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tu diario..." : "Loading your journal..."}</div>
+              </div>
+            ) : (
+              <div>
+                {/* Tarjeta de la pregunta del día — mismo lenguaje visual que "Versículo del Día" */}
+                <div style={{ background: `linear-gradient(135deg, ${BG_MAIN}, ${BG_CARD})`, border: `1px solid ${GOLD}`, borderRadius: 16, padding: "16px 18px", marginBottom: 16, position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>✝</div>
+                  <div style={{ fontSize: 12, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700, textTransform: "uppercase" }}>
+                    ✦ {diarioHoy ? (lang === "es" ? "Tu pregunta de hoy" : "Your question today") : (lang === "es" ? "Pregunta de hoy" : "Question for today")}
+                  </div>
+                  <div style={{ fontSize: 17, fontStyle: "italic", color: CREAM, lineHeight: 1.6, fontFamily: "'Cormorant', serif" }}>
+                    "{PREGUNTAS_DIARIO[diarioHoy ? diarioHoy.preguntaIndex : todayPreguntaIndex()]}"
+                  </div>
+                </div>
+
+                {diarioHoy ? (
+                  <div>
+                    <div style={{ fontSize: 13, color: MUTED, marginBottom: 8, fontFamily: "'Work Sans', sans-serif" }}>
+                      {lang === "es" ? "Tu respuesta de hoy:" : "Your answer today:"}
+                    </div>
+                    <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: 16, marginBottom: 14, fontSize: 14, color: CREAM, lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "'Work Sans', sans-serif" }}>
+                      {diarioHoy.texto}
+                    </div>
+                    <div style={{ textAlign: "center", fontSize: 13, color: MUTED, marginBottom: 22 }}>
+                      {lang === "es" ? "Ya escribiste hoy. Vuelve mañana ✝" : "You already wrote today. Come back tomorrow ✝"}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <textarea
+                      value={diarioTexto}
+                      onChange={e => setDiarioTexto(e.target.value)}
+                      maxLength={3000}
+                      placeholder={lang === "es" ? "Escribe lo que quieras, con calma..." : "Write whatever you'd like, slowly..."}
+                      style={{ width: "100%", minHeight: 140, padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: CREAM, background: NAVY, fontFamily: "'Georgia', serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6, outline: "none", marginBottom: 12 }}
+                    />
+                    <button onClick={saveDiarioEntry} disabled={!diarioTexto.trim() || diarioSaving} style={{ width: "100%", padding: "13px", background: diarioTexto.trim() ? `linear-gradient(135deg, #1a6b3a, #0f4a28)` : CREAM_DARK, color: WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: diarioTexto.trim() ? "pointer" : "default", fontFamily: "'Work Sans', sans-serif", marginBottom: 22 }}>
+                      {diarioSaving ? (lang === "es" ? "Guardando..." : "Saving...") : (lang === "es" ? "Guardar entrada de hoy" : "Save today's entry")}
+                    </button>
+                  </div>
+                )}
+
+                {/* Entradas anteriores — solo lectura, sin editar ni borrar */}
+                <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, marginBottom: 12, fontFamily: "'Work Sans', sans-serif" }}>
+                  {lang === "es" ? "Entradas anteriores" : "Past entries"}
+                </div>
+                {diarioEntradas.length === 0 ? (
+                  <div style={{ textAlign: "center", color: MUTED, fontSize: 13, padding: "20px 0" }}>
+                    {lang === "es" ? "Aún no tienes entradas anteriores." : "No past entries yet."}
+                  </div>
+                ) : diarioEntradas.map(entry => (
+                  <div key={entry.id} style={{ background: BG_CARD, borderRadius: 14, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
+                    <div style={{ fontSize: 11, color: MUTED, marginBottom: 6 }}>{formatFirestoreDate(entry.fecha)}</div>
+                    <div style={{ fontSize: 13, color: GOLD, fontStyle: "italic", marginBottom: 8, fontFamily: "'Cormorant', serif", lineHeight: 1.5 }}>
+                      {PREGUNTAS_DIARIO[entry.preguntaIndex]}
+                    </div>
+                    <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "'Work Sans', sans-serif" }}>
+                      {entry.texto}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : null}
       </div>
