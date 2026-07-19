@@ -14,7 +14,7 @@ const NAVY_DARK = NOCHE_DARK;
 const WHITE = "#FFFFFF";
 
 const TABS = [
-  { id: "clasicas", es: "Oraciones Clásicas", en: "Classic Prayers" },
+  { id: "clasicas", es: "Oraciones", en: "Classic Prayers" },
   { id: "novenas", es: "Novenas", en: "Novenas" },
   { id: "santo", es: "Santo del Día", en: "Saint of the Day" },
 ];

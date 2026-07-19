@@ -563,10 +563,17 @@ export default function App() {
     const handleScrollAway = (e) => {
       if (isOutside(e)) setMenuOpen(false);
     };
-    document.addEventListener("mousedown", handleOutsideClick);
-    window.addEventListener("scroll", handleScrollAway, { passive: true });
-    window.addEventListener("touchmove", handleScrollAway, { passive: true });
+    // Attach on the next tick, not immediately: the same tap that opened the menu
+    // (mousedown/touchend still finishing their dispatch) must not be the tap that
+    // closes it. Registering a task later guarantees this render's open gesture has
+    // already fully finished before these listeners can see anything.
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleOutsideClick);
+      window.addEventListener("scroll", handleScrollAway, { passive: true });
+      window.addEventListener("touchmove", handleScrollAway, { passive: true });
+    }, 0);
     return () => {
+      clearTimeout(timer);
       document.removeEventListener("mousedown", handleOutsideClick);
       window.removeEventListener("scroll", handleScrollAway);
       window.removeEventListener("touchmove", handleScrollAway);
@@ -3771,7 +3778,7 @@ export default function App() {
             return (
               <button
                 key={idx}
-                onClick={() => goToTab(idx)}
+                onClick={() => { goToTab(idx); setMenuOpen(false); }}
                 onPointerEnter={() => setHoveredQuickBtn(idx)}
                 onPointerLeave={() => { setHoveredQuickBtn(null); setPressedQuickBtn(null); }}
                 onPointerDown={() => setPressedQuickBtn(idx)}
