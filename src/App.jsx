@@ -6,6 +6,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPas
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
+import Coronilla from "./Coronilla";
 import Devocional, { getSantoHoy } from "./Devocional";
 import ComingSoon from "./ComingSoon";
 import JovenFe from "./JovenFe";
@@ -376,11 +377,14 @@ const todayParishDayKey = () => {
 const todayDiarioKey = () =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
 
-// Día 31 (meses que lo tienen) reutiliza la pregunta del día 30, para que
-// el día 1 del mes siguiente siempre empiece una pregunta fresca.
+// Cicla por las 90 preguntas según el día del año (1-365/366), calculado a
+// partir de la fecha calendario ya anclada a America/Bogota por
+// todayDiarioKey() — aritmética pura en UTC sobre año/mes/día, nunca
+// new Date().getDate() del dispositivo, para no depender de su huso horario.
 const todayPreguntaIndex = () => {
-  const day = Number(todayDiarioKey().split('-')[2]);
-  return Math.min(day, 30) - 1;
+  const [y, m, d] = todayDiarioKey().split('-').map(Number);
+  const dayOfYear = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 86400000) + 1;
+  return (dayOfYear - 1) % PREGUNTAS_DIARIO.length;
 };
 
 const misasSignature = (misas) => (misas || []).map(m => `${m.hora}|${m.lugar || ''}`).join(';');
@@ -2036,6 +2040,19 @@ export default function App() {
         ),
       },
       {
+        id: "coronilla",
+        title: lang === "es" ? "Coronilla" : "Chaplet",
+        desc: lang === "es" ? "Coronilla de la Divina Misericordia" : "Chaplet of Divine Mercy",
+        icon: (
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <circle cx="13" cy="9" r="3" stroke={GOLD} strokeWidth="1.5"/>
+            <line x1="13" y1="13" x2="13" y2="24" stroke={GOLD} strokeWidth="1.4" strokeLinecap="round"/>
+            <line x1="9" y1="14.5" x2="6" y2="23" stroke={GOLD} strokeWidth="1.2" strokeLinecap="round"/>
+            <line x1="17" y1="14.5" x2="20" y2="23" stroke={GOLD} strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+        ),
+      },
+      {
         id: "devocional",
         title: lang === "es" ? "Devocional" : "Devotional",
         desc: lang === "es" ? "Reflexiones y oraciones para tu fe" : "Reflections and prayers for your faith",
@@ -2098,6 +2115,15 @@ export default function App() {
         <div>
           {backButton}
           <Rosario lang={lang} onHome={() => setPersonalSection(null)} />
+        </div>
+      );
+    }
+
+    if (personalSection === "coronilla") {
+      return (
+        <div>
+          {backButton}
+          <Coronilla lang={lang} onHome={() => setPersonalSection(null)} />
         </div>
       );
     }
