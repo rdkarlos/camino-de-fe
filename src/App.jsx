@@ -7,6 +7,7 @@ import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, updat
 import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
 import Devocional, { getSantoHoy } from "./Devocional";
+import ComingSoon from "./ComingSoon";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
 import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba, mix } from "./theme";
@@ -2686,27 +2687,21 @@ export default function App() {
   };
 
   const renderShop = () => (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", textAlign: "center", padding: "20px 10px" }}>
-      <div style={{ background: BG_CARD, border: `1.5px solid ${GOLD}55`, borderRadius: 20, padding: "40px 28px", maxWidth: 340, width: "100%" }}>
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 18 }}>
+    <ComingSoon
+      icon={
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
           <path d="M5 8 H19 L17.5 21 H6.5 Z" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round"/>
           <path d="M9 8 C9 4.5 15 4.5 15 8" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
           <line x1="12" y1="12.5" x2="12" y2="16.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
           <line x1="10" y1="14.5" x2="14" y2="14.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
-        <div style={{ fontFamily: "'Cormorant', serif", fontSize: 22, fontWeight: 700, color: GOLD, marginBottom: 14 }}>
-          {lang === 'es' ? 'Tienda Horeb' : 'Horeb Shop'}
-        </div>
-        <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.7, fontFamily: "'Work Sans', sans-serif", marginBottom: 18 }}>
-          {lang === 'es'
-            ? 'Estamos preparando algo especial para ti. Pronto encontrarás artículos de fe para tu hogar y devoción.'
-            : 'We are preparing something special for you. Soon you will find faith items for your home and devotion.'}
-        </div>
-        <span style={{ display: "inline-block", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, fontSize: 11, fontWeight: "bold", padding: "6px 16px", borderRadius: 20, letterSpacing: 0.5 }}>
-          {lang === 'es' ? 'Próximamente' : 'Coming Soon'}
-        </span>
-      </div>
-    </div>
+      }
+      title={lang === 'es' ? 'Tienda Horeb' : 'Horeb Shop'}
+      description={lang === 'es'
+        ? 'Estamos preparando algo especial para ti. Pronto encontrarás artículos de fe para tu hogar y devoción.'
+        : 'We are preparing something special for you. Soon you will find faith items for your home and devotion.'}
+      badge={lang === 'es' ? 'Próximamente' : 'Coming Soon'}
+    />
   );
 
   const renderSettings = () => {
