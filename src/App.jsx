@@ -2909,11 +2909,26 @@ export default function App() {
           where("chapterNumber", "==", chapter.number)
         ));
         const map = {};
-        snap.docs.forEach(d => { map[d.data().verseNumber] = { id: d.id, ...d.data() }; });
+        snap.docs.forEach(d => { map[d.id] = { id: d.id, ...d.data() }; });
         setBibleHighlights(map);
       } catch (e) {
         console.error("[firestore] error cargando versículos resaltados:", e.message);
         setBibleHighlights({});
+      }
+    };
+
+    const loadHighlightsForSearchResults = async (results) => {
+      if (!user || !results?.length) return;
+      try {
+        const refs = results.map(v => buildSearchVerseRef(v)).filter(Boolean);
+        const snaps = await Promise.all(refs.map(ref =>
+          getDoc(doc(db, "usuarios", user.uid, "versiculosGuardados", highlightDocId({ id: ref.bookId }, ref.chapterNumber, ref.verseNumber)))
+        ));
+        const map = {};
+        snaps.forEach(snap => { if (snap.exists()) map[snap.id] = { id: snap.id, ...snap.data() }; });
+        setBibleHighlights(prev => ({ ...prev, ...map }));
+      } catch (e) {
+        console.error("[firestore] error cargando resaltados de resultados:", e.message);
       }
     };
 
@@ -2965,13 +2980,16 @@ export default function App() {
       setBibleView("search");
       setBibleLoading(true);
       setBibleSearchResults(null);
+      setBibleCommentEditingVerse(null);
       try {
         const r = await fetch(
           `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/search?query=${encodeURIComponent(q)}&limit=20`,
           { headers: { "api-key": API_KEY } }
         );
         const json = await r.json();
-        setBibleSearchResults(json.data?.verses || []);
+        const results = json.data?.verses || [];
+        setBibleSearchResults(results);
+        await loadHighlightsForSearchResults(results);
       } catch (_) {
         setBibleSearchResults([]);
       }
@@ -3078,17 +3096,59 @@ export default function App() {
       setBibleGotoLoading(false);
     };
 
-    const ensureHighlighted = async (v) => {
-      if (bibleHighlights[v.num]) return bibleHighlights[v.num];
+    // ref = { bookId, bookName, chapterNumber, verseNumber, verseText } — works the same whether
+    // the verse comes from a chapter being read (buildVerseRef) or a search result (buildSearchVerseRef).
+    const buildVerseRef = (v) => ({
+      bookId: bibleSelectedBook.id,
+      bookName: bibleSelectedBook.name,
+      chapterNumber: bibleSelectedChapter.number,
+      verseNumber: v.num,
+      verseText: v.text,
+    });
+
+    const parseSearchVerseId = (v) => {
+      // The search endpoint returns an id like "JHN.3.16" (bookId.chapter.verse).
+      if (v.id) {
+        const parts = String(v.id).split(".");
+        if (parts.length === 3) {
+          const verseNumber = parseInt(parts[2], 10);
+          if (!isNaN(verseNumber)) return { bookId: parts[0], chapterNumber: parts[1], verseNumber };
+        }
+      }
+      // Fallback: derive from chapterId ("JHN.3") + the trailing verse number in the reference text.
+      if (v.chapterId) {
+        const cparts = String(v.chapterId).split(".");
+        const m = String(v.reference || "").match(/(\d+)\s*$/);
+        const verseNumber = m ? parseInt(m[1], 10) : NaN;
+        if (cparts.length === 2 && !isNaN(verseNumber)) return { bookId: cparts[0], chapterNumber: cparts[1], verseNumber };
+      }
+      return null;
+    };
+
+    const buildSearchVerseRef = (v) => {
+      const info = parseSearchVerseId(v);
+      if (!info) return null;
+      const book = allBooks.find(b => b.id === info.bookId);
+      return {
+        bookId: info.bookId,
+        bookName: book?.name || String(v.reference || "").replace(/\s*\d+:\d+\s*$/, "").trim(),
+        chapterNumber: info.chapterNumber,
+        verseNumber: info.verseNumber,
+        verseText: (v.text || "").replace(/\s+/g, " ").trim(),
+      };
+    };
+
+    const ensureHighlighted = async (ref) => {
+      const docId = highlightDocId({ id: ref.bookId }, ref.chapterNumber, ref.verseNumber);
+      if (bibleHighlights[docId]) return bibleHighlights[docId];
       const entry = {
-        bookId: bibleSelectedBook.id,
-        bookName: bibleSelectedBook.name,
-        chapterNumber: bibleSelectedChapter.number,
-        verseNumber: v.num,
-        verseText: v.text,
+        bookId: ref.bookId,
+        bookName: ref.bookName,
+        chapterNumber: ref.chapterNumber,
+        verseNumber: ref.verseNumber,
+        verseText: ref.verseText,
         comment: "",
       };
-      const docId = highlightDocId(bibleSelectedBook, bibleSelectedChapter.number, v.num);
       try {
         await setDoc(doc(db, "usuarios", user.uid, "versiculosGuardados", docId), { ...entry, fecha: serverTimestamp() });
       } catch (e) {
@@ -3096,45 +3156,45 @@ export default function App() {
         return null;
       }
       const saved = { id: docId, ...entry, fecha: new Date() };
-      setBibleHighlights(prev => ({ ...prev, [v.num]: saved }));
+      setBibleHighlights(prev => ({ ...prev, [docId]: saved }));
       return saved;
     };
 
-    const toggleHighlight = async (v) => {
+    const toggleHighlight = async (ref) => {
       if (!user) { setBibleNoSessionBanner(true); return; }
-      if (bibleHighlights[v.num]) {
-        const docId = highlightDocId(bibleSelectedBook, bibleSelectedChapter.number, v.num);
+      const docId = highlightDocId({ id: ref.bookId }, ref.chapterNumber, ref.verseNumber);
+      if (bibleHighlights[docId]) {
         try {
           await deleteDoc(doc(db, "usuarios", user.uid, "versiculosGuardados", docId));
         } catch (e) {
           console.error("[firestore] error quitando resaltado:", e.message);
           return;
         }
-        setBibleHighlights(prev => { const next = { ...prev }; delete next[v.num]; return next; });
-        if (bibleCommentEditingVerse === v.num) setBibleCommentEditingVerse(null);
+        setBibleHighlights(prev => { const next = { ...prev }; delete next[docId]; return next; });
+        if (bibleCommentEditingVerse === docId) setBibleCommentEditingVerse(null);
       } else {
-        await ensureHighlighted(v);
+        await ensureHighlighted(ref);
       }
     };
 
-    const openCommentEditor = async (v) => {
+    const openCommentEditor = async (ref) => {
       if (!user) { setBibleNoSessionBanner(true); return; }
-      const entry = bibleHighlights[v.num] || await ensureHighlighted(v);
+      const docId = highlightDocId({ id: ref.bookId }, ref.chapterNumber, ref.verseNumber);
+      const entry = bibleHighlights[docId] || await ensureHighlighted(ref);
       setBibleCommentDraft(entry?.comment || "");
-      setBibleCommentEditingVerse(v.num);
+      setBibleCommentEditingVerse(docId);
     };
 
-    const saveComment = async (v) => {
+    const saveComment = async (docId) => {
       if (!user) return;
       const text = bibleCommentDraft.trim();
-      const docId = highlightDocId(bibleSelectedBook, bibleSelectedChapter.number, v.num);
       try {
         await updateDoc(doc(db, "usuarios", user.uid, "versiculosGuardados", docId), { comment: text });
       } catch (e) {
         console.error("[firestore] error guardando comentario:", e.message);
         return;
       }
-      setBibleHighlights(prev => ({ ...prev, [v.num]: { ...prev[v.num], comment: text } }));
+      setBibleHighlights(prev => ({ ...prev, [docId]: { ...prev[docId], comment: text } }));
       setBibleCommentEditingVerse(null);
     };
 
@@ -3160,9 +3220,7 @@ export default function App() {
         return;
       }
       setMyVerses(prev => prev.filter(x => x.id !== docId));
-      if (bibleSelectedBook?.id === entry.bookId && bibleSelectedChapter?.number === entry.chapterNumber) {
-        setBibleHighlights(prev => { const next = { ...prev }; delete next[entry.verseNumber]; return next; });
-      }
+      setBibleHighlights(prev => { const next = { ...prev }; delete next[docId]; return next; });
     };
 
     const openSavedVerse = async (entry) => {
@@ -3198,44 +3256,95 @@ export default function App() {
       setBibleGotoLoading(false);
     };
 
-    const handleVersePointerDown = (e, v) => {
-      const ref = verseLongPressRef.current;
-      ref.verseNum = v.num;
-      ref.startX = e.clientX;
-      ref.startY = e.clientY;
-      ref.fired = false;
-      clearTimeout(ref.timer);
-      ref.timer = setTimeout(() => {
-        ref.fired = true;
+    const handleVersePointerDown = (e, verseRef) => {
+      const p = verseLongPressRef.current;
+      p.startX = e.clientX;
+      p.startY = e.clientY;
+      p.fired = false;
+      clearTimeout(p.timer);
+      p.timer = setTimeout(() => {
+        p.fired = true;
         if (navigator.vibrate) navigator.vibrate(30);
-        openCommentEditor(v);
+        openCommentEditor(verseRef);
       }, 450);
     };
 
     const handleVersePointerMove = (e) => {
-      const ref = verseLongPressRef.current;
-      if (ref.timer == null) return;
-      const dx = e.clientX - ref.startX;
-      const dy = e.clientY - ref.startY;
+      const p = verseLongPressRef.current;
+      if (p.timer == null) return;
+      const dx = e.clientX - p.startX;
+      const dy = e.clientY - p.startY;
       if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-        clearTimeout(ref.timer);
-        ref.timer = null;
+        clearTimeout(p.timer);
+        p.timer = null;
       }
     };
 
     const handleVersePointerUp = () => {
-      const ref = verseLongPressRef.current;
-      clearTimeout(ref.timer);
-      ref.timer = null;
+      const p = verseLongPressRef.current;
+      clearTimeout(p.timer);
+      p.timer = null;
     };
 
-    const handleVerseClick = (v) => {
-      const ref = verseLongPressRef.current;
-      if (ref.fired) {
-        ref.fired = false;
+    const handleVerseClick = (verseRef) => {
+      const p = verseLongPressRef.current;
+      if (p.fired) {
+        p.fired = false;
         return;
       }
-      toggleHighlight(v);
+      toggleHighlight(verseRef);
+    };
+
+    const verseHighlightExtras = (verseRef) => {
+      const docId = highlightDocId({ id: verseRef.bookId }, verseRef.chapterNumber, verseRef.verseNumber);
+      const h = bibleHighlights[docId];
+      const isEditing = bibleCommentEditingVerse === docId;
+      if (!h && !isEditing) return null;
+      return (
+        <>
+          {h && !isEditing && (
+            <span
+              onClick={(e) => { e.stopPropagation(); openCommentEditor(verseRef); }}
+              style={{ display: "inline-flex", marginTop: 4, cursor: "pointer", opacity: 0.85 }}
+              title={lang === "es" ? "Agregar/editar nota" : "Add/edit note"}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M4 20 L4 16 L15 5 L19 9 L8 20 Z" stroke={GOLD} strokeWidth="1.8" strokeLinejoin="round"/>
+                <line x1="13" y1="7" x2="17" y2="11" stroke={GOLD} strokeWidth="1.8"/>
+              </svg>
+            </span>
+          )}
+          {h?.comment && !isEditing && (
+            <div style={{ marginTop: 6, paddingLeft: 10, borderLeft: `2px solid ${GOLD}`, fontSize: 13, fontStyle: "italic", color: GOLD_LIGHT, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.5 }}>
+              "{h.comment}"
+            </div>
+          )}
+          {isEditing && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{ marginTop: 8, background: BG_CARD, border: `1px solid ${GOLD}59`, borderRadius: 12, padding: "10px 12px" }}
+            >
+              <textarea
+                autoFocus
+                rows={2}
+                value={bibleCommentDraft}
+                onChange={e => setBibleCommentDraft(e.target.value)}
+                placeholder={lang === "es" ? "Escribe una nota corta (opcional)..." : "Write a short note (optional)..."}
+                style={{ width: "100%", background: NAVY_DARK, border: `1px solid ${CREAM_DARK}`, borderRadius: 8, color: CREAM, fontSize: 13, fontFamily: "'Work Sans', sans-serif", padding: "8px 10px", resize: "none", outline: "none", boxSizing: "border-box" }}
+              />
+              <div style={{ display: "flex", gap: 8, marginTop: 8, justifyContent: "flex-end" }}>
+                <button onClick={() => setBibleCommentEditingVerse(null)} style={{ fontSize: 12, fontWeight: 600, borderRadius: 8, padding: "6px 14px", cursor: "pointer", background: "none", border: `1px solid ${CREAM_DARK}`, color: MUTED }}>
+                  {lang === "es" ? "Cancelar" : "Cancel"}
+                </button>
+                <button onClick={() => saveComment(docId)} style={{ fontSize: 12, fontWeight: 600, borderRadius: 8, padding: "6px 14px", cursor: "pointer", background: GOLD, border: "none", color: NAVY_DARK }}>
+                  {lang === "es" ? "Guardar" : "Save"}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      );
     };
 
     const thematicSearchJsx = (autoFocus = false) => (
@@ -3451,11 +3560,31 @@ export default function App() {
     if (bibleView === "search") {
       return (
         <div>
-          <button onClick={() => { setBibleView("books"); setBibleSearchResults(null); }} style={{ marginBottom: 16, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Work Sans', sans-serif" }}>
+          <button
+            onClick={() => {
+              setBibleView("books"); setBibleSearchResults(null);
+              setBibleNoSessionBanner(false); setBibleCommentEditingVerse(null);
+            }}
+            style={{ marginBottom: 16, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Work Sans', sans-serif" }}
+          >
             ← {lang === "es" ? "Libros" : "Books"}
           </button>
           {thematicSearchJsx(true)}
           {gotoJsx()}
+          {bibleNoSessionBanner && !user && (
+            <div style={{ background: `${GOLD}14`, border: `1px solid ${GOLD}55`, borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 13, color: CREAM, fontFamily: "'Work Sans', sans-serif", display: "flex", flexDirection: "column", gap: 10 }}>
+              <span>{lang === "es" ? "Inicia sesión para guardar tus versículos resaltados y llevarlos contigo." : "Sign in to save your highlighted verses and carry them with you."}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <button onClick={() => setAuthMode("register")} style={{ padding: "7px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
+                  {lang === "es" ? "Crear cuenta" : "Create account"}
+                </button>
+                <span onClick={() => setAuthMode("login")} style={{ fontSize: 12, color: MUTED, cursor: "pointer" }}>
+                  {lang === "es" ? "¿Ya tienes cuenta? " : "Already have an account? "}
+                  <span style={{ color: GOLD, fontWeight: "bold" }}>{lang === "es" ? "Inicia sesión" : "Sign in"}</span>
+                </span>
+              </div>
+            </div>
+          )}
           {bibleLoading ? (
             <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🙏</div>
@@ -3470,16 +3599,35 @@ export default function App() {
               <div style={{ fontSize: 12, color: MUTED, marginBottom: 14 }}>
                 {bibleSearchResults.length} {lang === "es" ? "versículos encontrados" : "verses found"}
               </div>
-              {bibleSearchResults.map((v, i) => (
-                <div key={i} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
-                  <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 6, fontFamily: "'Cormorant', serif", letterSpacing: 0.5 }}>
-                    {formatRef(v.reference)}
+              {bibleSearchResults.map((v, i) => {
+                const verseRef = buildSearchVerseRef(v);
+                const docId = verseRef && highlightDocId({ id: verseRef.bookId }, verseRef.chapterNumber, verseRef.verseNumber);
+                const h = docId ? bibleHighlights[docId] : null;
+                return (
+                  <div
+                    key={i}
+                    onClick={() => verseRef && handleVerseClick(verseRef)}
+                    onPointerDown={(e) => verseRef && handleVersePointerDown(e, verseRef)}
+                    onPointerMove={handleVersePointerMove}
+                    onPointerUp={handleVersePointerUp}
+                    onPointerCancel={handleVersePointerUp}
+                    style={{
+                      background: h ? `${GOLD}4d` : BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10,
+                      border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)",
+                      cursor: verseRef ? "pointer" : "default", userSelect: "none", WebkitUserSelect: "none",
+                      transition: "background 0.3s ease",
+                    }}
+                  >
+                    <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, marginBottom: 6, fontFamily: "'Cormorant', serif", letterSpacing: 0.5 }}>
+                      {formatRef(v.reference)}
+                    </div>
+                    <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.75, fontFamily: "'Work Sans', sans-serif" }}>
+                      {v.text?.replace(/\s+/g, " ").trim()}
+                    </div>
+                    {verseRef && verseHighlightExtras(verseRef)}
                   </div>
-                  <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.75, fontFamily: "'Work Sans', sans-serif" }}>
-                    {v.text?.replace(/\s+/g, " ").trim()}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -3539,21 +3687,22 @@ export default function App() {
           ) : (
             <div>
               {verses.map(v => {
-                const h = bibleHighlights[v.num];
+                const verseRef = buildVerseRef(v);
+                const docId = highlightDocId(bibleSelectedBook, bibleSelectedChapter.number, v.num);
+                const h = bibleHighlights[docId];
                 const isTarget = v.num === bibleGotoTargetVerse;
-                const isEditing = bibleCommentEditingVerse === v.num;
                 return (
                   <div
                     key={v.num}
                     id={`bible-verse-${v.num}`}
-                    onClick={() => v.num > 0 && handleVerseClick(v)}
-                    onPointerDown={(e) => v.num > 0 && handleVersePointerDown(e, v)}
+                    onClick={() => v.num > 0 && handleVerseClick(verseRef)}
+                    onPointerDown={(e) => v.num > 0 && handleVersePointerDown(e, verseRef)}
                     onPointerMove={handleVersePointerMove}
                     onPointerUp={handleVersePointerUp}
                     onPointerCancel={handleVersePointerUp}
                     style={{
                       display: "flex", gap: 12, padding: "12px 8px", borderBottom: `1px solid ${CREAM_DARK}`,
-                      background: (h || isTarget) ? `${GOLD}1f` : "transparent",
+                      background: (h || isTarget) ? `${GOLD}4d` : "transparent",
                       borderRadius: (h || isTarget) ? 10 : 0,
                       transition: "background 0.3s ease",
                       cursor: v.num > 0 ? "pointer" : "default",
@@ -3569,47 +3718,7 @@ export default function App() {
                       <div style={{ fontSize: 15, color: CREAM, lineHeight: 1.8, fontFamily: "'Work Sans', sans-serif" }}>
                         {v.text}
                       </div>
-                      {h && !isEditing && (
-                        <span
-                          onClick={(e) => { e.stopPropagation(); openCommentEditor(v); }}
-                          style={{ display: "inline-flex", marginTop: 4, cursor: "pointer", opacity: 0.85 }}
-                          title={lang === "es" ? "Agregar/editar nota" : "Add/edit note"}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                            <path d="M4 20 L4 16 L15 5 L19 9 L8 20 Z" stroke={GOLD} strokeWidth="1.8" strokeLinejoin="round"/>
-                            <line x1="13" y1="7" x2="17" y2="11" stroke={GOLD} strokeWidth="1.8"/>
-                          </svg>
-                        </span>
-                      )}
-                      {h?.comment && !isEditing && (
-                        <div style={{ marginTop: 6, paddingLeft: 10, borderLeft: `2px solid ${GOLD}`, fontSize: 13, fontStyle: "italic", color: GOLD_LIGHT, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.5 }}>
-                          "{h.comment}"
-                        </div>
-                      )}
-                      {isEditing && (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          style={{ marginTop: 8, background: BG_CARD, border: `1px solid ${GOLD}59`, borderRadius: 12, padding: "10px 12px" }}
-                        >
-                          <textarea
-                            autoFocus
-                            rows={2}
-                            value={bibleCommentDraft}
-                            onChange={e => setBibleCommentDraft(e.target.value)}
-                            placeholder={lang === "es" ? "Escribe una nota corta (opcional)..." : "Write a short note (optional)..."}
-                            style={{ width: "100%", background: NAVY_DARK, border: `1px solid ${CREAM_DARK}`, borderRadius: 8, color: CREAM, fontSize: 13, fontFamily: "'Work Sans', sans-serif", padding: "8px 10px", resize: "none", outline: "none", boxSizing: "border-box" }}
-                          />
-                          <div style={{ display: "flex", gap: 8, marginTop: 8, justifyContent: "flex-end" }}>
-                            <button onClick={() => setBibleCommentEditingVerse(null)} style={{ fontSize: 12, fontWeight: 600, borderRadius: 8, padding: "6px 14px", cursor: "pointer", background: "none", border: `1px solid ${CREAM_DARK}`, color: MUTED }}>
-                              {lang === "es" ? "Cancelar" : "Cancel"}
-                            </button>
-                            <button onClick={() => saveComment(v)} style={{ fontSize: 12, fontWeight: 600, borderRadius: 8, padding: "6px 14px", cursor: "pointer", background: GOLD, border: "none", color: NAVY_DARK }}>
-                              {lang === "es" ? "Guardar" : "Save"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                      {v.num > 0 && verseHighlightExtras(verseRef)}
                     </div>
                   </div>
                 );
