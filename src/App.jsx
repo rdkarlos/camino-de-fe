@@ -201,6 +201,20 @@ const BIBLE_CATEGORIES = {
   },
 };
 
+const BIBLE_BOOK_ORDER = {
+  ot: ["pentateuco", "historicos", "sapienciales", "profeticos"],
+  nt: ["evangelios", "hechos", "cartas", "apocalipsis"],
+};
+function flattenBibleBooks(lang) {
+  const books = [];
+  ["ot", "nt"].forEach((t) => {
+    BIBLE_BOOK_ORDER[t].forEach((cat) => {
+      books.push(...(BIBLE_BOOKS[lang][t][cat] || []));
+    });
+  });
+  return books;
+}
+
 const ONBOARDING_ICONS = {
   logo: (
     <svg viewBox="0 0 160 160" width="88" height="88" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -419,6 +433,7 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const headerMenuRef = useRef(null);
   const [openReading, setOpenReading] = useState(null);
   const [showEnglishFallback, setShowEnglishFallback] = useState({});
   const [notifGospel, setNotifGospel] = useState(false);
@@ -495,6 +510,13 @@ export default function App() {
   const [bibleSearch, setBibleSearch] = useState("");
   const [bibleSearchResults, setBibleSearchResults] = useState(null);
   const [bibleLoading, setBibleLoading] = useState(false);
+  const [bibleGotoOpen, setBibleGotoOpen] = useState(false);
+  const [bibleGotoBookId, setBibleGotoBookId] = useState("");
+  const [bibleGotoChapter, setBibleGotoChapter] = useState("");
+  const [bibleGotoVerse, setBibleGotoVerse] = useState("");
+  const [bibleGotoLoading, setBibleGotoLoading] = useState(false);
+  const [bibleGotoMsg, setBibleGotoMsg] = useState(null);
+  const [bibleGotoTargetVerse, setBibleGotoTargetVerse] = useState(null);
   const [circleView, setCircleView] = useState("list");
   const [myCircles, setMyCircles] = useState([]);
   const [circleLoading, setCircleLoading] = useState(false);
@@ -522,6 +544,23 @@ export default function App() {
   });
   const [splashIn, setSplashIn] = useState(false);
   const [splashOut, setSplashOut] = useState(false);
+
+  useEffect(() => {
+    if (bibleView !== "verses" || !bibleGotoTargetVerse) return;
+    const el = document.getElementById(`bible-verse-${bibleGotoTargetVerse}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [bibleView, bibleGotoTargetVerse, bibleChapterText]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleOutsideClick = (e) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!showSplash) return;
@@ -2822,11 +2861,14 @@ export default function App() {
   const renderBible = () => {
     const BIBLE_ID = "e3f420b9665abaeb-01";
     const API_KEY = "8z-olVvbUPzjg2OtXjSks";
+    const allBooks = flattenBibleBooks(lang);
     const loadChapters = async (book) => {
       setBibleSelectedBook(book);
       setBibleView("chapters");
       setBibleChapters([]);
       setBibleLoading(true);
+      setBibleGotoMsg(null);
+      setBibleGotoTargetVerse(null);
       try {
         const r = await fetch(
           `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/books/${book.id}/chapters`,
@@ -2843,6 +2885,8 @@ export default function App() {
       setBibleView("verses");
       setBibleChapterText("");
       setBibleLoading(true);
+      setBibleGotoMsg(null);
+      setBibleGotoTargetVerse(null);
       try {
         const r = await fetch(
           `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/chapters/${chapter.id}?content-type=html&include-verse-numbers=true&include-titles=false&include-notes=false&include-chapter-numbers=false`,
@@ -2902,19 +2946,160 @@ export default function App() {
       }
     };
 
-    const searchBarJsx = (autoFocus = false) => (
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <input
-          autoFocus={autoFocus}
-          value={bibleSearch}
-          onChange={e => setBibleSearch(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && doSearch()}
-          placeholder={lang === "es" ? "Buscar versículo..." : "Search verse..."}
-          style={{ flex: 1, padding: "10px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: CREAM, background: NAVY, fontFamily: "'Georgia', serif", outline: "none", boxSizing: "border-box" }}
-        />
-        <button onClick={doSearch} style={{ padding: "10px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 16, cursor: "pointer", flexShrink: 0 }}>
-          🔍
+    const doGoto = async () => {
+      const book = allBooks.find(b => b.id === bibleGotoBookId);
+      if (!book) return;
+      const chapterNum = parseInt(bibleGotoChapter, 10);
+      if (!chapterNum || chapterNum < 1) {
+        setBibleGotoMsg({ text: lang === "es" ? "Escribe un número de capítulo." : "Enter a chapter number.", ok: false });
+        return;
+      }
+      setBibleGotoMsg(null);
+      setBibleGotoLoading(true);
+      try {
+        const r = await fetch(
+          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/books/${book.id}/chapters`,
+          { headers: { "api-key": API_KEY } }
+        );
+        const json = await r.json();
+        const chapters = (json.data || []).filter(c => c.number !== "intro");
+        const match = chapters.find(c => c.number === String(chapterNum));
+        if (!match) {
+          setBibleGotoMsg({
+            text: lang === "es"
+              ? `${book.name} tiene ${chapters.length} capítulos. Prueba con un número entre 1 y ${chapters.length}.`
+              : `${book.name} has ${chapters.length} chapters. Try a number between 1 and ${chapters.length}.`,
+            ok: false,
+          });
+          setBibleGotoLoading(false);
+          return;
+        }
+
+        const r2 = await fetch(
+          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/chapters/${match.id}?content-type=html&include-verse-numbers=true&include-titles=false&include-notes=false&include-chapter-numbers=false`,
+          { headers: { "api-key": API_KEY } }
+        );
+        const json2 = await r2.json();
+        const content = json2.data?.content || "";
+        const verses = parseVerses(content);
+
+        setBibleSelectedBook(book);
+        setBibleChapters(chapters);
+        setBibleSelectedChapter(match);
+        setBibleChapterText(content);
+        setBibleView("verses");
+
+        const verseNum = bibleGotoVerse.trim() ? parseInt(bibleGotoVerse, 10) : null;
+        if (verseNum) {
+          if (verses.some(v => v.num === verseNum)) {
+            setBibleGotoTargetVerse(verseNum);
+            setBibleGotoMsg(null);
+            setBibleGotoOpen(false);
+          } else {
+            setBibleGotoTargetVerse(null);
+            setBibleGotoMsg({
+              text: lang === "es"
+                ? `Este capítulo tiene ${verses.length} versículos. Te mostramos el capítulo completo — prueba un número entre 1 y ${verses.length} para ir directo a un versículo.`
+                : `This chapter has ${verses.length} verses. Showing the full chapter — try a number between 1 and ${verses.length} to jump straight to a verse.`,
+              ok: false,
+            });
+          }
+        } else {
+          setBibleGotoTargetVerse(null);
+          setBibleGotoOpen(false);
+        }
+      } catch (_) {
+        setBibleGotoMsg({ text: lang === "es" ? "No pudimos cargar esa cita. Intenta de nuevo." : "We couldn't load that reference. Try again.", ok: false });
+      }
+      setBibleGotoLoading(false);
+    };
+
+    const thematicSearchJsx = (autoFocus = false) => (
+      <div style={{
+        background: `linear-gradient(160deg, ${BG_CARD}, ${NAVY_DARK})`,
+        border: `1px solid ${GOLD}59`,
+        borderRadius: 18,
+        padding: "18px 16px 16px",
+        marginBottom: 14,
+      }}>
+        <div style={{ fontFamily: "'Cormorant', serif", fontWeight: "bold", fontSize: 17.5, color: GOLD, lineHeight: 1.3, marginBottom: 12 }}>
+          {lang === "es" ? "Busca lo que tu corazón necesita hoy" : "Search for what your heart needs today"}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            autoFocus={autoFocus}
+            value={bibleSearch}
+            onChange={e => setBibleSearch(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && doSearch()}
+            placeholder={lang === "es" ? "ej. paz, perdón, miedo, gratitud..." : "e.g. peace, forgiveness, fear, gratitude..."}
+            style={{ flex: 1, padding: "10px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: CREAM, background: NAVY_DARK, fontFamily: "'Georgia', serif", outline: "none", boxSizing: "border-box" }}
+          />
+          <button onClick={doSearch} style={{ padding: "10px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 16, cursor: "pointer", flexShrink: 0 }}>
+            🔍
+          </button>
+        </div>
+      </div>
+    );
+
+    const gotoJsx = () => (
+      <div style={{ marginBottom: 20 }}>
+        <button
+          onClick={() => { setBibleGotoOpen(o => !o); setBibleGotoMsg(null); }}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%",
+            background: "none", border: "none", color: MUTED, fontSize: 12.5, fontWeight: 600,
+            cursor: "pointer", padding: "6px 0", fontFamily: "'Work Sans', sans-serif",
+          }}
+        >
+          {lang === "es" ? "Ir a una cita" : "Go to a reference"}
+          <span style={{ fontSize: 10, transition: "transform 0.2s ease", transform: bibleGotoOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
         </button>
+        {bibleGotoOpen && (
+          <div style={{ marginTop: 10, paddingTop: 14, borderTop: `1px solid ${CREAM_DARK}55` }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: bibleGotoMsg ? 10 : 0 }}>
+              <select
+                value={bibleGotoBookId}
+                onChange={e => { setBibleGotoBookId(e.target.value); setBibleGotoMsg(null); }}
+                style={{ flex: 1.4, minWidth: 0, background: "transparent", border: `1px solid ${CREAM_DARK}`, borderRadius: 9, color: CREAM, fontSize: 12.5, padding: "8px 6px", fontFamily: "'Work Sans', sans-serif" }}
+              >
+                <option value="" disabled>{lang === "es" ? "Libro" : "Book"}</option>
+                {allBooks.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+              <input
+                type="number" inputMode="numeric" min="1"
+                value={bibleGotoChapter}
+                onChange={e => { setBibleGotoChapter(e.target.value); setBibleGotoMsg(null); }}
+                onKeyDown={e => e.key === "Enter" && doGoto()}
+                placeholder={lang === "es" ? "Cap." : "Ch."}
+                style={{ flex: 0.7, width: 0, textAlign: "center", background: "transparent", border: `1px solid ${CREAM_DARK}`, borderRadius: 9, color: CREAM, fontSize: 12.5, padding: "8px 4px", fontFamily: "'Work Sans', sans-serif" }}
+              />
+              <input
+                type="number" inputMode="numeric" min="1"
+                value={bibleGotoVerse}
+                onChange={e => { setBibleGotoVerse(e.target.value); setBibleGotoMsg(null); }}
+                onKeyDown={e => e.key === "Enter" && doGoto()}
+                placeholder={lang === "es" ? "Vers." : "Vs."}
+                style={{ flex: 0.7, width: 0, textAlign: "center", background: "transparent", border: `1px solid ${CREAM_DARK}`, borderRadius: 9, color: CREAM, fontSize: 12.5, padding: "8px 4px", fontFamily: "'Work Sans', sans-serif" }}
+              />
+              <button
+                onClick={doGoto}
+                disabled={bibleGotoLoading || !bibleGotoBookId || !bibleGotoChapter}
+                style={{ flex: "0 0 auto", background: "transparent", border: `1px solid ${GOLD}`, color: GOLD, borderRadius: 9, padding: "8px 12px", fontSize: 12.5, fontWeight: 600, cursor: bibleGotoLoading ? "default" : "pointer", opacity: (bibleGotoLoading || !bibleGotoBookId || !bibleGotoChapter) ? 0.5 : 1 }}
+              >
+                {bibleGotoLoading ? "…" : (lang === "es" ? "Ir" : "Go")}
+              </button>
+            </div>
+            {bibleGotoMsg && (
+              <div style={{
+                fontSize: 12.5, fontStyle: "italic", lineHeight: 1.5,
+                color: bibleGotoMsg.ok ? GOLD : MUTED,
+                padding: "8px 10px", background: `${GOLD}0f`, borderRadius: 8, borderLeft: `2px solid ${GOLD}`,
+              }}>
+                {bibleGotoMsg.text}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
 
@@ -2923,7 +3108,8 @@ export default function App() {
       const currentBooks = BIBLE_BOOKS[lang][bibleTestament][bibleCategory] || [];
       return (
         <div>
-          {searchBarJsx(false)}
+          {thematicSearchJsx(false)}
+          {gotoJsx()}
 
           {/* Botones Antiguo / Nuevo Testamento */}
           <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
@@ -3030,7 +3216,8 @@ export default function App() {
           <button onClick={() => { setBibleView("books"); setBibleSearchResults(null); }} style={{ marginBottom: 16, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Work Sans', sans-serif" }}>
             ← {lang === "es" ? "Libros" : "Books"}
           </button>
-          {searchBarJsx(true)}
+          {thematicSearchJsx(true)}
+          {gotoJsx()}
           {bibleLoading ? (
             <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🙏</div>
@@ -3065,7 +3252,7 @@ export default function App() {
       const verses = parseVerses(bibleChapterText);
       return (
         <div>
-          <button onClick={() => setBibleView("chapters")} style={{ marginBottom: 14, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Work Sans', sans-serif" }}>
+          <button onClick={() => { setBibleView("chapters"); setBibleGotoMsg(null); setBibleGotoTargetVerse(null); }} style={{ marginBottom: 14, background: "none", border: "none", color: CREAM, fontSize: 14, cursor: "pointer", padding: 0, fontFamily: "'Work Sans', sans-serif" }}>
             ← {bibleSelectedBook?.name}
           </button>
           <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 14, padding: "14px 18px", marginBottom: 16, color: WHITE }}>
@@ -3073,6 +3260,15 @@ export default function App() {
               {bibleSelectedBook?.name} {bibleSelectedChapter?.number}
             </div>
           </div>
+          {bibleGotoMsg && (
+            <div style={{
+              fontSize: 12.5, fontStyle: "italic", lineHeight: 1.5, color: MUTED,
+              padding: "10px 12px", background: `${GOLD}0f`, borderRadius: 10, borderLeft: `2px solid ${GOLD}`,
+              marginBottom: 14,
+            }}>
+              {bibleGotoMsg.text}
+            </div>
+          )}
           {bibleLoading ? (
             <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🙏</div>
@@ -3085,7 +3281,16 @@ export default function App() {
           ) : (
             <div>
               {verses.map(v => (
-                <div key={v.num} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: `1px solid ${CREAM_DARK}` }}>
+                <div
+                  key={v.num}
+                  id={`bible-verse-${v.num}`}
+                  style={{
+                    display: "flex", gap: 12, padding: "12px 8px", borderBottom: `1px solid ${CREAM_DARK}`,
+                    background: v.num === bibleGotoTargetVerse ? `${GOLD}1f` : "transparent",
+                    borderRadius: v.num === bibleGotoTargetVerse ? 10 : 0,
+                    transition: "background 0.4s ease",
+                  }}
+                >
                   {v.num > 0 && (
                     <div style={{ fontSize: 11, fontWeight: "bold", color: GOLD, minWidth: 22, paddingTop: 3, fontFamily: "'Cormorant', serif", flexShrink: 0, textAlign: "right" }}>
                       {v.num}
@@ -3460,7 +3665,7 @@ export default function App() {
       )}
 
       {/* ── HEADER ── */}
-      <div style={{ background: NAVY, borderBottom: `1px solid ${CREAM_DARK}33`, color: WHITE, position: "sticky", top: 0, zIndex: 40, borderRadius: 24, margin: 8 }}>
+      <div ref={headerMenuRef} style={{ background: NAVY, borderBottom: `1px solid ${CREAM_DARK}33`, color: WHITE, position: "sticky", top: 0, zIndex: 40, borderRadius: 24, margin: 8 }}>
 
         {/* Barra superior: hamburguesa + logo izquierda | acciones derecha */}
         <div style={{ display: "flex", alignItems: "center", padding: "12px 14px 10px", gap: 10 }}>
