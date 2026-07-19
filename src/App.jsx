@@ -553,13 +553,24 @@ export default function App() {
 
   useEffect(() => {
     if (!menuOpen) return;
+    const isOutside = (e) => !headerMenuRef.current || !headerMenuRef.current.contains(e.target);
     const handleOutsideClick = (e) => {
-      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target)) {
-        setMenuOpen(false);
-      }
+      if (isOutside(e)) setMenuOpen(false);
+    };
+    // Scroll/touchmove signal the user wants to keep using the page content, not the
+    // menu — but touchmove bubbles, so skip it when it starts inside the menu's own
+    // scrollable nav list (long lists use overflowY: auto there).
+    const handleScrollAway = (e) => {
+      if (isOutside(e)) setMenuOpen(false);
     };
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    window.addEventListener("scroll", handleScrollAway, { passive: true });
+    window.addEventListener("touchmove", handleScrollAway, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      window.removeEventListener("scroll", handleScrollAway);
+      window.removeEventListener("touchmove", handleScrollAway);
+    };
   }, [menuOpen]);
 
   useEffect(() => {
