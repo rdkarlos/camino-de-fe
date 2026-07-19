@@ -328,21 +328,21 @@ export default function Devocional({ lang = "es", onBack, initialTab }) {
                                 {p.dialogue ? (
                                   p.dialogue.map((pair, i) => (
                                     <div key={i} style={{ marginBottom: 10 }}>
-                                      <div style={{ fontSize: 14, lineHeight: 1.75, fontFamily: "'Work Sans', sans-serif", color: CREAM }}>
+                                      <div style={{ fontSize: 17, lineHeight: 1.75, fontFamily: "'Work Sans', sans-serif", color: CREAM }}>
                                         <span style={{ color: GOLD, fontWeight: "bold" }}>V.</span> {pair.v}
                                       </div>
-                                      <div style={{ fontSize: 14, lineHeight: 1.75, fontFamily: "'Work Sans', sans-serif", color: CREAM }}>
+                                      <div style={{ fontSize: 17, lineHeight: 1.75, fontFamily: "'Work Sans', sans-serif", color: CREAM }}>
                                         <span style={{ color: CREAM, fontWeight: "bold" }}>R.</span> {pair.r}
                                       </div>
                                       {pair.note && (
-                                        <div style={{ marginTop: 2, marginLeft: 20, fontStyle: "italic", fontSize: 12, color: MUTED, fontFamily: "'Work Sans', sans-serif" }}>
+                                        <div style={{ marginTop: 2, marginLeft: 20, fontStyle: "italic", fontSize: 13, color: MUTED, fontFamily: "'Work Sans', sans-serif" }}>
                                           {pair.note}
                                         </div>
                                       )}
                                     </div>
                                   ))
                                 ) : (
-                                  <div style={{ fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
+                                  <div style={{ fontSize: 17, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
                                     {p.text}
                                   </div>
                                 )}
@@ -389,7 +389,7 @@ export default function Devocional({ lang = "es", onBack, initialTab }) {
                       transition: "max-height 0.3s ease, opacity 0.3s ease",
                     }}
                   >
-                    <div style={{ padding: "0 16px 16px", fontSize: 14, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
+                    <div style={{ padding: "0 16px 16px", fontSize: 17, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
                       {p.text}
                     </div>
                   </div>
