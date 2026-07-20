@@ -1,6 +1,6 @@
 # Horeb (antes Lumora / Camino de Fe)
 
-> Migración de marca COMPLETA: nombre, signo, paleta y dominio propio.
+> Migración de marca COMPLETA: nombre, signo, paleta, dominio propio y textos residuales limpiados.
 
 ## URLs
 - Producción: https://somoshoreb.com (dominio principal, conectado)
@@ -20,214 +20,236 @@
 - Node.js v24, Windows 10
 
 ## Marca — Somos Horeb
-- **Nombre:** Horeb. **Firma:** Somos Horeb. **Eslogan:** *Sube. Vuelve distinto.*
+- **Nombre:** Horeb. **Firma:** Somos Horeb. **Eslogan:** *Sube. Vuelve distinto.* / *Rise. Return renewed.*
 - **Por qué Horeb:** el monte donde Dios no estaba en el viento, ni el terremoto, ni el fuego — sino en una brisa suave. Moisés y Elías subieron cansados, "con lo que les quedaba".
 - **El "somos" no es decorativo:** dice comunidad. Nadie sube solo. Diferencia a Horeb de Hallow y Ora (individuales).
-- **Nombres descartados:** Tabor (app de citas rusa, 17M descargas), Lumora (saturado: apps de bienestar/belleza, incluida una de manifestación New Age), Tabita (marca de calzado brasileña), Emaús/Cenáculo/Betania/Nazaret (todos tomados). Lección: entre más obvio y bíblico el nombre, más probable que ya lo tengan.
-- **Competencia:** Hallow (#1, épico/disciplina) y Ora (colombiana, mismas funciones). Diferenciador de Horeb: comunidad + parroquias.
+- **Nombres descartados:** Tabor (app de citas rusa, 17M descargas), Lumora (saturado de apps de bienestar/belleza), Tabita, Emaús, Cenáculo, Betania, Nazaret — todos tomados.
+- **Competencia:** Hallow (épico/disciplina) y Ora (colombiana, mismas funciones). Diferenciador de Horeb: comunidad + parroquias.
 
 ## Identidad visual
 ### El signo (logo)
-- `src/Horeb.jsx` — sol asomando detrás del monte, tres líneas horizontales descendentes que se estrechan hacia la cima (la brisa), monte principal (dos trazos) y monte interior más tenue en Cielo de Altura (el *somos*, perspectiva atmosférica)
-- Prop `background` (default `false` = transparente). Con fondo: favicon e íconos PWA (viewBox no cuadrado, 400×320 — cuidado al forzar tamaño cuadrado)
+- `src/Horeb.jsx` — sol asomando detrás del monte, tres líneas horizontales descendentes (la brisa), monte principal + monte interior tenue en Cielo de Altura (el *somos*)
+- Prop `background` (default `false` = transparente). Con fondo: favicon e íconos PWA
+- Prop `animated` (nuevo, default `false`, opt-in): activa el pulso de "respiración" del halo del sol — ver `HorebLoading` abajo
 - Umbral de simplificación: 32px. IDs de gradientes con `useId()`
-- **El logo NO va en las tarjetas de la app** (Santo del Día, Parroquia) — ahí va un motivo decorativo (círculos difusos + punto de luz, en Brisa de Alba). El logo se reserva para splash, favicon/PWA y firma de imágenes compartidas
-- Reemplaza también el ícono del modal de login (antes: emoji ✝️, se veía morado según el dispositivo)
+- **El logo NO va en las tarjetas de la app** — ahí va un motivo decorativo (círculos difusos + punto de luz en Brisa de Alba). El logo se reserva para splash, favicon/PWA y firma de imágenes compartidas
+- Reemplazó el ícono del modal de login (antes: emoji ✝️, se veía morado según el dispositivo)
+
+### `HorebLoading` — estado de carga unificado (14 jul 2026)
+- Componente nuevo que envuelve `Horeb.jsx` con `animated={true}`: el halo del sol crece y se encoge en un ciclo suave (2.2s, ease-in-out), el trazo del monte permanece fijo — mismo lenguaje que "la luz que crece" del Rosario
+- Respeta `prefers-reduced-motion` automáticamente
+- **Reemplazó 10 apariciones del emoji 🙏** (estado de carga genérico) en: La Biblia (capítulos, búsqueda, versículos, Mis Versículos), Mis Oraciones, Diario, Conec✝2 (2 vacíos + botón crear), confirmación de pago
+- Tamaños usados: 60px (confirmación de pago), 44px (vacío Conec✝2), 36px (vacío intenciones), 32px (Mis Oraciones/Diario/Biblia), 24px (lista capítulos), 18px (inline en botón)
 
 ### Paleta (brand book Horeb) — migrada
-| Nombre | Hex | Antes (Lumora) |
-|---|---|---|
-| Noche de Horeb | `#1E2630` | sin cambio |
-| Brisa de Alba (ALBA) | `#E4C79B` | `#E8B45C` |
-| Lino | `#F5F1E8` | sin cambio |
-| Cielo de Altura (CIELO) | `#8497A6` | `#7E97AB` |
-| Arena del Monte (PIEDRA) | `#C7B79C` | `#B8AE9C` |
-| Verde Zarza | `#7A8C6E` | nuevo — **se probó para el resaltado de versículos, pero Carlos prefirió el dorado. Sigue sin uso asignado.** |
+| Nombre | Hex |
+|---|---|
+| Noche de Horeb | `#1E2630` |
+| Brisa de Alba (ALBA) | `#E4C79B` |
+| Lino | `#F5F1E8` |
+| Cielo de Altura (CIELO) | `#8497A6` |
+| Arena del Monte (PIEDRA) | `#C7B79C` |
+| Verde Zarza | `#7A8C6E` — se probó para el resaltado de versículos, Carlos prefirió el dorado. **Sigue sin uso asignado.** |
 
-- `theme.js` exporta `rgba(hex, alpha)` y `mix(colorA, colorB, ratio)` como utilidades centralizadas — **no dejar rgba/mix hardcodeados en componentes**.
-- Contraste verificado: Brisa de Alba tiene MÁS contraste que el dorado anterior contra Noche (9.4:1 vs 8.1:1).
-- Verdes de éxito y rojos de error son colores semánticos (no de marca) — no se tocan.
-- **Tipografía:** Cormorant (títulos), Work Sans (interfaz).
+- `theme.js` exporta `rgba(hex, alpha)` y `mix(colorA, colorB, ratio)` — no dejar rgba/mix hardcodeados
+- Contraste verificado: Brisa de Alba MÁS contraste que el dorado anterior contra Noche (9.4:1 vs 8.1:1)
+- Tipografía: Cormorant (títulos), Work Sans (interfaz)
+
+### Barrido de íconos y emojis (14 jul 2026) — 3 tandas
+Se hizo un inventario exhaustivo de emojis en `src/` y `public/`: 21 distintos, 55 apariciones. Reemplazados por SVG propios (trazo fino 1.5-1.8px, sin relleno, color desde `theme.js`) o eliminados por ser código muerto.
+
+**Tanda 1 — código muerto eliminado:** `t.rosary.steps`, `t.home.reminder`, campo `icon: "📖"` no usado en `t.home.cards` — arrastraban 7+ apariciones de emoji que nunca se renderizaban (hermanos de los fósiles de marca ya encontrados antes).
+
+**Tanda 2 — reemplazos con SVG ya existente:** 📖 (`navIcons`), ✝️ (ícono de cruz de pantallas de cierre), 🔔 (el de `<ComingSoon>`), 👤 (avatar del menú), 🛒 (bolsa de compras), 🕯️ (`CandleGlyph`, ya hecho para Novenas).
+
+**Tanda 3 — SVG nuevos + `HorebLoading`:**
+- `LockGlyph`, `GlobeGlyph`, `KeyGlyph`, `PeopleGlyph`, `TrashGlyph` — Grupo A, Conec✝2 (privado/público/código/miembros/borrar), 13 apariciones
+- `BookmarkGlyph` — extraído del ícono que ya existía en "Mis Versículos" y reutilizado ahí también (sin duplicar), aplicado a 2 estados vacíos + el propio botón
+- `SearchGlyph` — reemplaza 🔍 en el buscador de La Biblia
+- `HorebLoading` — reemplaza 🙏 y ✨ (10 apariciones, ver arriba)
+- `CalmGlyph` — dos líneas onduladas, reemplaza 🕊 en `PRAYER_MOODS` (ánimo "Ansiedad"). **Deliberadamente genérico/temporal** — pendiente diseñar algo mejor en otra sesión
+- `CandleGlyph` reutilizado también en `PRAYER_MOODS` (ánimo "Duelo", antes 🕯)
+
+**Hallazgo importante:** `PRAYER_MOODS` (✝ ♡ ✞ ✦ ✿ 🕯 🕊) se había clasificado como "tipografía de marca, no emoji" en el inventario original — correcto para la mayoría, pero 🕯 y 🕊 SÍ eran pictogramas de emoji reales sin selector de variación, y se colaron sin detectarse hasta que Carlos reportó "una velita en Mis Oraciones".
+
+**Quedan como emoji, a propósito:**
+- 🕊️ (Home, tarjeta "Oración Personal") — se intentó rediseñar DOS veces (de frente con alas simétricas, luego de perfil en vuelo) y ninguna mejoró el original. Se mantiene el emoji. Pendiente retomar con otro enfoque en otra sesión.
+- 📔 (producto de Tienda) — baja prioridad, `products.js` no se renderiza en ningún lado (Tienda inactiva)
+
+**Lección reafirmada:** varios emojis vivían escondidos en lugares no obvios — un contador de estados de ánimo, un fallback de función, código muerto heredado. El grep de texto por sí solo no basta; hace falta revisar también los SVG/emoji embebidos en constantes de datos, no solo en el JSX visible.
 
 ### Fósiles de marca — limpiados
-Restos de versiones anteriores que ningún grep de texto detectaba (colores hardcodeados a mano, no componentes importados):
-- Íconos PWA: cruz sobre azul marino `#1B2A4A` — anterior incluso al vértice de luz viejo
-- Favicon con vértice de luz viejo
-- Tarjetas de Santo del Día y Parroquia: resplandor copiado a mano
-- Overlay morado en "Joven Fe"
-- Splash con hex suelto
-- `public/icons.svg`: sprite huérfano de un boilerplate — borrado
-- Constantes muertas `BLUE`/`BLUE_DARK` — eliminadas
-- **Lección:** si algo es un motivo de marca, debe ser un componente importado, no una copia manual.
-- **Pendiente, no urgente:** `api/confirm-payment.js` (email de pago) con paleta vieja — se actualiza cuando la Tienda esté activa de verdad.
+Restos de versiones anteriores encontrados en distintas sesiones: íconos PWA con cruz azul marino `#1B2A4A`, favicon viejo, resplandores copiados a mano, overlay morado en Joven Fe, splash con hex suelto, sprite `icons.svg` huérfano, constantes `BLUE`/`BLUE_DARK` muertas, "Lumora" en el email de pago, **y el eslogan viejo ("Luz que guía, amor que une") en el splash y `manifest.json`**, reemplazado por "Sube. Vuelve distinto." / "Rise. Return renewed."
+- **Lección:** si algo es un motivo de marca o texto de marca, debe vivir en un solo lugar (componente o constante), no copiado a mano en varios sitios — y el `manifest.json` es un escondite recurrente porque no se ve en la interfaz normal.
+- **Pendiente, no urgente:** `api/confirm-payment.js` — paleta de color vieja (ya tiene el texto correcto "Horeb"), se actualiza cuando la Tienda esté activa de verdad.
 
 ### Tono
-- Tuteo, español neutro, sin regionalismos ni clericalismos
-- *"El susurro, no el grito"* — la palabra justa, si sobra se quita
-- Invita, no ordena. Nunca: rachas, gamificación culposa, emojis pictóricos.
+- Tuteo, español neutro, sin regionalismos ni clericalismos. *"El susurro, no el grito."* Invita, no ordena. Nunca rachas ni gamificación culposa.
 
 ## Secciones
 1. **Inicio** — Bloque "Hoy": Versículo → Evangelio → Santo del Día → Misas de tu parroquia. Bloque "Tu camino": Oración Personal → Joven Fe
-2. **Oración Personal** — Mi Oración (Crear Oración, Mis Oraciones, Diario, Conec✝2), Rosario, Devocional
+2. **Oración Personal** — Mi Oración (Crear Oración, Mis Oraciones, Diario, Conec✝2), **Santo Rosario**, **Coronilla de la Divina Misericordia**, Devocional
 3. Evangelio — "Ponlo en Práctica"
-4. **La Biblia** — LBLA, buscador temático + navegación directa + resaltar/comentar versículos (ver detalle abajo)
+4. **La Biblia** — LBLA, buscador temático + navegación directa + resaltar/comentar versículos
 5. Lecturas del día
 6. Santo Rosario
-7. Devocional — **Oraciones** (50, en 6 secciones), Novenas (en construcción), Santo del Día
-8. Tienda — en construcción
-9. Configuración — incluye "Tu parroquia"
-10. Joven Fe
+7. Coronilla de la Divina Misericordia
+8. Devocional — **Oraciones** (50, en 6 secciones), Novenas (en construcción), Santo del Día
+9. Tienda — en construcción
+10. Configuración — incluye "Tu parroquia". **Notificaciones retirada** (ver detalle abajo)
+11. Joven Fe
 
 ## Mi Oración — 4 pestañas
 
 ### Crear Oración
-- Grid de 8 estados de ánimo → versículo + santo patrono (datos estáticos) → intención en texto libre → botón "Orar" (plantillas fijas, no hay IA real pese al nombre `generatePrayer`)
-- Guardar requiere sesión. Sin sesión: invitación serena a crear cuenta.
+- Grid de 8 estados de ánimo (íconos ahora todos SVG/símbolos de marca, sin emoji real) → versículo + santo patrono → intención en texto libre → "Orar" (plantillas fijas)
+- Guardar requiere sesión
 
 ### Mis Oraciones (unificada — antes existía "Diario" duplicando este contenido)
-- Con sesión: Firestore fuente única (`usuarios/{uid}/oraciones`), sincroniza entre dispositivos
-- **Permite borrar** (hueco cerrado — antes no se podía desde aquí)
-- Migración automática de datos heredados de localStorage por comparación de texto (trimmed), preservando fecha original (`new Date(id)`, no `serverTimestamp()`)
-- Sin sesión: banner con oraciones heredadas visibles + invitación a crear cuenta
-- Ya no es el `else` implícito del selector de tabs — caso explícito
+- Firestore fuente única con sesión (`usuarios/{uid}/oraciones`), localStorage de respaldo sin sesión
+- Permite borrar (antes no). Migración automática de datos heredados por comparación de texto
 
-### Diario (nuevo, 14 jul 2026)
-- **Distinto de Mis Oraciones:** gratitud y reflexión, no intenciones — mirar hacia atrás en el día, no pedir hacia adelante
-- `src/diarioPreguntas.js` — 30 preguntas fijas, una por día del mes, tono Horeb (examen ignaciano + gratitud, nunca culpa)
-- Pregunta del día por **día del mes**, anclada a `America/Bogota`. Día 31 → reutiliza pregunta del día 30
-- **Una entrada por día**, reforzado en Firestore (ID del doc = fecha de hoy, `setDoc` determinístico — Firestore impide una segunda escritura el mismo día)
-- **Entradas NO editables ni borrables** una vez guardadas — diario real. Se pueden releer.
-- Requiere sesión. Persistencia: `usuarios/{uid}/diario/{fecha}` — cubierto por regla existente
+### Diario — ampliado a 90 preguntas (14 jul 2026)
+- **Distinto de Mis Oraciones:** gratitud y reflexión, no intenciones
+- `src/diarioPreguntas.js` — **90 preguntas** (ampliado de 30), mismo tono (examen ignaciano + gratitud, nunca culpa)
+- **Selección por día del año** (cambiado de día del mes): `(díaDelAño - 1) % PREGUNTAS_DIARIO.length`, anclado a America/Bogota, ciclo de ~90 días antes de repetir. Usa `.length` en vez de número fijo — si se agregan más preguntas en el futuro, no hay que tocar dos lugares
+- Verificado con 4 fechas + un año bisiesto (2028) — el día extra no rompe el ciclo
+- **Una entrada por día**, ID del doc = fecha de hoy (determinístico)
+- **Entradas NO editables ni borrables.** Cada entrada guarda su propio `preguntaIndex` al crearse — entradas viejas no se ven afectadas por cambios futuros en la lógica de selección o en la cantidad de preguntas
 
-### Conec✝2 (sin cambios)
-- Círculos privados/públicos, compartir intenciones, botón "Estoy orando", borrar con permisos, abandonar círculo, límite 10 miembros, rastro de luz de actividad nueva
+### Conec✝2
+- Círculos privados/públicos, intenciones, rastro de luz. Íconos de privacidad/comunidad ahora SVG propios (antes 🔒🌍🔑👥🗑)
 
-## Devocional — Oraciones (14 jul 2026)
-- Pestaña renombrada de "Oraciones Clásicas" → **"Oraciones"** (más corto, sin connotación de "categoría de museo")
-- **50 oraciones en 6 secciones** (antes: 11 en lista plana — el PROYECTO.md decía 12, estaba desactualizado):
-  - I. Oraciones Básicas y Principales (13)
-  - II. Oraciones para la Santa Misa (7)
-  - III. Oraciones a la Virgen María (10)
-  - IV. Oraciones al Espíritu Santo (8)
-  - V. Oraciones a Jesucristo (6)
-  - VI. Oraciones de Protección y a los Santos (6)
-- Texto tomado literal de documento aportado por Carlos, verificado carácter por carácter (Claude Code encontró y corrigió 8 errores propios de transcripción antes de construir).
-- **Navegación: acordeón de dos niveles** (sección → oración), una sección y una oración abiertas a la vez.
-- **El Ángelus** (sección III): formato de diálogo real (campo `dialogue`, no `text`) — V. en dorado bold, R. en crema bold, instrucciones intercaladas en itálica gris.
-- Texto de las oraciones: 14px → 17px (se reza con luz tenue, a veces sin lentes). Instrucciones del Ángelus a 13px.
-- `CLASSIC_PRAYERS.en` sin tocar (11 de siempre) — traducir es fase aparte.
-- **Acto de Contrición:** misma fórmula colombiana/latinoamericana que el Rosario ("Jesús, mi Señor y Redentor...").
-- **Novenas:** contenido retirado (solo había 1, Sagrado Corazón, no 5 como decía el proyecto). Pestaña muestra `<ComingSoon>` (componente extraído y compartido con la Tienda, antes función inline no reutilizable). Ícono de vela.
-- **Santo del Día: sin ninguna modificación** en todo este trabajo.
+## Santo Rosario — alineado a la Santa Sede
+- Fuente: vatican.va — 20 misterios oficiales + citas bíblicas, LITERAL
+- Misterio del día anclado a America/Bogota. 6 pasos español (con meditación), 5 en inglés
+- Contador "luz que crece": anillo de 10 cuentas
+- Persistencia localStorage, retomar solo si es del día y misterio correctos
+- **Acto de Contrición: fórmula colombiana/latinoamericana** ("Jesús, mi Señor y Redentor...")
+- **Exporta `OUR_FATHER`, `HAIL_MARY`, `APOSTLES_CREED`** — reutilizadas por la Coronilla, sin duplicación
+
+## Coronilla de la Divina Misericordia (nuevo, 14 jul 2026)
+- Nueva pestaña en Oración Personal, debajo de Santo Rosario. `src/Coronilla.jsx`, misma arquitectura que `Rosario.jsx` (páginas, anillo "luz que crece", persistencia)
+- **Reutiliza `OUR_FATHER`, `HAIL_MARY`, `APOSTLES_CREED`** exportadas desde `Rosario.jsx` — cero duplicación de texto
+- **Pantalla de historia:** origen según el Diario de Santa Faustina (1935), resumida, mismo tratamiento visual que la meditación del Rosario. Solo se muestra al empezar fresco — si se retoma un progreso del día, se salta directo a donde se quedó
+- **Estructura:** Señal de la Cruz → Padre Nuestro → Ave María → Credo de los Apóstoles → Grano Mayor (1 vez, sin contador, "Padre Eterno, te ofrezco...") → 10 Granos Menores (anillo, "Por Su dolorosa Pasión...") → Invocación ×3 ("Santo Dios, Santo Fuerte...") → Oración Final (siempre visible, no opcional) → finalización
+- **Persistencia:** `lumora_coronilla_progress_v1` (clave distinta al Rosario), America/Bogota, retomar solo si es del mismo día
+- Textos verificados con diff automatizado contra la fuente, carácter por carácter
+
+## Devocional — Oraciones (renombrado de "Oraciones Clásicas")
+- Pestaña renombrada a **"Oraciones"** (más corto, sin connotación de "categoría de museo")
+- **50 oraciones en 6 secciones:** I. Básicas y Principales (13) · II. Santa Misa (7) · III. Virgen María (10) · IV. Espíritu Santo (8) · V. Jesucristo (6) · VI. Protección y Santos (6)
+- Texto tomado literal de documento aportado por Carlos, verificado carácter por carácter
+- **Navegación: acordeón de dos niveles** (sección → oración)
+- **El Ángelus** (sección III): formato de diálogo real (campo `dialogue`) — V. en dorado bold, R. en crema bold, instrucciones en itálica gris
+- Texto de las oraciones: 17px (subido de 14px, se reza con luz tenue)
+- `CLASSIC_PRAYERS.en` sin tocar (11 de siempre) — traducir es fase aparte
+- **Acto de Contrición:** misma fórmula que Rosario/Coronilla
+- **Novenas:** contenido retirado (solo había 1). Pestaña muestra `<ComingSoon>` (componente compartido con Tienda). Ícono de vela
+- **Santo del Día: sin ninguna modificación** en todo este trabajo
 
 ## La Biblia — buscadores + resaltar y comentar (14 jul 2026)
 
 ### Buscadores
-- **Buscador temático:** copy cambiado de "Buscar versículo" a **"Busca lo que tu corazón necesita hoy"**, con placeholder "ej. paz, perdón, miedo, gratitud...". Card con protagonismo visual (degradado, borde dorado). La función de búsqueda por palabra clave no cambió.
-- **Navegación directa (nueva):** "Ir a una cita" — colapsada por defecto, visualmente secundaria. Tres campos: libro (dropdown, 73 libros en orden bíblico real), capítulo, versículo. Validación real: capítulo fuera de rango → mensaje sereno con rango válido; versículo fuera de rango pero capítulo válido → abre igual con nota; válido → navega y resalta con scroll automático.
-- **Memoria de lectura NO se toca** (reafirmado 14 jul): La Biblia sigue recordando libro/capítulo al salir y volver — deliberado, funciona como marcador de lectura. Único tab con esa excepción a `goToTab`.
+- **Buscador temático:** copy "Busca lo que tu corazón necesita hoy" (antes "Buscar versículo"), placeholder "ej. paz, perdón, miedo, gratitud...". Card con protagonismo visual
+- **Navegación directa:** "Ir a una cita" — colapsada, tres campos (libro/capítulo/versículo). Validación real contra la API, con mensajes serenos en cada caso de error
+- **Memoria de lectura NO se toca** — La Biblia sigue recordando libro/capítulo al salir y volver (marcador de lectura deliberado, reafirmado dos veces)
+- **Barra de scroll horizontal de categorías** (Pentateuco/Históricos/etc.): oculta la barra nativa con clase reutilizable `.hide-scrollbar` en `index.css`; corregido padding que dejaba el primer chip pegado al borde
 
-### Resaltar y comentar versículos (nuevo, 14 jul 2026)
-- **Toque simple** sobre un versículo → resalta/quita. **Mantener presionado** (~450ms, mismo patrón que el botón flotante del Cordero: `pointerdown` + `setTimeout` cancelable con movimiento) → abre comentario opcional. Ícono de lápiz en versículos ya resaltados como acceso alternativo.
-- **Color de resaltado: dorado (ALBA) al 30% de opacidad.** Se probó también Verde Zarza (según su uso declarado en el brand book para "confirmación/estados positivos"), pero Carlos comparó ambos en vivo y prefirió el dorado. Decisión de gusto sobre norma — el brand book es guía, no regla rígida.
-- Comentario: tratamiento de cita con borde izquierdo dorado (mismo patrón "blockquote" ya usado en la app).
-- **Funciona igual en la lectura de un capítulo Y en los resultados del buscador temático** (se corrigió una laguna: el buscador usaba un componente de versículo distinto, sin la interactividad — ahora ambos comparten el mismo componente).
-- Persistencia: `usuarios/{uid}/versiculosGuardados`, **ID determinístico** por versículo (bookId+capítulo+versículo) — evita duplicados, permite `setDoc`/`deleteDoc` simples, consulta por capítulo con 2 filtros de igualdad sin índice compuesto. Cubierto por regla existente `{document=**}`.
-- **"Mis Versículos":** vive DENTRO de La Biblia (no en Mi Oración) — acceso discreto junto a "Ir a una cita". Lista con texto, referencia, comentario, fecha. Tocar una tarjeta navega al capítulo con el versículo centrado. Se puede quitar el resaltado desde ahí también.
-- Requiere sesión — reutiliza el patrón de invitación existente.
+### Resaltar y comentar versículos
+- **Toque simple** → resalta/quita. **Mantener presionado** (~450ms, mismo patrón que el botón del Cordero) → abre comentario opcional. Ícono de lápiz como acceso alternativo
+- **Color de resaltado: dorado (ALBA) al 30%** — se probó también Verde Zarza (según su rol en el brand book), Carlos comparó ambos en vivo y prefirió el dorado. Decisión de gusto sobre norma
+- Comentario: cita con borde izquierdo dorado
+- **Funciona igual en lectura de capítulo Y en resultados del buscador** (unificado a un solo componente de versículo)
+- Persistencia: `usuarios/{uid}/versiculosGuardados`, ID determinístico por versículo — evita duplicados, consulta por capítulo sin índice compuesto
+- **"Mis Versículos":** vive DENTRO de La Biblia. Lista con texto, referencia, comentario, fecha. Navega al capítulo con el versículo centrado
 
-## Menú hamburguesa — arreglos (14 jul 2026)
-- **Antes:** solo se cerraba con el botón X.
-- **Ahora:** se cierra al tocar o hacer scroll fuera del panel. Un `useEffect` con tres listeners (`mousedown`, `scroll`, `touchmove`) que se agregan y limpian juntos mientras el menú está abierto. Un solo helper `isOutside` (basado en un `ref` que envuelve TODO el header) reutilizado por los tres — evita lógica duplicada.
-- `scroll` en window no burbujea desde el panel interno (sin caso especial). `touchmove` sí burbujea, por eso usa `isOutside` para no cerrarse si el scroll ocurre dentro de una lista interna del propio menú.
-- **Segunda ronda de arreglos:** los accesos rápidos (Evangelio, La Biblia, etc.) ahora cierran el menú al navegar (antes quedaba abierto de fondo). Corregido el "cierre fantasma": a veces el mismo toque que abría el menú disparaba también el cierre por "click afuera" (carrera entre eventos) — verificado con múltiples aperturas/cierres seguidos.
+## Menú hamburguesa — arreglos completos (14 jul 2026)
+- Se cierra al tocar/scrollear fuera del panel (antes solo con X)
+- Los accesos rápidos ahora cierran el menú al navegar (antes quedaba abierto de fondo)
+- Corregido "cierre fantasma": el mismo toque que abría el menú a veces disparaba también el cierre (carrera entre eventos) — verificado con múltiples aperturas/cierres seguidos
+- Un solo helper `isOutside` reutilizado por los tres listeners (`mousedown`, `scroll`, `touchmove`)
+
+## Notificaciones — retiradas temporalmente (14 jul 2026)
+- La función en Configuración era solo un `setTimeout` local: sin persistencia, sin Push API real, sin disparador de servidor. Nunca notificaba de verdad (la pestaña se cerraba antes del plazo)
+- **Se eliminó por completo** (no comentado — arquitectura incompatible con una futura implementación real vía FCM). Código anterior recuperable del historial de git si hace falta como referencia
+- Muestra `<ComingSoon>` mientras tanto
+- **Push notifications reales — proyecto propio, no un ajuste menor.** Requiere: Firebase Cloud Messaging (VAPID keys), service worker con `self.addEventListener('push', ...)` (hoy `sw.js` solo cachea), tokens de dispositivo por usuario en Firestore, disparador server-side (otro Vercel Cron) que respete la hora de cada usuario. **Limitación de iOS:** solo funciona si la PWA está instalada en pantalla de inicio. Merece su propia sesión de diseño
 
 ## Rastro de luz — Conec✝2
-- Aviso in-app (no push). Punto de luz en 4 niveles: Inicio → Mi Oración → Conec✝2 → círculo. Se apaga solo al abrir el círculo con la novedad.
+- Aviso in-app. Punto de luz en 4 niveles: Inicio → Mi Oración → Conec✝2 → círculo. Se apaga solo al abrir el círculo con la novedad
 
 ## Seguridad Firestore — endurecida ✅ (12 jul 2026)
-- `usuarios/{uid}` y **toda subcolección** (`{document=**}`): solo el propio usuario — cubre `oraciones`, `diario`, `versiculosGuardados`, y futuras subcolecciones sin reglas nuevas.
-- `reflexiones`, `versiculos`, `parroquias`: lectura pública, escritura bloqueada (`if false`). Solo el servidor escribe vía admin.
-- `circulos`: lectura pública. Update limitado a campos específicos y solo miembros. Delete solo el creador.
-- `circulos/{id}/intenciones`: solo miembros. Create requiere `autorId == uid`. Delete: autor o creador (modera).
-- **No hay archivo `firestore.rules` versionado en el repo** — se gestionan directamente en la consola de Firebase.
+- `usuarios/{uid}` y **toda subcolección** (`{document=**}`): solo el propio usuario — cubre `oraciones`, `diario`, `versiculosGuardados`, y futuras subcolecciones sin reglas nuevas
+- `reflexiones`, `versiculos`, `parroquias`: lectura pública, escritura bloqueada. Solo el servidor escribe vía admin
+- `circulos` e `intenciones`: solo miembros, reglas por campo específicas
+- **No hay archivo `firestore.rules` versionado en el repo** — se gestionan directamente en consola de Firebase
 
-## Cron de reflexión diaria (IMPORTANTE)
-- `api/cron-reflexion.js` y `api/spiritual-guide.js` usan **firebase-admin**, no el SDK de cliente.
-- Credencial: `FIREBASE_SERVICE_ACCOUNT_BASE64` en Vercel (rotada 12 jul). Nunca en el repo.
-- ✅ Verificado: el cron se dispara solo en plan Hobby.
-
-## Santo Rosario — alineado a la Santa Sede
-- Fuente: vatican.va — 20 misterios oficiales + citas bíblicas, copiadas LITERAL
-- Misterio del día anclado a America/Bogota. 6 pasos español (con meditación), 5 en inglés (sin ella — faltan citas oficiales)
-- Contador "luz que crece": anillo de 10 cuentas, círculo central progresivo
-- Persistencia localStorage, retomar solo si es del día y misterio correctos
-- **Acto de Contrición: fórmula colombiana/latinoamericana**, consistente con Devocional
+## Cron de reflexión diaria
+- `firebase-admin` en `cron-reflexion.js`/`spiritual-guide.js`. ✅ Verificado: se dispara solo en plan Hobby
 
 ## Parroquias — misas
-- Colección `parroquias`. Datos del directorio oficial de la Diócesis de Zipaquirá.
-- `horarioMisas`: cada misa `{hora, lugar?}` — lugar solo si no es la iglesia principal
-- 3 parroquias cargadas (Cajicá). Falta San José de Ríogrande.
-- Tarjeta en Inicio: invitación / misas de hoy / semana expandida. Fuente citada en Configuración.
-- **Investigación de escalamiento (14 jul 2026):** se evaluó "Horarios de Misa" (horariosdemisa.com) — **sin API pública**, modelo 100% colaborativo (usuarios cargan, equipo verifica a mano), cobertura desigual por región, sin respaldo eclesial oficial. **Decisión: NO replicar ese modelo.** La ventaja de Horeb es la inversa — certeza sobre escala, datos oficiales de diócesis. Camino de crecimiento: diócesis por diócesis, con aval oficial, igual que Zipaquirá. Pendiente: verificar si esa diócesis tiene más parroquias en su directorio.
+- Colección `parroquias`, datos oficiales de la Diócesis de Zipaquirá. `horarioMisas`: `{hora, lugar?}`
+- 3 parroquias cargadas (Cajicá). Falta San José de Ríogrande
+- **Investigación de escalamiento:** "Horarios de Misa" (horariosdemisa.com) evaluado — sin API pública, modelo colaborativo sin respaldo eclesial. Decisión: NO replicar. Camino de crecimiento: diócesis por diócesis con aval oficial
 
 ## Compartir como imagen
-- `src/shareImage.js` — 1080×1920, degradado alba→noche, signo de Horeb, Cormorant. Sin fecha (no caduca).
-- **Ponlo en Práctica:** comparte solo el PRIMER consejo (antes fundía los 3 en un párrafo ilegible). Fuente 44-65px.
-- **Versículo del Día:** función nueva, reutiliza header/separador/firma compartidos.
-- Imagen + texto con link a **somoshoreb.com** vía Web Share API. Botón: "Comparte esta luz".
-- Firma: signo compacto de Horeb + "HOREB" (según brand book — "Somos Horeb" se reserva para otros usos)
-- **Canal de crecimiento orgánico clave**
+- `src/shareImage.js` — 1080×1920, degradado alba→noche, signo de Horeb, sin fecha
+- Ponlo en Práctica: solo el primer consejo. Versículo del Día: función propia
+- Imagen + texto con link a **somoshoreb.com**. Botón: "Comparte esta luz"
 
 ## Navegación
-- `goToTab(i)` centralizado resetea `personalSection`, `personalTab`, `devocionalInitialTab` al cambiar de sección
-- **Excepción — La Biblia:** conserva su estado deliberadamente (marcador de lectura)
+- `goToTab(i)` centralizado resetea sub-estados. **Excepción — La Biblia:** conserva su estado deliberadamente
 
 ## Archivos clave
 - `src/App.jsx`, `src/theme.js`, `src/Horeb.jsx`
-- `src/Rosario.jsx`, `src/Devocional.jsx`, `src/diarioPreguntas.js`
+- `src/Rosario.jsx` (exporta oraciones compartidas), `src/Coronilla.jsx` (nuevo), `src/Devocional.jsx`, `src/diarioPreguntas.js` (90 preguntas)
 - `src/santos.js`, `src/versiculos.js`, `src/JovenFe.jsx`, `src/shareImage.js`
 - `seed-parroquias.mjs`
 - `api/gospel.js`, `api/spiritual-guide.js`, `api/cron-reflexion.js`, `api/order.js`, `api/confirm-payment.js`
-- `public/sw.js` (v18), `public/favicon.svg`, `generate-icons.js`
+- `public/sw.js` (**v19**), `public/favicon.svg`, `public/manifest.json` (eslogan actualizado), `generate-icons.js`
 
 ## Variables de entorno en Vercel
-- `ANTHROPIC_API_KEY`, `CRON_SECRET` (rotado 11 jul), `FIREBASE_SERVICE_ACCOUNT_BASE64` (rotado 12 jul)
-- Cambios en env vars requieren REDEPLOY
+- `ANTHROPIC_API_KEY`, `CRON_SECRET`, `FIREBASE_SERVICE_ACCOUNT_BASE64`. Cambios requieren REDEPLOY
 
 ## Pendiente
 
 ### Parroquias — siguiente fase
-- **HABLAR CON EL PÁRROCO.** No vender: preguntar si los horarios están correctos y escuchar. Mensajes ya redactados (para usuarios de Lumora y para el padre).
-- WhatsApp es el flujo (lo que pasó); Horeb es el estado (lo que ES, siempre visible)
-- San José de Ríogrande (faltan horarios) · más parroquias de la diócesis, si el directorio las tiene
-- Canal "escríbenos" (el copy lo promete, no existe) · Panel del párroco solo si lo pide
+- **HABLAR CON EL PÁRROCO.** Mensajes ya redactados
+- San José de Ríogrande · más parroquias si el directorio las tiene · canal "escríbenos" (el copy lo promete, no existe)
 
 ### Contenido
-- **Novenas — contenido nuevo** (sección quedó en "en construcción"). Fuente católica confiable, NO generado.
-- `CLASSIC_PRAYERS.en` — traducir las 50 oraciones al inglés (fase aparte, sin inventar)
+- Novenas — contenido nuevo, fuente confiable, NO generado
+- `CLASSIC_PRAYERS.en` — traducir las 50 al inglés
 - Joven Fe — Testimonios y Quiz Bíblico
 - Rosario: citas bíblicas oficiales en inglés
+- **🕊️ (paloma) de Home** — dos intentos de rediseño fallidos, retomar con otro enfoque
+- **CalmGlyph de "Ansiedad"** en PRAYER_MOODS — es deliberadamente genérico/temporal, diseñar algo mejor
 
 ### Funcionalidad futura
-- Push notifications reales
+- **Push notifications reales** — ver sección "Notificaciones" arriba, proyecto propio completo
 - Monetización — Fase 0: definir modelo (Cordada, Brisa, Semilla, Cumbre ya nombrados en el brand book)
-- Decidir uso del Verde Zarza (se probó para resaltado de versículos, no se usó — sigue disponible)
+- Decidir uso del Verde Zarza
 
 ### Distribución
-- PWA sin tiendas. iPhone: instalar requiere 5 pasos ocultos en Safari. Empaquetar (Bubblewrap/Capacitor) cuando el contenido esté más completo. Ojo: comisión 15-30% si se vende dentro de la app.
+- PWA sin tiendas. iPhone: 5 pasos ocultos en Safari. Empaquetar (Bubblewrap/Capacitor) cuando el contenido esté más completo
 
 ### Técnico
 - Fallback Evangelio: lanza 500 si falla su traducción
 - Limpieza: cuentas de prueba en Authentication, claves de servicio sin usar en Firebase
-- `api/confirm-payment.js`: paleta vieja, actualizar cuando la Tienda esté activa
+- `api/confirm-payment.js`: paleta de color vieja (texto ya correcto), actualizar cuando la Tienda esté activa
 - CNAME del `www` en Namecheap: actualizar al formato nuevo recomendado por Vercel (no urgente)
+- 📔 (producto Tienda) sin ícono SVG — baja prioridad, `products.js` inactivo
 
 ### Hecho ✅
-- Marca Horeb completa: nombre, dominio, logo, paleta, limpieza de fósiles
-- Mi Oración reestructurado: Diario unificado con Mis Oraciones + Diario de gratitud nuevo (30 preguntas)
-- Devocional: 50 Oraciones en 6 secciones (renombrado de "Oraciones Clásicas"), Novenas retiradas a "en construcción"
-- La Biblia: buscador temático con nuevo copy + navegación directa + **resaltar y comentar versículos con "Mis Versículos"**
-- Menú hamburguesa: cierre al tocar/scrollear fuera + accesos rápidos cierran al navegar + cierre fantasma corregido
+- Marca Horeb completa: nombre, dominio, logo, paleta, limpieza de fósiles (incluido el eslogan en splash/manifest)
+- Mi Oración: Diario unificado con Mis Oraciones + Diario de gratitud ampliado a 90 preguntas
+- Devocional: 50 Oraciones en 6 secciones, Novenas retiradas a "en construcción"
+- La Biblia: buscador temático + navegación directa + resaltar y comentar versículos + scroll de categorías pulido
+- **Coronilla de la Divina Misericordia** — nueva devoción completa
+- Menú hamburguesa: cierre al tocar/scrollear fuera + accesos rápidos + cierre fantasma corregido
+- **Notificaciones incompletas retiradas** (reemplazadas por "en construcción", proyecto real documentado como pendiente)
+- **Barrido completo de emojis** (3 tandas): código muerto eliminado, 15+ reemplazados por SVG propios, `HorebLoading` como estado de carga unificado
 - Seguridad Firestore endurecida · Parroquias: selección + horarios · Compartir como imagen
 - Rosario alineado a la Santa Sede · Santo del Día en Inicio · Cron verificado
+- **Service worker en v19**

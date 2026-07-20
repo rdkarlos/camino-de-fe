@@ -40,7 +40,7 @@ if ('serviceWorker' in navigator) {
 const translations = {
   es: {
     appName: "Horeb",
-    tagline: "Luz que guía, amor que une",
+    tagline: "Sube. Vuelve distinto.",
     nav: ["Inicio", "Oración personal", "Evangelio", "Lecturas del día", "Rosario", "Devocional", "La Biblia", "Tienda", "Configuración", "Joven Fe"],
     home: {
       greeting: "Que la paz del Señor esté contigo",
@@ -62,7 +62,7 @@ const translations = {
   },
   en: {
     appName: "Horeb",
-    tagline: "Light that guides, love that unites",
+    tagline: "Rise. Return renewed.",
     nav: ["Home", "Personal prayer", "Gospel", "Daily readings", "Rosary", "Devotional", "Bible", "Shop", "Settings", "Youth Faith"],
     home: {
       greeting: "May the peace of the Lord be with you",
@@ -98,20 +98,20 @@ const BG_CARD = CARD;
 const PRAYER_MOODS = {
   es: [
     { id: "gratitud",   icon: "✝", label: "Gratitud",   verse: "«Dad gracias en todo» — 1 Tes 5:18",                           saint: "San Francisco de Asís",         template: "Señor, te doy gracias por...",                       prayer: "Señor y Dios mío,\n\nCon el corazón lleno de gratitud me postro ante Ti. Gracias por cada bendición que derramas sobre mi vida, por Tu amor que nunca falla y por la gracia de este nuevo día. Tu bondad me rodea y Tu misericordia me sostiene.\n\nQue mis labios siempre Te bendigan y que mi corazón nunca olvide lo que Tu mano ha hecho por mí.\n\nAmén." },
-    { id: "ansiedad",   icon: "🕊", label: "Ansiedad",   verse: "«No se turbe vuestro corazón» — Jn 14:1",                      saint: "Santa Teresa de Ávila",         template: "Señor, siento angustia por... confío en Ti porque...", prayer: "Señor Jesús,\n\nTú que dijiste «No se turbe vuestro corazón», vengo a Ti cargado/a de preocupaciones. Deposito en Tus manos todo lo que me inquieta y perturba mi paz. Tú conoces lo que siento mejor que yo mismo/a.\n\nQue Tu paz, que sobrepasa todo entendimiento, guarde mi corazón y mi mente en Ti. Confío en Tu amor.\n\nAmén." },
+    { id: "ansiedad",   icon: "calm", label: "Ansiedad",   verse: "«No se turbe vuestro corazón» — Jn 14:1",                      saint: "Santa Teresa de Ávila",         template: "Señor, siento angustia por... confío en Ti porque...", prayer: "Señor Jesús,\n\nTú que dijiste «No se turbe vuestro corazón», vengo a Ti cargado/a de preocupaciones. Deposito en Tus manos todo lo que me inquieta y perturba mi paz. Tú conoces lo que siento mejor que yo mismo/a.\n\nQue Tu paz, que sobrepasa todo entendimiento, guarde mi corazón y mi mente en Ti. Confío en Tu amor.\n\nAmén." },
     { id: "familia",    icon: "♡", label: "Familia",    verse: "«El amor es paciente» — 1 Cor 13:4",                           saint: "San José",                      template: "Señor, pongo en tus manos a mi familia, especialmente a...", prayer: "Padre celestial,\n\nTe encomiendo a mi familia. Que Tu amor sea el cimiento de nuestro hogar, que el perdón sea nuestra práctica diaria y la alegría nuestra herencia. Protege a cada uno de los que amo.\n\nSan José, modelo de fidelidad y amor, intercede por nosotros. Que Dios bendiga nuestro hogar.\n\nAmén." },
     { id: "trabajo",    icon: "✝", label: "Trabajo",    verse: "«Todo lo que hagan, háganlo de corazón» — Col 3:23",           saint: "San José Obrero",               template: "Señor, bendice mi trabajo hoy en...",                 prayer: "Señor,\n\nBendice el trabajo de mis manos. Que todo lo que realice hoy sea ofrendado a Ti, para Tu gloria y el bien de mis hermanos. Dame sabiduría para decidir, fortaleza para perseverar y un corazón generoso para servir.\n\nSan José Obrero, patrono del trabajo honesto, intercede por mí.\n\nAmén." },
-    { id: "duelo",      icon: "🕯", label: "Duelo",     verse: "«Bienaventurados los que lloran» — Mt 5:4",                    saint: "Nuestra Señora de los Dolores", template: "Señor, llevo en mi corazón la pérdida de...",         prayer: "Señor de la vida y de la muerte,\n\nVengo a Ti con el corazón roto. En medio de la oscuridad del dolor, creo que Tú estás presente y que ninguna lágrima cae sin que Tú la veas. Tú que resucitaste, transforma mi duelo en esperanza.\n\nNuestra Señora de los Dolores, que conociste el dolor junto a la cruz, acompáñame en este camino.\n\nAmén." },
+    { id: "duelo",      icon: "candle", label: "Duelo",     verse: "«Bienaventurados los que lloran» — Mt 5:4",                    saint: "Nuestra Señora de los Dolores", template: "Señor, llevo en mi corazón la pérdida de...",         prayer: "Señor de la vida y de la muerte,\n\nVengo a Ti con el corazón roto. En medio de la oscuridad del dolor, creo que Tú estás presente y que ninguna lágrima cae sin que Tú la veas. Tú que resucitaste, transforma mi duelo en esperanza.\n\nNuestra Señora de los Dolores, que conociste el dolor junto a la cruz, acompáñame en este camino.\n\nAmén." },
     { id: "salud",      icon: "✞", label: "Salud",      verse: "«Sana a los enfermos» — Lc 9:2",                              saint: "San Rafael Arcángel",           template: "Señor, te pido por la salud de...",                  prayer: "Señor Jesucristo,\n\nTú que recorriste los caminos de Galilea sanando a los enfermos con Tu sola palabra, te pido salud y restauración. Pon Tu mano misericordiosa sobre quien sufre y devuélvele la fortaleza y la paz.\n\nSan Rafael Arcángel, medicina de Dios, intercede ante el Señor por esta intención.\n\nAmén." },
     { id: "decisiones", icon: "✦", label: "Decisiones", verse: "«Fíate del Señor con todo tu corazón» — Prov 3:5",            saint: "Espíritu Santo",                template: "Señor, necesito sabiduría para decidir sobre...",    prayer: "Espíritu Santo,\n\nVen a iluminar mi mente y a guiar mis pasos. Me encuentro en una encrucijada y necesito Tu sabiduría. Dame el discernimiento para reconocer Tu voluntad y el valor para seguirla, aunque no lo entienda todo.\n\nSeñor, no mi voluntad sino la Tuya.\n\nAmén." },
     { id: "otra",       icon: "✿", label: "Otra",       verse: "«Todo lo que pidan en mi nombre, lo haré» — Jn 14:13",        saint: "Espíritu Santo",                template: "Señor, quiero hablarte de...",                       prayer: "Señor,\n\nAquí estoy ante Ti con todo lo que llevo en el corazón. No sé cómo expresarlo con palabras, pero Tú conoces mis necesidades antes de que yo las formule. Escucha el clamor de mi alma.\n\nResponde según Tu voluntad perfecta y que en todo sea glorificado Tu santo nombre.\n\nAmén." },
   ],
   en: [
     { id: "gratitud",   icon: "✝", label: "Gratitude",  verse: "«Give thanks in all circumstances» — 1 Thes 5:18",            saint: "St. Francis of Assisi",       template: "Lord, I am grateful for...",                         prayer: "Lord my God,\n\nWith a heart full of gratitude I come before You. Thank You for every blessing You pour into my life, for Your love that never fails, and for the grace of this new day. Your goodness surrounds me and Your mercy sustains me.\n\nMay my lips always bless You and may my heart never forget what Your hand has done for me.\n\nAmen." },
-    { id: "ansiedad",   icon: "🕊", label: "Anxiety",    verse: "«Let not your hearts be troubled» — Jn 14:1",                 saint: "St. Teresa of Ávila",         template: "Lord, I feel anxious about... I trust in You because...", prayer: "Lord Jesus,\n\nYou who said 'Let not your hearts be troubled,' I come to You burdened with worries. I place in Your hands everything that unsettles me and disturbs my peace. You know what I feel better than I do myself.\n\nMay Your peace, which surpasses all understanding, guard my heart and mind in You. I trust in Your love.\n\nAmen." },
+    { id: "ansiedad",   icon: "calm", label: "Anxiety",    verse: "«Let not your hearts be troubled» — Jn 14:1",                 saint: "St. Teresa of Ávila",         template: "Lord, I feel anxious about... I trust in You because...", prayer: "Lord Jesus,\n\nYou who said 'Let not your hearts be troubled,' I come to You burdened with worries. I place in Your hands everything that unsettles me and disturbs my peace. You know what I feel better than I do myself.\n\nMay Your peace, which surpasses all understanding, guard my heart and mind in You. I trust in Your love.\n\nAmen." },
     { id: "familia",    icon: "♡", label: "Family",     verse: "«Love is patient» — 1 Cor 13:4",                              saint: "St. Joseph",                  template: "Lord, I place my family in Your hands, especially...", prayer: "Heavenly Father,\n\nI entrust my family to You. May Your love be the foundation of our home, may forgiveness be our daily practice, and joy our inheritance. Protect each one of those I love.\n\nSt. Joseph, model of faithful love, intercede for us. May God bless our home.\n\nAmen." },
     { id: "trabajo",    icon: "✝", label: "Work",       verse: "«Whatever you do, do it from the heart» — Col 3:23",          saint: "St. Joseph the Worker",       template: "Lord, bless my work today in...",                     prayer: "Lord,\n\nBless the work of my hands. May everything I do today be offered to You, for Your glory and the good of my brothers and sisters. Give me wisdom to decide, strength to persevere, and a generous heart to serve.\n\nSt. Joseph the Worker, patron of honest labor, intercede for me.\n\nAmen." },
-    { id: "duelo",      icon: "🕯", label: "Grief",     verse: "«Blessed are those who mourn» — Mt 5:4",                     saint: "Our Lady of Sorrows",         template: "Lord, I carry in my heart the loss of...",            prayer: "Lord of life and death,\n\nI come to You with a broken heart. In the darkness of pain, I believe that You are present and that no tear falls without You seeing it. You who rose again, transform my grief into hope.\n\nOur Lady of Sorrows, who knew pain beside the cross, accompany me on this journey.\n\nAmen." },
+    { id: "duelo",      icon: "candle", label: "Grief",     verse: "«Blessed are those who mourn» — Mt 5:4",                     saint: "Our Lady of Sorrows",         template: "Lord, I carry in my heart the loss of...",            prayer: "Lord of life and death,\n\nI come to You with a broken heart. In the darkness of pain, I believe that You are present and that no tear falls without You seeing it. You who rose again, transform my grief into hope.\n\nOur Lady of Sorrows, who knew pain beside the cross, accompany me on this journey.\n\nAmen." },
     { id: "salud",      icon: "✞", label: "Health",     verse: "«Heal the sick» — Lk 9:2",                                   saint: "St. Raphael the Archangel",   template: "Lord, I pray for the health of...",                   prayer: "Lord Jesus Christ,\n\nYou who healed the sick with Your word alone, I ask You for health and restoration. Lay Your merciful hand upon those who suffer and restore their strength and peace.\n\nSt. Raphael the Archangel, medicine of God, intercede before the Lord for this intention.\n\nAmen." },
     { id: "decisiones", icon: "✦", label: "Decisions",  verse: "«Trust in the Lord with all your heart» — Prov 3:5",         saint: "Holy Spirit",                 template: "Lord, I need wisdom to decide about...",              prayer: "Holy Spirit,\n\nCome to enlighten my mind and guide my steps. I find myself at a crossroads and I need Your wisdom. Give me the discernment to recognize Your will and the courage to follow it, even when I don't understand everything.\n\nLord, not my will but Yours.\n\nAmen." },
     { id: "otra",       icon: "✿", label: "Other",      verse: "«Whatever you ask in my name, I will do it» — Jn 14:13",     saint: "Holy Spirit",                 template: "Lord, I want to talk to you about...",                prayer: "Lord,\n\nHere I am before You with everything I carry in my heart. I don't know how to put it into words, but You know my needs before I express them. Hear the cry of my soul.\n\nRespond according to Your perfect will and may Your holy name be glorified in all things.\n\nAmen." },
@@ -292,6 +292,27 @@ function CandleGlyph({ size = 24, color = GOLD }) {
   );
 }
 
+function CalmGlyph({ size = 24, color = GOLD }) {
+  // Marcador temporal para el ánimo "Ansiedad" (aguas de reposo) — reemplaza
+  // el ícono definitivo cuando se diseñe con calma en otra sesión.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M3 9 Q6.5 6.5 10 9 T17 9 T21 9" stroke={color} strokeWidth="1.7" strokeLinecap="round"/>
+      <path d="M3 14.5 Q6.5 12 10 14.5 T17 14.5 T21 14.5" stroke={color} strokeWidth="1.7" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// PRAYER_MOODS.icon es texto plano para los símbolos de marca (✝ ♡ ✞ ✦ ✿),
+// salvo "candle"/"calm" que son claves para los dos moods cuyo emoji original
+// (🕯 🕊) sí tenía presentación de emoji por defecto — se resuelven a un
+// componente aquí para poder ajustar tamaño/color según cada contexto.
+function moodIconNode(icon, size, color) {
+  if (icon === "candle") return <CandleGlyph size={size} color={color} />;
+  if (icon === "calm") return <CalmGlyph size={size} color={color} />;
+  return icon;
+}
+
 // Grupo A de Conec✝2 (barrido de reemplazo de emojis, Tanda 3) — mismo
 // lenguaje de líneas finas, sin relleno, color desde theme.js.
 function LockGlyph({ size = 24, color = GOLD }) {
@@ -334,6 +355,15 @@ function PeopleGlyph({ size = 24, color = GOLD }) {
       <path d="M2.5 19.5 C2.5 15.8 4.8 13.8 8 13.8 C9.3 13.8 10.5 14.1 11.4 14.7" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
       <circle cx="15" cy="9" r="3.6" stroke={color} strokeWidth="1.5"/>
       <path d="M8.5 21 C8.5 17 11.4 15 15 15 C18.6 15 21.5 17 21.5 21" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function SearchGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="10.5" cy="10.5" r="6.5" stroke={color} strokeWidth="1.7"/>
+      <line x1="15.3" y1="15.3" x2="20" y2="20" stroke={color} strokeWidth="1.7" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -2296,7 +2326,7 @@ export default function App() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
               {moods.map(m => (
                 <button key={m.id} onClick={() => { const next = selectedMood === m.id ? null : m.id; setSelectedMood(next); setGeneratedPrayer(null); setPrayerIntention(""); }} style={{ padding: "10px 4px", borderRadius: 12, background: selectedMood === m.id ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: selectedMood === m.id ? WHITE : CREAM, border: `1.5px solid ${selectedMood === m.id ? GOLD : CREAM_DARK}`, cursor: "pointer", textAlign: "center" }}>
-                  <div style={{ fontSize: 20, marginBottom: 4 }}>{m.icon}</div>
+                  <div style={{ fontSize: 20, marginBottom: 4, display: "flex", justifyContent: "center" }}>{moodIconNode(m.icon, 20, selectedMood === m.id ? WHITE : CREAM)}</div>
                   <div style={{ fontSize: 11, fontWeight: "600", fontFamily: "'Work Sans', sans-serif", lineHeight: 1.2 }}>{m.label}</div>
                 </button>
               ))}
@@ -2340,7 +2370,7 @@ export default function App() {
               <div>
                 <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 16, padding: "22px 20px", marginBottom: 14, color: WHITE, position: "relative", overflow: "hidden" }}>
                   <div style={{ position: "absolute", top: -16, right: -10, fontSize: 80, opacity: 0.06 }}>✝</div>
-                  <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", letterSpacing: 1, marginBottom: 12, textTransform: "uppercase" }}>{mood.icon} {mood.label}</div>
+                  <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", letterSpacing: 1, marginBottom: 12, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 5 }}>{moodIconNode(mood.icon, 14, GOLD)} {mood.label}</div>
                   <div style={{ fontSize: 15, fontFamily: "'Work Sans', sans-serif", lineHeight: 1.8, color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>{generatedPrayer}</div>
                 </div>
 
@@ -2707,7 +2737,7 @@ export default function App() {
                         {/* Header — clic para expandir/colapsar */}
                         <div onClick={() => setExpandedPrayerId(isOpen ? null : p.id)} style={{ background: p.respondida ? `linear-gradient(135deg, ${NAVY_DARK}, #432B00)` : `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                            <span style={{ fontSize: 24, flexShrink: 0 }}>{p.moodIcon}</span>
+                            <span style={{ fontSize: 24, flexShrink: 0, display: "flex" }}>{moodIconNode(p.moodIcon, 24, WHITE)}</span>
                             <div style={{ minWidth: 0 }}>
                               <div style={{ fontSize: 14, fontWeight: "bold", color: WHITE, fontFamily: "'Work Sans', sans-serif" }}>{p.moodLabel}</div>
                               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>{p.fechaLabel}</div>
@@ -3450,8 +3480,8 @@ export default function App() {
             placeholder={lang === "es" ? "ej. paz, perdón, miedo, gratitud..." : "e.g. peace, forgiveness, fear, gratitude..."}
             style={{ flex: 1, padding: "10px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: CREAM, background: NAVY_DARK, fontFamily: "'Georgia', serif", outline: "none", boxSizing: "border-box" }}
           />
-          <button onClick={doSearch} style={{ padding: "10px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 12, fontSize: 16, cursor: "pointer", flexShrink: 0 }}>
-            🔍
+          <button onClick={doSearch} style={{ padding: "10px 16px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, border: "none", borderRadius: 12, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <SearchGlyph size={18} color={WHITE} />
           </button>
         </div>
       </div>
@@ -4188,7 +4218,7 @@ export default function App() {
             )}
             {lambLoading ? (
               <div style={{ textAlign: "center", padding: "28px 0" }}>
-                <div style={{ fontSize: 30, marginBottom: 10 }}>✨</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}><HorebLoading size={30} /></div>
                 <div style={{ fontSize: 14, fontStyle: "italic", color: MUTED }}>
                   {lang === 'es' ? 'Preparando tu reflexión…' : 'Preparing your reflection…'}
                 </div>
