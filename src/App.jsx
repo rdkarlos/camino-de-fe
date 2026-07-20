@@ -667,6 +667,11 @@ export default function App() {
   const [newIntencion, setNewIntencion] = useState("");
   const [circleError, setCircleError] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
+  const [orandoWordOpenId, setOrandoWordOpenId] = useState(null);
+  const [orandoWordDraft, setOrandoWordDraft] = useState("");
+  const [expandedWordsId, setExpandedWordsId] = useState(null);
+  const [respondingId, setRespondingId] = useState(null);
+  const [testimonioDraft, setTestimonioDraft] = useState("");
   const [verseExpanded, setVerseExpanded] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
     try {
@@ -2081,6 +2086,8 @@ export default function App() {
           autorNombre: user.displayName || user.email.split("@")[0],
           fecha: serverTimestamp(),
           orando: [],
+          oracionesPalabras: [],
+          respondida: false,
         };
         const ref = await addDoc(collection(db, "circulos", selectedCircle.id, "intenciones"), data);
         setCircleIntenciones(prev => [{ id: ref.id, ...data, fecha: new Date() }, ...prev]);
@@ -2095,26 +2102,37 @@ export default function App() {
       } catch (e) {}
     };
 
-    const toggleOrando = async (intent) => {
+    // palabra es opcional: el toque simple sigue siendo instantáneo (isOrando
+    // se invierte, sin texto). Si se pasa una palabra, se agrega junto al
+    // registro en oracionesPalabras — solo mientras se está marcando "orando"
+    // (no al desmarcar). Al desmarcar se retira también la palabra, si había.
+    const toggleOrando = async (intent, palabra = "") => {
       const isOrando = intent.orando?.includes(user.uid);
       const updatedOrando = isOrando
         ? (intent.orando || []).filter(u => u !== user.uid)
         : [...(intent.orando || []), user.uid];
+      const palabraTexto = palabra.trim();
+      const updatedPalabras = isOrando
+        ? (intent.oracionesPalabras || []).filter(o => o.uid !== user.uid)
+        : palabraTexto
+          ? [...(intent.oracionesPalabras || []), { uid: user.uid, nombre: user.displayName || user.email.split("@")[0], palabra: palabraTexto, fecha: Date.now() }]
+          : (intent.oracionesPalabras || []);
 
       // Optimistic update — UI responds immediately
       setCircleIntenciones(prev => prev.map(i =>
-        i.id === intent.id ? { ...i, orando: updatedOrando } : i
+        i.id === intent.id ? { ...i, orando: updatedOrando, oracionesPalabras: updatedPalabras } : i
       ));
 
       try {
         await updateDoc(doc(db, "circulos", selectedCircle.id, "intenciones", intent.id), {
           orando: isOrando ? arrayRemove(user.uid) : arrayUnion(user.uid),
+          oracionesPalabras: updatedPalabras,
         });
       } catch (e) {
         console.error("[toggleOrando] Firestore error:", e.message);
         // Revert on failure
         setCircleIntenciones(prev => prev.map(i =>
-          i.id === intent.id ? { ...i, orando: intent.orando || [] } : i
+          i.id === intent.id ? { ...i, orando: intent.orando || [], oracionesPalabras: intent.oracionesPalabras || [] } : i
         ));
       }
     };
@@ -2124,6 +2142,39 @@ export default function App() {
         await deleteDoc(doc(db, "circulos", selectedCircle.id, "intenciones", intent.id));
         setCircleIntenciones(prev => prev.filter(i => i.id !== intent.id));
       } catch (e) {}
+    };
+
+    // Solo el autor puede marcar su intención como respondida (mismo criterio
+    // que el borrado). El testimonio es opcional y, si se comparte, queda en
+    // el propio documento (visible para el círculo, cubierto por la misma
+    // regla de "solo miembros" que el resto de la intención). Si se deja
+    // privado, NO se guarda el texto ahí — se guarda como una entrada normal
+    // en usuarios/{uid}/oraciones, que ya es privada por regla existente, así
+    // queda visible solo para el autor en Mis Oraciones.
+    const markIntencionRespondida = async (intent, testimonio, compartir) => {
+      if (!selectedCircle || intent.autorId !== user.uid) return;
+      const texto = (testimonio || "").trim();
+      const updates = { respondida: true, fechaRespuesta: serverTimestamp() };
+      if (texto && compartir) updates.testimonio = texto;
+      try {
+        await updateDoc(doc(db, "circulos", selectedCircle.id, "intenciones", intent.id), updates);
+        setCircleIntenciones(prev => prev.map(i => i.id === intent.id ? { ...i, ...updates, fechaRespuesta: new Date() } : i));
+
+        if (texto && !compartir) {
+          await addDoc(collection(db, "usuarios", user.uid, "oraciones"), {
+            estado: PRAYER_MOODS[lang].find(m => m.id === "gratitud")?.label || "Gratitud",
+            intencion: intent.texto,
+            oracion: texto,
+            fecha: serverTimestamp(),
+            respondida: true,
+            fechaRespuesta: serverTimestamp(),
+          });
+        }
+        setRespondingId(null);
+        setTestimonioDraft("");
+      } catch (e) {
+        console.error("[markIntencionRespondida] Firestore error:", e.message);
+      }
     };
 
     const leaveCircle = async () => {
@@ -2623,21 +2674,135 @@ export default function App() {
                 ) : circleIntenciones.map(intent => {
                   const isOrando = intent.orando?.includes(user.uid);
                   const orandoCount = intent.orando?.length || 0;
+                  const palabras = intent.oracionesPalabras || [];
                   const canDelete = intent.autorId === user.uid || selectedCircle?.creadorId === user.uid;
+                  const isAutor = intent.autorId === user.uid;
+                  const wordFieldOpen = orandoWordOpenId === intent.id;
+                  const wordsExpanded = expandedWordsId === intent.id;
+                  const isResponding = respondingId === intent.id;
                   return (
-                    <div key={intent.id} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}`, boxShadow: "0 2px 8px rgba(15,28,50,0.05)" }}>
-                      <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold", marginBottom: 6 }}>{intent.autorNombre}</div>
+                    <div key={intent.id} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${intent.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: intent.respondida ? `0 4px 16px ${GOLD}22` : "0 2px 8px rgba(15,28,50,0.05)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <div style={{ fontSize: 11, color: GOLD, fontWeight: "bold" }}>{intent.autorNombre}</div>
+                        {intent.respondida && (
+                          <span style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: CREAM, fontSize: 10, fontWeight: "bold", padding: "3px 9px", borderRadius: 20, letterSpacing: 0.3 }}>
+                            {lang === "es" ? "Respondida" : "Answered"}
+                          </span>
+                        )}
+                      </div>
                       <div style={{ fontSize: 14, color: CREAM, lineHeight: 1.65, fontFamily: "'Work Sans', sans-serif", marginBottom: 10 }}>{intent.texto}</div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <button onClick={() => toggleOrando(intent)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isOrando ? `${GOLD}22` : CREAM, border: `1px solid ${isOrando ? GOLD : CREAM_DARK}`, borderRadius: 20, fontSize: 13, cursor: "pointer", color: isOrando ? ALBA_DARK : MUTED }}>
-                          {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
-                        </button>
+
+                      {/* Testimonio compartido con el círculo */}
+                      {intent.respondida && intent.testimonio && (
+                        <div style={{ background: rgba(GOLD, 0.1), borderLeft: `3px solid ${GOLD}`, borderRadius: "0 8px 8px 0", padding: "10px 14px", marginBottom: 10 }}>
+                          <div style={{ fontSize: 10, color: ALBA_DARK, fontWeight: "bold", marginBottom: 3, letterSpacing: 0.4 }}>
+                            {lang === "es" ? "Testimonio" : "Testimony"}
+                          </div>
+                          <div style={{ fontSize: 13, color: CREAM, fontStyle: "italic", lineHeight: 1.6, fontFamily: "'Work Sans', sans-serif" }}>{intent.testimonio}</div>
+                        </div>
+                      )}
+
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                          <button onClick={() => toggleOrando(intent)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isOrando ? `${GOLD}22` : CREAM, border: `1px solid ${isOrando ? GOLD : CREAM_DARK}`, borderRadius: 20, fontSize: 13, cursor: "pointer", color: isOrando ? ALBA_DARK : MUTED }}>
+                            {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
+                          </button>
+                          {!isOrando && !wordFieldOpen && (
+                            <span onClick={() => { setOrandoWordOpenId(intent.id); setOrandoWordDraft(""); }} style={{ fontSize: 12, color: MUTED, cursor: "pointer", textDecoration: "underline" }}>
+                              {lang === "es" ? "Agregar unas palabras" : "Add a word"}
+                            </span>
+                          )}
+                          {palabras.length > 0 && (
+                            <span onClick={() => setExpandedWordsId(wordsExpanded ? null : intent.id)} style={{ fontSize: 12, color: MUTED, cursor: "pointer", textDecoration: "underline" }}>
+                              {wordsExpanded ? (lang === "es" ? "Ocultar" : "Hide") : (lang === "es" ? "Ver palabras" : "View words")}
+                            </span>
+                          )}
+                        </div>
                         {canDelete && (
                           <button onClick={() => deleteIntencion(intent)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", display: "flex", alignItems: "center" }}>
                             <TrashGlyph size={17} color={MUTED} />
                           </button>
                         )}
                       </div>
+
+                      {/* Campo opcional de palabra — se abre solo al pedirlo, el toque simple sigue intacto */}
+                      {wordFieldOpen && (
+                        <div style={{ marginTop: 10 }}>
+                          <textarea
+                            value={orandoWordDraft}
+                            onChange={e => setOrandoWordDraft(e.target.value.slice(0, 140))}
+                            maxLength={140}
+                            placeholder={lang === "es" ? "Una palabra para acompañar tu oración (opcional)" : "A word to go with your prayer (optional)"}
+                            style={{ width: "100%", padding: "8px 10px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 13, color: CREAM, background: NAVY, minHeight: 44, boxSizing: "border-box", resize: "none", outline: "none", fontFamily: "Georgia, serif" }}
+                          />
+                          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                            <button onClick={() => { toggleOrando(intent, orandoWordDraft); setOrandoWordOpenId(null); setOrandoWordDraft(""); }} style={{ padding: "6px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                              {lang === "es" ? "Confirmar" : "Confirm"}
+                            </button>
+                            <button onClick={() => { setOrandoWordOpenId(null); setOrandoWordDraft(""); }} style={{ padding: "6px 14px", background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer" }}>
+                              {lang === "es" ? "Cancelar" : "Cancel"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Palabras dejadas por quienes oraron — nota serena, no hilo de comentarios */}
+                      {wordsExpanded && palabras.length > 0 && (
+                        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                          {palabras.slice().sort((a, b) => (b.fecha || 0) - (a.fecha || 0)).map((o, idx) => (
+                            <div key={idx} style={{ borderLeft: `3px solid ${CREAM_DARK}`, borderRadius: "0 8px 8px 0", padding: "8px 12px" }}>
+                              <div style={{ fontSize: 13, color: CREAM, fontStyle: "italic", lineHeight: 1.6, fontFamily: "'Work Sans', sans-serif" }}>{o.palabra}</div>
+                              <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>— {o.nombre}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Marcar como respondida — solo el autor */}
+                      {isAutor && !intent.respondida && !isResponding && (
+                        <div style={{ marginTop: 10 }}>
+                          <span onClick={() => { setRespondingId(intent.id); setTestimonioDraft(""); }} style={{ fontSize: 12, color: ALBA_DARK, cursor: "pointer", textDecoration: "underline" }}>
+                            {lang === "es" ? "Marcar como respondida" : "Mark as answered"}
+                          </span>
+                        </div>
+                      )}
+                      {isAutor && isResponding && (
+                        <div style={{ marginTop: 10, borderTop: `1px solid ${CREAM_DARK}`, paddingTop: 10 }}>
+                          <textarea
+                            value={testimonioDraft}
+                            onChange={e => setTestimonioDraft(e.target.value.slice(0, 300))}
+                            maxLength={300}
+                            placeholder={lang === "es" ? "¿Qué pasó? (opcional)" : "What happened? (optional)"}
+                            style={{ width: "100%", padding: "8px 10px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 13, color: CREAM, background: NAVY, minHeight: 54, boxSizing: "border-box", resize: "none", outline: "none", fontFamily: "Georgia, serif" }}
+                          />
+                          <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                            {testimonioDraft.trim() ? (
+                              <>
+                                <button onClick={() => markIntencionRespondida(intent, testimonioDraft, true)} style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_DARK, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                                  {lang === "es" ? "Compartir con el círculo" : "Share with the circle"}
+                                </button>
+                                <button onClick={() => markIntencionRespondida(intent, testimonioDraft, false)} style={{ padding: "7px 14px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                                  {lang === "es" ? "Dejarlo privado" : "Keep it private"}
+                                </button>
+                              </>
+                            ) : (
+                              <button onClick={() => markIntencionRespondida(intent, "", false)} style={{ padding: "7px 14px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                                {lang === "es" ? "Marcar como respondida" : "Mark as answered"}
+                              </button>
+                            )}
+                            <button onClick={() => { setRespondingId(null); setTestimonioDraft(""); }} style={{ padding: "7px 10px", background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer" }}>
+                              {lang === "es" ? "Cancelar" : "Cancel"}
+                            </button>
+                          </div>
+                          {testimonioDraft.trim() && (
+                            <div style={{ fontSize: 11, color: MUTED, marginTop: 6, lineHeight: 1.5 }}>
+                              {lang === "es"
+                                ? "Puedes compartir tu testimonio con el círculo o dejarlo privado — solo tú lo verás en Mis Oraciones."
+                                : "You can share your testimony with the circle or keep it private — only you will see it in My Prayers."}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

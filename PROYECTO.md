@@ -119,6 +119,8 @@ Restos de versiones anteriores encontrados en distintas sesiones: íconos PWA co
 
 ### Conec✝2
 - Círculos privados/públicos, intenciones, rastro de luz. Íconos de privacidad/comunidad ahora SVG propios (antes 🔒🌍🔑👥🗑)
+- **Palabra opcional al orar + respondida con testimonio (20 jul 2026):** "Estoy orando" sigue siendo un toque instantáneo sin texto por defecto; junto a él, un enlace "Agregar unas palabras" abre un campo opcional (140 car., `oracionesPalabras` en el doc de la intención) que cualquiera puede expandir con "Ver palabras" — notas tipo cita, no hilo de comentarios. Solo el autor ve "Marcar como respondida": testimonio opcional (300 car.), y si escribe algo elige compartirlo con el círculo (`testimonio` en el doc, visible a todos) o dejarlo privado (no se guarda ahí — se crea una entrada nueva en `usuarios/{uid}/oraciones`, mismo patrón de Mis Oraciones, así queda privada sin reglas nuevas). La tarjeta muestra borde/insignia dorada "Respondida" siempre que se marca, con o sin testimonio compartido.
+  - **Pendiente de confirmar en consola de Firebase:** si la regla de `circulos/{id}/intenciones` restringe las escrituras por lista de campos permitidos (en vez de solo por autor/miembro), falta agregar `oracionesPalabras` a los campos que cualquier miembro puede escribir, y `respondida`/`fechaRespuesta`/`testimonio` a los que solo el autor puede escribir. No se tocó `usuarios/{uid}/oraciones` (ya cubierto por la regla existente).
 
 ## Santo Rosario — alineado a la Santa Sede
 - Fuente: vatican.va — 20 misterios oficiales + citas bíblicas, LITERAL
@@ -213,6 +215,11 @@ Restos de versiones anteriores encontrados en distintas sesiones: íconos PWA co
 - `ANTHROPIC_API_KEY`, `CRON_SECRET`, `FIREBASE_SERVICE_ACCOUNT_BASE64`. Cambios requieren REDEPLOY
 
 ## Pendiente
+
+### Conec✝2 — funcionalidad futura (ideas del 15 jul 2026)
+- **Ancla diaria del círculo:** una intención/reflexión automática por día (versículo del día, pregunta del Diario, o meditación del Rosario de hoy), para que el círculo tenga actividad aunque nadie publique. Resuelve el "silencio entre publicaciones".
+- **Orar juntos en tiempo real:** ver cuántos miembros del círculo rezaron el Rosario/Coronilla hoy (dato que ya se registra en localStorage, hoy invisible al grupo). Posible extensión: invitar a rezar a una hora específica, sin videollamada — solo la certeza de "alguien más está rezando esto ahora".
+- **Memoria del círculo:** línea del tiempo o vista histórica de intenciones respondidas y testimonios compartidos — hoy las intenciones viejas se hunden sin dejar rastro de la historia de fe del grupo.
 
 ### Parroquias — siguiente fase
 - **HABLAR CON EL PÁRROCO.** Mensajes ya redactados
