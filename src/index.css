@@ -7,3 +7,31 @@
   --color-piedra: #C7B79C;
   --color-verde-zarza: #7A8C6E;
 }
+
+/* Oculta la barra de scroll nativa en listas horizontales (chips, categorías)
+   sin desactivar el gesto de scroll — patrón estándar para este tipo de UI. */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge viejo */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge Chromium */
+}
+
+/* Halo del sol de Horeb pulsando — usado por HorebLoading.jsx. El trazo del
+   monte nunca se anima, solo este círculo, escalado en su propio centro
+   (transform-box: fill-box evita tener que recalcular cx/cy manualmente). */
+@keyframes horeb-glow-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.14); opacity: 1; }
+}
+.horeb-glow-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: horeb-glow-pulse 2.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .horeb-glow-pulse {
+    animation: none;
+  }
+}

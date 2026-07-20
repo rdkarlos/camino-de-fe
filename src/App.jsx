@@ -13,6 +13,7 @@ import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
 import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba, mix } from "./theme";
 import Horeb from "./Horeb";
+import HorebLoading from "./HorebLoading";
 import { generateLambShareImage, generateVerseShareImage, gospelExcerpt } from "./shareImage";
 import { PREGUNTAS_DIARIO } from "./diarioPreguntas";
 
@@ -46,20 +47,10 @@ const translations = {
       date: new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
         { icon: "🕊️", title: "Oración Personal", desc: "Construye tu oración y lleva un diario de gracias", btn: "Comenzar", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
-        { icon: "📖", title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
+        { title: "Evangelio del Día", desc: "La Palabra de Dios para hoy", btn: "Leer más", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
       ],
-      reminder: "🔔 Recordatorio activo: Ángelus · 12:00 PM",
     },
     gospel: { reading: "Evangelio del día", text: "Cargando el Evangelio de hoy..." },
-    rosary: {
-      mysteries: ["Misterios Gozosos", "Misterios Luminosos", "Misterios Dolorosos", "Misterios Gloriosos"],
-      today: "Misterios Gloriosos",
-      steps: [
-        "✝️ Señal de la Cruz","📿 Credo Apostólico","🙏 Padre Nuestro","💛 3 Ave Marías","⭐ Gloria",
-        "🌟 1er Misterio: La Resurrección","🌟 2do Misterio: La Ascensión","🌟 3er Misterio: Pentecostés",
-        "🌟 4to Misterio: La Asunción","🌟 5to Misterio: La Coronación","✝️ Salve Regina",
-      ],
-    },
     prayers: {
       list: [
         { name: "Padre Nuestro", text: "Padre nuestro, que estás en el cielo, santificado sea tu Nombre; venga a nosotros tu reino; hágase tu voluntad en la tierra como en el cielo..." },
@@ -78,20 +69,10 @@ const translations = {
       date: new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
       cards: [
         { icon: "🕊️", title: "Personal Prayer", desc: "Build your prayer and keep a gratitude journal", btn: "Start", img: "https://images.unsplash.com/photo-1476231682828-37e571bc172f?w=600", tab: 1 },
-        { icon: "📖", title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
+        { title: "Gospel of the Day", desc: "God's Word for today", btn: "Read more", img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600", tab: 2 },
       ],
-      reminder: "🔔 Active reminder: Angelus · 12:00 PM",
     },
     gospel: { reading: "Gospel of the day", text: "Loading today's Gospel..." },
-    rosary: {
-      mysteries: ["Joyful Mysteries", "Luminous Mysteries", "Sorrowful Mysteries", "Glorious Mysteries"],
-      today: "Glorious Mysteries",
-      steps: [
-        "✝️ Sign of the Cross","📿 Apostles' Creed","🙏 Our Father","💛 3 Hail Marys","⭐ Glory Be",
-        "🌟 1st Mystery: The Resurrection","🌟 2nd Mystery: The Ascension","🌟 3rd Mystery: Pentecost",
-        "🌟 4th Mystery: The Assumption","🌟 5th Mystery: The Coronation","✝️ Hail Holy Queen",
-      ],
-    },
     prayers: {
       list: [
         { name: "Our Father", text: "Our Father, who art in heaven, hallowed be thy name; thy kingdom come; thy will be done on earth as it is in heaven..." },
@@ -259,6 +240,123 @@ const ONBOARDING_ICONS = {
     </svg>
   ),
 };
+
+// Íconos parametrizados por tamaño/color, reutilizando exactamente la misma
+// forma que ya existe en otro lugar del código (barrido de reemplazo de
+// emojis, 19 jul 2026) — para no duplicar el SVG en cada punto donde hace falta.
+function BookGlyph({ size = 24, color = GOLD }) {
+  // Misma forma que navIcons[6] (pestaña "La Biblia").
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 6 C9 5 5 6 3 8 L3 20 C5 18 9 17 12 19 Z" stroke={color} strokeWidth="1.5"/>
+      <path d="M12 6 C15 5 19 6 21 8 L21 20 C19 18 15 17 12 19 Z" stroke={color} strokeWidth="1.5"/>
+      <line x1="12" y1="6" x2="12" y2="19" stroke={color} strokeWidth="1.5"/>
+      <line x1="5" y1="11" x2="10.5" y2="10" stroke={color} strokeWidth="1"/>
+      <line x1="5" y1="14" x2="10.5" y2="13" stroke={color} strokeWidth="1"/>
+      <line x1="13.5" y1="10" x2="19" y2="11" stroke={color} strokeWidth="1"/>
+      <line x1="13.5" y1="13" x2="19" y2="14" stroke={color} strokeWidth="1"/>
+    </svg>
+  );
+}
+
+function PersonGlyph({ size = 24, color = GOLD }) {
+  // Misma forma que el avatar del menú (estado sin sesión).
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.5"/>
+      <path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function ShoppingBagGlyph({ size = 24, color = GOLD }) {
+  // Misma forma que el ComingSoon de Tienda y navIcons[7].
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M5 8 H19 L17.5 21 H6.5 Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M9 8 C9 4.5 15 4.5 15 8" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="12" y1="12.5" x2="12" y2="16.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="10" y1="14.5" x2="14" y2="14.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function CandleGlyph({ size = 24, color = GOLD }) {
+  // Misma forma que el ComingSoon de Novenas en Devocional.jsx.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="9" y="9" width="6" height="12" rx="1" stroke={color} strokeWidth="1.5"/>
+      <path d="M12 9 C12 9 10 6.5 12 4 C14 6.5 12 9 12 9 Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>
+      <line x1="7" y1="21" x2="17" y2="21" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// Grupo A de Conec✝2 (barrido de reemplazo de emojis, Tanda 3) — mismo
+// lenguaje de líneas finas, sin relleno, color desde theme.js.
+function LockGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="11" width="14" height="10" rx="2" stroke={color} strokeWidth="1.6"/>
+      <path d="M8 11 V8 C8 5.5 9.8 4 12 4 C14.2 4 16 5.5 16 8 V11" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function GlobeGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="8.5" stroke={color} strokeWidth="1.6"/>
+      <line x1="3.5" y1="12" x2="20.5" y2="12" stroke={color} strokeWidth="1.6"/>
+      <path d="M12 3.5 C8 7 8 17 12 20.5" stroke={color} strokeWidth="1.6"/>
+      <path d="M12 3.5 C16 7 16 17 12 20.5" stroke={color} strokeWidth="1.6"/>
+    </svg>
+  );
+}
+
+function KeyGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="7" cy="12" r="4" stroke={color} strokeWidth="1.6"/>
+      <line x1="11" y1="12" x2="20" y2="12" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="16" y1="12" x2="16" y2="15" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="19" y1="12" x2="19" y2="15" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function PeopleGlyph({ size = 24, color = GOLD }) {
+  // Misma base que PersonGlyph (avatar individual del menú), duplicada y
+  // ajustada: la silueta de atrás más chica y con menor opacidad.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="8" cy="8" r="3.2" stroke={color} strokeWidth="1.5" opacity="0.5"/>
+      <path d="M2.5 19.5 C2.5 15.8 4.8 13.8 8 13.8 C9.3 13.8 10.5 14.1 11.4 14.7" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+      <circle cx="15" cy="9" r="3.6" stroke={color} strokeWidth="1.5"/>
+      <path d="M8.5 21 C8.5 17 11.4 15 15 15 C18.6 15 21.5 17 21.5 21" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function BookmarkGlyph({ size = 24, color = GOLD }) {
+  // Misma forma que ya usaba el botón "Mis Versículos" de La Biblia.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M6 3 H18 V21 L12 16.5 L6 21 Z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function TrashGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <line x1="5" y1="7" x2="19" y2="7" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M7 7 L8 20 H16 L17 7" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <line x1="10.5" y1="10.5" x2="11" y2="17" stroke={color} strokeWidth="1.3" strokeLinecap="round"/>
+      <line x1="13.5" y1="10.5" x2="13" y2="17" stroke={color} strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  );
+}
 
 const ONBOARDING_SCREENS = {
   es: [
@@ -440,12 +538,6 @@ export default function App() {
   const headerMenuRef = useRef(null);
   const [openReading, setOpenReading] = useState(null);
   const [showEnglishFallback, setShowEnglishFallback] = useState({});
-  const [notifGospel, setNotifGospel] = useState(false);
-  const [notifRosary, setNotifRosary] = useState(false);
-  const [notifLiturgy, setNotifLiturgy] = useState(false);
-  const [gospelTime, setGospelTime] = useState("07:00");
-  const [rosaryTime, setRosaryTime] = useState("19:00");
-  const [liturgyTime, setLiturgyTime] = useState("06:00");
   const [showCart, setShowCart] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(0);
   const [checkoutName, setCheckoutName] = useState("");
@@ -1232,7 +1324,7 @@ export default function App() {
   const renderPaymentSuccess = () => (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,28,50,0.88)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ background: BG_CARD, borderRadius: 24, padding: 32, width: "100%", maxWidth: 380, textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.6)", border: `1px solid ${CREAM_DARK}` }}>
-        <div style={{ fontSize: 60, marginBottom: 16 }}>🙏</div>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}><HorebLoading size={60} /></div>
         <div style={{ fontSize: 24, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", marginBottom: 8 }}>
           {lang === 'es' ? '¡Gracias por tu compra!' : 'Thank you for your purchase!'}
         </div>
@@ -1362,7 +1454,7 @@ export default function App() {
             cursor: "pointer",
           }}
         >
-          <div style={{ position: "absolute", top: -8, left: -4, fontSize: 56, opacity: 0.06, color: GOLD }}>📖</div>
+          <div style={{ position: "absolute", top: -8, left: -4, opacity: 0.06 }}><BookGlyph size={56} color={GOLD} /></div>
           <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
           <div style={{ fontSize: 15, fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
           <div style={{ fontSize: "0.8rem", color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {formatRef(dailyVerse.ref)}</div>
@@ -2218,7 +2310,7 @@ export default function App() {
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 10, background: BG_CARD, borderRadius: 12, padding: "12px 16px", marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
-                  <span style={{ fontSize: 22 }}>🕯️</span>
+                  <CandleGlyph size={22} color={GOLD} />
                   <div>
                     <div style={{ fontSize: 10, color: MUTED, letterSpacing: 0.5 }}>{lang === "es" ? "Santo patrono sugerido" : "Suggested patron saint"}</div>
                     <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{mood.saint}</div>
@@ -2312,7 +2404,7 @@ export default function App() {
                   </div>
                 ) : myCircles.length === 0 ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-                    <div style={{ fontSize: 44, marginBottom: 12 }}>🙏</div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HorebLoading size={44} /></div>
                     <div style={{ fontSize: 15, color: CREAM, marginBottom: 8, fontFamily: "'Work Sans', sans-serif" }}>
                       {lang === "es" ? <>Todavía no tienes un Conec<span style={cx}>✝</span>2</> : <>You're not in any Pray<span style={cx}>✝</span>2gether yet</>}
                     </div>
@@ -2328,12 +2420,13 @@ export default function App() {
                         </div>
                         {c.descripcion && <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.5 }}>{c.descripcion.length > 80 ? c.descripcion.substring(0, 80) + "…" : c.descripcion}</div>}
                       </div>
-                      <span style={{ fontSize: 11, background: c.tipo === "privado" ? `${NAVY}18` : `${GOLD}22`, color: c.tipo === "privado" ? NAVY : ALBA_DARK, padding: "3px 8px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
-                        {c.tipo === "privado" ? "🔒" : "🌍"} {c.tipo === "privado" ? (lang === "es" ? "Privado" : "Private") : (lang === "es" ? "Público" : "Public")}
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, background: c.tipo === "privado" ? `${NAVY}18` : `${GOLD}22`, color: c.tipo === "privado" ? NAVY : ALBA_DARK, padding: "3px 8px", borderRadius: 20, fontWeight: "bold", flexShrink: 0 }}>
+                        {c.tipo === "privado" ? <LockGlyph size={12} color={NAVY} /> : <GlobeGlyph size={12} color={ALBA_DARK} />}
+                        {c.tipo === "privado" ? (lang === "es" ? "Privado" : "Private") : (lang === "es" ? "Público" : "Public")}
                       </span>
                     </div>
-                    <div style={{ fontSize: 12, color: MUTED, marginTop: 8 }}>
-                      👥 {c.miembros?.length || 1}/10 · {c.creadorId === user.uid ? (lang === "es" ? "Tú eres el creador" : "You're the creator") : c.creadorNombre}
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: MUTED, marginTop: 8 }}>
+                      <PeopleGlyph size={13} color={MUTED} /> {c.miembros?.length || 1}/10 · {c.creadorId === user.uid ? (lang === "es" ? "Tú eres el creador" : "You're the creator") : c.creadorNombre}
                     </div>
                   </div>
                 ))}
@@ -2357,8 +2450,11 @@ export default function App() {
                 <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 16, border: `1px solid ${CREAM_DARK}` }}>
                   <div style={{ fontSize: 12, color: MUTED, marginBottom: 10 }}>{lang === "es" ? "Tipo de círculo" : "Circle type"}</div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    {[["publico", "🌍", lang === "es" ? "Público" : "Public"], ["privado", "🔒", lang === "es" ? "Privado" : "Private"]].map(([type, icon, label]) => (
-                      <button key={type} onClick={() => setNewCircleType(type)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${newCircleType === type ? NAVY : CREAM_DARK}`, background: newCircleType === type ? `${GOLD}18` : BG_CARD, color: newCircleType === type ? GOLD : MUTED, fontSize: 13, fontWeight: "bold", cursor: "pointer" }}>
+                    {[
+                      ["publico", <GlobeGlyph key="g" size={14} color={newCircleType === "publico" ? GOLD : MUTED} />, lang === "es" ? "Público" : "Public"],
+                      ["privado", <LockGlyph key="l" size={14} color={newCircleType === "privado" ? GOLD : MUTED} />, lang === "es" ? "Privado" : "Private"],
+                    ].map(([type, icon, label]) => (
+                      <button key={type} onClick={() => setNewCircleType(type)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${newCircleType === type ? NAVY : CREAM_DARK}`, background: newCircleType === type ? `${GOLD}18` : BG_CARD, color: newCircleType === type ? GOLD : MUTED, fontSize: 13, fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                         {icon} {label}
                       </button>
                     ))}
@@ -2375,8 +2471,9 @@ export default function App() {
                   )}
                 </div>
                 {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
-                <button onClick={createCircle} disabled={circleLoading || !newCircleName.trim()} style={{ width: "100%", padding: 13, background: !newCircleName.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newCircleName.trim() ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: newCircleName.trim() ? "pointer" : "default", fontFamily: "'Work Sans', sans-serif" }}>
-                  🙏 {circleLoading ? (lang === "es" ? "Creando..." : "Creating...") : (lang === "es" ? <>Crear Conec<span style={cx}>✝</span>2</> : <>Create Pray<span style={cx}>✝</span>2gether</>)}
+                <button onClick={createCircle} disabled={circleLoading || !newCircleName.trim()} style={{ width: "100%", padding: 13, background: !newCircleName.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newCircleName.trim() ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: newCircleName.trim() ? "pointer" : "default", fontFamily: "'Work Sans', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <HorebLoading size={18} />
+                  {circleLoading ? (lang === "es" ? "Creando..." : "Creating...") : (lang === "es" ? <>Crear Conec<span style={cx}>✝</span>2</> : <>Create Pray<span style={cx}>✝</span>2gether</>)}
                 </button>
               </div>
             ) : circleView === "join" ? (
@@ -2388,8 +2485,11 @@ export default function App() {
                   {lang === "es" ? <>Unirse a un Conec<span style={cx}>✝</span>2</> : <>Join a Pray<span style={cx}>✝</span>2gether</>}
                 </div>
                 <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-                  {[["private", "🔒", lang === "es" ? "Código privado" : "Private code"], ["public", "🌍", lang === "es" ? <>Conec<span style={cx}>✝</span>2 públicos</> : <>Public Pray<span style={cx}>✝</span>2gether</>]].map(([mode, icon, label]) => (
-                    <button key={mode} onClick={() => { setJoinMode(mode); if (mode === "public") loadPublicCircles(); }} style={{ flex: 1, padding: "9px 8px", borderRadius: 12, background: joinMode === mode ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: joinMode === mode ? WHITE : MUTED, border: `1px solid ${joinMode === mode ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                  {[
+                    ["private", <LockGlyph key="l" size={13} color={joinMode === "private" ? WHITE : MUTED} />, lang === "es" ? "Código privado" : "Private code"],
+                    ["public", <GlobeGlyph key="g" size={13} color={joinMode === "public" ? WHITE : MUTED} />, lang === "es" ? <>Conec<span style={cx}>✝</span>2 públicos</> : <>Public Pray<span style={cx}>✝</span>2gether</>],
+                  ].map(([mode, icon, label]) => (
+                    <button key={mode} onClick={() => { setJoinMode(mode); if (mode === "public") loadPublicCircles(); }} style={{ flex: 1, padding: "9px 8px", borderRadius: 12, background: joinMode === mode ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: joinMode === mode ? WHITE : MUTED, border: `1px solid ${joinMode === mode ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                       {icon} {label}
                     </button>
                   ))}
@@ -2413,7 +2513,7 @@ export default function App() {
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).length === 0 ? (
                       <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
-                        <div style={{ fontSize: 36, marginBottom: 10 }}>🌍</div>
+                        <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}><GlobeGlyph size={36} color={MUTED} /></div>
                         <div style={{ fontSize: 14 }}>{lang === "es" ? <>No hay Conec<span style={cx}>✝</span>2 públicos disponibles</> : <>No public Pray<span style={cx}>✝</span>2gether available</>}</div>
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).map(c => (
@@ -2421,7 +2521,7 @@ export default function App() {
                         <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{c.nombre}</div>
                         {c.descripcion && <div style={{ fontSize: 13, color: MUTED, marginTop: 3, marginBottom: 8 }}>{c.descripcion}</div>}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <div style={{ fontSize: 12, color: MUTED }}>👥 {c.miembros?.length || 1}/10</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: MUTED }}><PeopleGlyph size={13} color={MUTED} /> {c.miembros?.length || 1}/10</div>
                           <button onClick={() => joinPublicCircle(c)} disabled={(c.miembros?.length || 0) >= 10} style={{ padding: "7px 16px", background: (c.miembros?.length || 0) >= 10 ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: (c.miembros?.length || 0) >= 10 ? MUTED : WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: (c.miembros?.length || 0) >= 10 ? "default" : "pointer" }}>
                             {(c.miembros?.length || 0) >= 10 ? (lang === "es" ? "Lleno" : "Full") : (lang === "es" ? "Unirse" : "Join")}
                           </button>
@@ -2442,14 +2542,14 @@ export default function App() {
                     <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{selectedCircle?.nombre}</div>
                     {selectedCircle?.descripcion && <div style={{ fontSize: 12, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCircle.descripcion}</div>}
                   </div>
-                  <div style={{ fontSize: 12, color: MUTED, flexShrink: 0 }}>👥 {selectedCircle?.miembros?.length || 1}/10</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: MUTED, flexShrink: 0 }}><PeopleGlyph size={13} color={MUTED} /> {selectedCircle?.miembros?.length || 1}/10</div>
                 </div>
 
                 {/* Access code — visible only to the creator of a private circle */}
                 {selectedCircle?.tipo === "privado" && selectedCircle?.creadorId === user.uid && (
                   <div style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}66`, borderRadius: 12, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 15 }}>🔑</span>
+                      <KeyGlyph size={17} color={GOLD} />
                       <div>
                         <div style={{ fontSize: 10, color: ALBA_DARK, fontWeight: "bold", letterSpacing: 0.5 }}>
                           {lang === "es" ? "Código de acceso" : "Access code"}
@@ -2487,7 +2587,7 @@ export default function App() {
                   </div>
                 ) : circleIntenciones.length === 0 ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
-                    <div style={{ fontSize: 36, marginBottom: 10 }}>🙏</div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}><HorebLoading size={36} /></div>
                     <div style={{ fontSize: 14 }}>{lang === "es" ? "Todavía no hay intenciones. ¿Compartes la primera?" : "Be the first to share an intention"}</div>
                   </div>
                 ) : circleIntenciones.map(intent => {
@@ -2503,8 +2603,8 @@ export default function App() {
                           {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
                         </button>
                         {canDelete && (
-                          <button onClick={() => deleteIntencion(intent)} style={{ background: "none", border: "none", color: MUTED, fontSize: 18, cursor: "pointer", padding: "4px 8px" }}>
-                            🗑
+                          <button onClick={() => deleteIntencion(intent)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", display: "flex", alignItems: "center" }}>
+                            <TrashGlyph size={17} color={MUTED} />
                           </button>
                         )}
                       </div>
@@ -2552,7 +2652,7 @@ export default function App() {
               if (user && prayerBookLoading) {
                 return (
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-                    <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HorebLoading size={32} /></div>
                     <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tus oraciones..." : "Loading your prayers..."}</div>
                   </div>
                 );
@@ -2561,7 +2661,7 @@ export default function App() {
               if (list.length === 0) {
                 return (
                   <div style={{ textAlign: "center", padding: "48px 20px" }}>
-                    <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><BookGlyph size={44} color={MUTED} /></div>
                     <div style={{ fontSize: 14, color: CREAM, marginBottom: 6, fontFamily: "'Work Sans', sans-serif" }}>
                       {lang === "es" ? "Aún no tienes oraciones guardadas." : "No prayers saved yet."}
                     </div>
@@ -2696,7 +2796,7 @@ export default function App() {
           <div>
             {!user ? (
               <div style={{ textAlign: "center", padding: "48px 20px" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>📖</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><BookGlyph size={44} color={MUTED} /></div>
                 <div style={{ fontSize: 14, color: CREAM, marginBottom: 10, fontFamily: "'Work Sans', sans-serif" }}>
                   {lang === "es" ? "Crea una cuenta para guardar tus oraciones y llevarlas contigo." : "Create an account to save your prayers and carry them with you."}
                 </div>
@@ -2710,7 +2810,7 @@ export default function App() {
               </div>
             ) : diarioLoading ? (
               <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HorebLoading size={32} /></div>
                 <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tu diario..." : "Loading your journal..."}</div>
               </div>
             ) : (
@@ -2799,35 +2899,6 @@ export default function App() {
   );
 
   const renderSettings = () => {
-    const scheduleNotification = (time, title, body) => {
-      const [hours, minutes] = time.split(':').map(Number);
-      const now = new Date();
-      const notifTime = new Date();
-      notifTime.setHours(hours, minutes, 0, 0);
-      if (notifTime <= now) notifTime.setDate(notifTime.getDate() + 1);
-      setTimeout(() => {
-        if (Notification.permission === 'granted') new Notification(title, { body, icon: '/icon-192.png' });
-      }, notifTime - now);
-    };
-
-    const requestPermission = async () => {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        if (notifGospel) scheduleNotification(gospelTime, 'Evangelio del día', 'El Evangelio de hoy te espera');
-        if (notifRosary) scheduleNotification(rosaryTime, 'Santo Rosario', 'Un momento para el Rosario, cuando puedas');
-        if (notifLiturgy) scheduleNotification(liturgyTime, 'Liturgia de las Horas', 'Un espacio para la oración de las horas');
-      }
-    };
-
-    const switchStyle = (active) => ({ width: 44, height: 24, borderRadius: 12, background: active ? NAVY : CREAM_DARK, position: "relative", cursor: "pointer", border: "none", flexShrink: 0 });
-    const knobStyle = (active) => ({ position: "absolute", top: 2, left: active ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: WHITE, transition: "left 0.3s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" });
-
-    const notifs = [
-      { label: lang === 'es' ? 'Evangelio del día' : 'Gospel of the Day', desc: lang === 'es' ? 'Recordatorio matutino' : 'Morning reminder', active: notifGospel, setter: setNotifGospel, time: gospelTime, setTime: setGospelTime },
-      { label: lang === 'es' ? 'Santo Rosario' : 'Holy Rosary', desc: lang === 'es' ? 'Recordatorio para rezar el Rosario' : 'Rosary reminder', active: notifRosary, setter: setNotifRosary, time: rosaryTime, setTime: setRosaryTime },
-      { label: lang === 'es' ? 'Liturgia de las Horas' : 'Liturgy of the Hours', desc: lang === 'es' ? 'Un espacio para la oración de las horas' : 'A space for the liturgy of the hours', active: notifLiturgy, setter: setNotifLiturgy, time: liturgyTime, setTime: setLiturgyTime },
-    ];
-
     return (
       <div>
         <div style={{ background: BG_CARD, borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: "0 2px 12px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
@@ -2882,33 +2953,19 @@ export default function App() {
             </div>
           )}
         </div>
-        {Notification.permission !== 'granted' && (
-          <div style={{ background: `linear-gradient(135deg, ${NAVY_DARK}, ${NAVY})`, borderRadius: 16, padding: 20, marginBottom: 16, color: WHITE, textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
-            <div style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8, fontFamily: "'Cormorant', serif" }}>{lang === 'es' ? 'Activar notificaciones' : 'Enable notifications'}</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 16 }}>{lang === 'es' ? 'Un recordatorio diario para tu oración' : 'A daily reminder for your prayer'}</div>
-            <button onClick={requestPermission} style={{ background: GOLD, color: CREAM, border: "none", padding: "10px 24px", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: "pointer", fontFamily: "'Cormorant', serif" }}>{lang === 'es' ? 'Permitir notificaciones' : 'Allow notifications'}</button>
-          </div>
-        )}
-        {notifs.map((n, i) => (
-          <div key={i} style={{ background: BG_CARD, borderRadius: 16, padding: 18, marginBottom: 12, boxShadow: "0 2px 12px rgba(15,28,50,0.07)", border: `1px solid ${CREAM_DARK}` }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontWeight: "bold", color: CREAM, fontSize: 14, fontFamily: "'Cormorant', serif" }}>{n.label}</div>
-                <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{n.desc}</div>
-              </div>
-              <button style={switchStyle(n.active)} onClick={() => n.setter(!n.active)}>
-                <div style={knobStyle(n.active)} />
-              </button>
-            </div>
-            {n.active && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
-                <span style={{ fontSize: 12, color: MUTED }}>{lang === 'es' ? 'Hora:' : 'Time:'}</span>
-                <input type="time" value={n.time} onChange={e => n.setTime(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${CREAM_DARK}`, fontSize: 13, color: CREAM, background: NAVY }} />
-              </div>
-            )}
-          </div>
-        ))}
+        <ComingSoon
+          icon={
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3 C9 3 7 5.5 7 9 L7 13 L5 17 L19 17 L17 13 L17 9 C17 5.5 15 3 12 3 Z" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M10 17 C10 18.5 10.9 19.5 12 19.5 C13.1 19.5 14 18.5 14 17" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          }
+          title={lang === 'es' ? 'Notificaciones' : 'Notifications'}
+          description={lang === 'es'
+            ? 'Estamos preparando este espacio con cuidado. Vuelve pronto.'
+            : "We're carefully preparing this space. Check back soon."}
+          badge={lang === 'es' ? 'Próximamente' : 'Coming Soon'}
+        />
       </div>
     );
   };
@@ -3423,7 +3480,7 @@ export default function App() {
               cursor: "pointer", padding: "6px 0", fontFamily: "'Work Sans', sans-serif",
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 3 H18 V21 L12 16.5 L6 21 Z" stroke={MUTED} strokeWidth="1.6" strokeLinejoin="round"/></svg>
+            <BookmarkGlyph size={12} color={MUTED} />
             {lang === "es" ? "Mis Versículos" : "My Verses"}
           </button>
         </div>
@@ -3514,8 +3571,8 @@ export default function App() {
             ))}
           </div>
 
-          {/* Pestañas de categoría — scroll horizontal */}
-          <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" }}>
+          {/* Pestañas de categoría — scroll horizontal, sin barra nativa visible */}
+          <div className="hide-scrollbar" style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto", overflowY: "hidden", padding: "2px 2px 6px", WebkitOverflowScrolling: "touch" }}>
             {categories.map(({ key, label }) => (
               <button
                 key={key}
@@ -3569,7 +3626,7 @@ export default function App() {
             </div>
           </div>
           {bibleLoading ? (
-            <div style={{ textAlign: "center", color: MUTED, padding: 40, fontSize: 24 }}>🙏</div>
+            <div style={{ textAlign: "center", color: MUTED, padding: 40, display: "flex", justifyContent: "center" }}><HorebLoading size={24} /></div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
               {bibleChapters.map(c => (
@@ -3613,7 +3670,7 @@ export default function App() {
           )}
           {bibleLoading ? (
             <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🙏</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}><HorebLoading size={32} /></div>
               <div style={{ fontSize: 14 }}>{lang === "es" ? "Buscando..." : "Searching..."}</div>
             </div>
           ) : bibleSearchResults === null ? null : bibleSearchResults.length === 0 ? (
@@ -3703,7 +3760,7 @@ export default function App() {
           )}
           {bibleLoading ? (
             <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🙏</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}><HorebLoading size={32} /></div>
               <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando capítulo..." : "Loading chapter..."}</div>
             </div>
           ) : verses.length === 0 ? (
@@ -3766,7 +3823,7 @@ export default function App() {
           </div>
           {!user ? (
             <div style={{ textAlign: "center", padding: "48px 20px" }}>
-              <div style={{ fontSize: 44, marginBottom: 12 }}>🔖</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><BookmarkGlyph size={44} color={MUTED} /></div>
               <div style={{ fontSize: 14, color: CREAM, marginBottom: 6, fontFamily: "'Work Sans', sans-serif" }}>
                 {lang === "es" ? "Aún no tienes versículos resaltados." : "No highlighted verses yet."}
               </div>
@@ -3785,12 +3842,12 @@ export default function App() {
             </div>
           ) : myVersesLoading ? (
             <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-              <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HorebLoading size={32} /></div>
               <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tus versículos..." : "Loading your verses..."}</div>
             </div>
           ) : myVerses.length === 0 ? (
             <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-              <div style={{ fontSize: 44, marginBottom: 12 }}>🔖</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><BookmarkGlyph size={44} color={MUTED} /></div>
               <div style={{ fontSize: 14, color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>
                 {lang === "es" ? "Aún no has resaltado ningún versículo." : "You haven't highlighted any verses yet."}
               </div>
@@ -4210,12 +4267,13 @@ export default function App() {
               {lang === 'es' ? 'EN' : 'ES'}
             </button>
             {!user ? (
-              <button onClick={() => setAuthMode('login')} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 30, height: 30, borderRadius: 8, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>👤</button>
+              <button onClick={() => setAuthMode('login')} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 30, height: 30, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><PersonGlyph size={16} color={WHITE} /></button>
             ) : (
-              <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: WHITE, width: 30, height: 30, borderRadius: 8, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title={lang === 'es' ? 'Salir' : 'Sign out'}>👤</button>
+              <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 30, height: 30, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title={lang === 'es' ? 'Salir' : 'Sign out'}><PersonGlyph size={16} color={WHITE} /></button>
             )}
-            <button onClick={() => setShowCart(true)} style={{ background: cartCount > 0 ? GOLD : "rgba(255,255,255,0.1)", border: "none", color: cartCount > 0 ? NAVY_DARK : WHITE, width: 30, height: 30, borderRadius: 8, fontSize: cartCount > 0 ? 9 : 14, cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {cartCount > 0 ? `🛒${cartCount}` : "🛒"}
+            <button onClick={() => setShowCart(true)} style={{ background: cartCount > 0 ? GOLD : "rgba(255,255,255,0.1)", border: "none", color: cartCount > 0 ? NAVY_DARK : WHITE, width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+              <ShoppingBagGlyph size={16} color={cartCount > 0 ? NAVY_DARK : WHITE} />
+              {cartCount > 0 && <span style={{ fontSize: 9 }}>{cartCount}</span>}
             </button>
           </div>
         </div>

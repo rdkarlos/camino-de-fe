@@ -10,7 +10,7 @@ import { NOCHE, NOCHE_DARK, BRISA_ALBA, CIELO_ALTURA, SOL_NUCLEO, SOL_MEDIO, SOL
 // fondo (favicon, íconos PWA) el fondo debe llenar un cuadrado completo,
 // así que ahí se usa un lienzo cuadrado 400x400 con el dibujo centrado
 // 40 unidades más abajo (ver <g transform>).
-export default function Horeb({ size = 64, background = false, style, className }) {
+export default function Horeb({ size = 64, background = false, animated = false, style, className }) {
   const id = useId();
   const bgId = `horeb-bg-${id}`;
   const glowId = `horeb-glow-${id}`;
@@ -22,7 +22,7 @@ export default function Horeb({ size = 64, background = false, style, className 
 
   const artwork = (
     <>
-      <circle cx="200" cy="85" r="95" fill={`url(#${glowId})`} />
+      <circle cx="200" cy="85" r="95" fill={`url(#${glowId})`} className={animated ? "horeb-glow-pulse" : undefined} />
 
       {simplified ? (
         // Monte principal — versión simplificada a tamaños diminutos.
