@@ -388,6 +388,15 @@ function TrashGlyph({ size = 24, color = GOLD }) {
   );
 }
 
+function PlusGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <line x1="12" y1="4.5" x2="12" y2="19.5" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="4.5" y1="12" x2="19.5" y2="12" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 const ONBOARDING_SCREENS = {
   es: [
     { title: "Bienvenido a Horeb", text: "Tu compañero espiritual diario. Fe, oración y comunidad, siempre contigo.", icon: "logo" },
@@ -2739,7 +2748,8 @@ export default function App() {
                             {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
                           </button>
                           {!wordFieldOpen && !yaEscribioPalabra && (
-                            <span onClick={() => { setOrandoWordOpenId(intent.id); setOrandoWordDraft(""); }} style={{ fontSize: 12, color: MUTED, cursor: "pointer", textDecoration: "underline" }}>
+                            <span onClick={() => { setOrandoWordOpenId(intent.id); setOrandoWordDraft(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: CREAM_DARK, cursor: "pointer" }}>
+                              <PlusGlyph size={11} color={CREAM_DARK} />
                               {lang === "es" ? "Agregar unas palabras" : "Add a word"}
                             </span>
                           )}
@@ -2791,10 +2801,10 @@ export default function App() {
 
                       {/* Marcar como respondida — solo el autor */}
                       {isAutor && !intent.respondida && !isResponding && (
-                        <div style={{ marginTop: 10 }}>
-                          <span onClick={() => { setRespondingId(intent.id); setTestimonioDraft(""); }} style={{ fontSize: 12, color: ALBA_DARK, cursor: "pointer", textDecoration: "underline" }}>
+                        <div style={{ marginTop: 16 }}>
+                          <button onClick={() => { setRespondingId(intent.id); setTestimonioDraft(""); }} style={{ background: "transparent", border: `1px solid ${GOLD}66`, color: GOLD, borderRadius: 20, padding: "8px 16px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
                             {lang === "es" ? "Marcar como respondida" : "Mark as answered"}
-                          </span>
+                          </button>
                         </div>
                       )}
                       {isAutor && isResponding && (
