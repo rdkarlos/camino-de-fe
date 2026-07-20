@@ -2104,8 +2104,10 @@ export default function App() {
 
     // palabra es opcional: el toque simple sigue siendo instantáneo (isOrando
     // se invierte, sin texto). Si se pasa una palabra, se agrega junto al
-    // registro en oracionesPalabras — solo mientras se está marcando "orando"
-    // (no al desmarcar). Al desmarcar se retira también la palabra, si había.
+    // registro en oracionesPalabras — esto solo ocurre al marcar (no-orando ->
+    // orando); agregar palabra cuando ya se está orando pasa por addPalabra
+    // (abajo), que no vuelve a tocar "orando". Al desmarcar se retira también
+    // la palabra, si había.
     const toggleOrando = async (intent, palabra = "") => {
       const isOrando = intent.orando?.includes(user.uid);
       const updatedOrando = isOrando
@@ -2133,6 +2135,34 @@ export default function App() {
         // Revert on failure
         setCircleIntenciones(prev => prev.map(i =>
           i.id === intent.id ? { ...i, orando: intent.orando || [], oracionesPalabras: intent.oracionesPalabras || [] } : i
+        ));
+      }
+    };
+
+    // El flujo natural es marcar "estoy orando" rápido primero y decidir
+    // después si se quiere dejar una palabra — no al revés. Esta función
+    // solo agrega la palabra sin tocar "orando" (que ya está marcado); se usa
+    // cuando el campo se confirma con isOrando ya en true.
+    const addPalabra = async (intent, palabra) => {
+      const palabraTexto = palabra.trim();
+      if (!palabraTexto) return;
+      const updatedPalabras = [
+        ...(intent.oracionesPalabras || []).filter(o => o.uid !== user.uid),
+        { uid: user.uid, nombre: user.displayName || user.email.split("@")[0], palabra: palabraTexto, fecha: Date.now() },
+      ];
+
+      setCircleIntenciones(prev => prev.map(i =>
+        i.id === intent.id ? { ...i, oracionesPalabras: updatedPalabras } : i
+      ));
+
+      try {
+        await updateDoc(doc(db, "circulos", selectedCircle.id, "intenciones", intent.id), {
+          oracionesPalabras: updatedPalabras,
+        });
+      } catch (e) {
+        console.error("[addPalabra] Firestore error:", e.message);
+        setCircleIntenciones(prev => prev.map(i =>
+          i.id === intent.id ? { ...i, oracionesPalabras: intent.oracionesPalabras || [] } : i
         ));
       }
     };
@@ -2680,6 +2710,7 @@ export default function App() {
                   const wordFieldOpen = orandoWordOpenId === intent.id;
                   const wordsExpanded = expandedWordsId === intent.id;
                   const isResponding = respondingId === intent.id;
+                  const yaEscribioPalabra = palabras.some(o => o.uid === user.uid);
                   return (
                     <div key={intent.id} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${intent.respondida ? GOLD + "88" : CREAM_DARK}`, boxShadow: intent.respondida ? `0 4px 16px ${GOLD}22` : "0 2px 8px rgba(15,28,50,0.05)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
@@ -2707,7 +2738,7 @@ export default function App() {
                           <button onClick={() => toggleOrando(intent)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isOrando ? `${GOLD}22` : CREAM, border: `1px solid ${isOrando ? GOLD : CREAM_DARK}`, borderRadius: 20, fontSize: 13, cursor: "pointer", color: isOrando ? ALBA_DARK : MUTED }}>
                             {orandoCount > 0 && <span style={{ fontWeight: "bold" }}>{orandoCount}</span>} <span>{lang === "es" ? "Estoy orando" : "I'm praying"}</span>
                           </button>
-                          {!isOrando && !wordFieldOpen && (
+                          {!wordFieldOpen && !yaEscribioPalabra && (
                             <span onClick={() => { setOrandoWordOpenId(intent.id); setOrandoWordDraft(""); }} style={{ fontSize: 12, color: MUTED, cursor: "pointer", textDecoration: "underline" }}>
                               {lang === "es" ? "Agregar unas palabras" : "Add a word"}
                             </span>
@@ -2736,7 +2767,7 @@ export default function App() {
                             style={{ width: "100%", padding: "8px 10px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 13, color: CREAM, background: NAVY, minHeight: 44, boxSizing: "border-box", resize: "none", outline: "none", fontFamily: "Georgia, serif" }}
                           />
                           <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                            <button onClick={() => { toggleOrando(intent, orandoWordDraft); setOrandoWordOpenId(null); setOrandoWordDraft(""); }} style={{ padding: "6px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                            <button onClick={() => { if (isOrando) { addPalabra(intent, orandoWordDraft); } else { toggleOrando(intent, orandoWordDraft); } setOrandoWordOpenId(null); setOrandoWordDraft(""); }} style={{ padding: "6px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
                               {lang === "es" ? "Confirmar" : "Confirm"}
                             </button>
                             <button onClick={() => { setOrandoWordOpenId(null); setOrandoWordDraft(""); }} style={{ padding: "6px 14px", background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer" }}>
