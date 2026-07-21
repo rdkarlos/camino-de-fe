@@ -11,7 +11,7 @@ import Devocional, { getSantoHoy } from "./Devocional";
 import ComingSoon from "./ComingSoon";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
-import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, rgba, mix } from "./theme";
+import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, VERDE_ZARZA, rgba, mix } from "./theme";
 import Horeb from "./Horeb";
 import HorebLoading from "./HorebLoading";
 import { generateLambShareImage, generateVerseShareImage, gospelExcerpt } from "./shareImage";
@@ -403,6 +403,18 @@ function PencilGlyph({ size = 24, color = GOLD }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <path d="M4 20 L4 16 L15 5 L19 9 L8 20 Z" stroke={color} strokeWidth="1.8" strokeLinejoin="round"/>
       <line x1="13" y1="7" x2="17" y2="11" stroke={color} strokeWidth="1.8"/>
+    </svg>
+  );
+}
+
+// Insignia de círculo oficial — marca de verificación en dorado de marca, no
+// el signo de Horeb (reservado para splash/favicon/imágenes, nunca tarjetas).
+// Con la regla de admin ya vigente, tipo === "publico" implica oficial.
+function OfficialBadge({ size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="9" fill={GOLD} />
+      <path d="M8 12.3 L10.8 15 L16 9" stroke={NOCHE_DARK} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -1012,6 +1024,14 @@ export default function App() {
     [myCircles, circleLastSeen, user]
   );
 
+  // Círculo con actividad más reciente, para la tarjeta "Tu comunidad" de
+  // Inicio. Sin intenciones todavía en ninguno, cae al primero de la lista —
+  // sigue siendo un círculo real al que llevar al usuario.
+  const mostActiveCircle = useMemo(() => {
+    if (!myCircles.length) return null;
+    return [...myCircles].sort((a, b) => toMillisSafe(b.ultimaIntencionFecha) - toMillisSafe(a.ultimaIntencionFecha))[0];
+  }, [myCircles]);
+
   useEffect(() => {
     if (personalTab !== "circles" || !user) return;
     setCircleView("list");
@@ -1061,6 +1081,29 @@ export default function App() {
       return next;
     });
     setDoc(doc(db, "usuarios", user.uid), { circleLastSeen: { [circleId]: serverTimestamp() } }, { merge: true }).catch(() => {});
+  };
+
+  // loadIntenciones/openCircle viven a nivel de App (no solo dentro de
+  // renderPersonalPrayer) porque la tarjeta "Tu comunidad" de Inicio también
+  // necesita poder abrir un círculo directamente, sin pasar primero por el
+  // tab de Conec✝2.
+  const loadIntenciones = async (circulo) => {
+    setCircleLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, "circulos", circulo.id, "intenciones"), orderBy("fecha", "desc")));
+      setCircleIntenciones(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (e) {}
+    setCircleLoading(false);
+  };
+
+  const openCircle = async (circulo) => {
+    setSelectedCircle(circulo);
+    setCircleView("inside");
+    setCircleIntenciones([]);
+    setConfirmDeleteCircle(false);
+    setEditingCircleInfo(false);
+    markCircleSeen(circulo.id);
+    await loadIntenciones(circulo);
   };
 
   // Fija (o cambia) la parroquia del usuario — un usuario tiene una sola,
@@ -1506,8 +1549,14 @@ export default function App() {
     const parroquiaTodayKey = todayParishDayKey();
     const parroquiaTodayMisas = parroquiaActual ? (parroquiaActual.horarioMisas?.[parroquiaTodayKey] || []) : [];
     const parroquiaWeekGroups = parroquiaActual ? groupWeekSchedule(parroquiaActual.horarioMisas) : [];
+    // Etiqueta discreta de sección — solo para orientar el scroll, nunca
+    // debe competir visualmente con las tarjetas: sin fondo, sin borde.
+    const sectionLabel = (text) => (
+      <div style={{ fontSize: 11, color: CREAM_DARK, textTransform: "uppercase", letterSpacing: 2.5, fontWeight: 700, marginBottom: 12 }}>{text}</div>
+    );
     return (
       <div>
+        {sectionLabel(lang === 'es' ? 'Hoy' : 'Today')}
         {/* Tarjeta versículo — ancho completo, clickeable */}
         <div
           onClick={() => setVerseExpanded(true)}
@@ -1689,7 +1738,129 @@ export default function App() {
         {/* Separador — cierre silencioso del bloque "Hoy" */}
         <div style={{ height: 1, background: `${CREAM_DARK}1F`, margin: "28px 0" }} />
 
+        {/* ── Bloque "Tu comunidad" ── */}
+        {sectionLabel(lang === 'es' ? 'Tu comunidad' : 'Your community')}
+
+        {/* Destello de novedad — solo esta tarjeta; el punto de luz sutil (LightDot)
+            se mantiene igual en el resto de la navegación. Mismo dato que ya existe
+            (hasAnyNewCircleActivity / circleLastSeen), solo un tratamiento más
+            notorio aquí, "la luz que crece" como en el Rosario. */}
+        <style>{`
+          @keyframes communityGlowPulse {
+            0%, 100% { box-shadow: 0 0 0 0 ${rgba(GOLD, 0.32)}, 0 2px 10px rgba(15,28,50,0.05); }
+            50%      { box-shadow: 0 0 20px 5px ${rgba(GOLD, 0.32)}, 0 2px 10px rgba(15,28,50,0.05); }
+          }
+        `}</style>
+        {(() => {
+          const cardStyle = {
+            position: "relative", background: BG_CARD, border: `1px solid ${GOLD}66`,
+            borderRadius: 16, padding: "16px 18px", marginBottom: 16,
+            overflow: "hidden", cursor: "pointer",
+            animation: (user && mostActiveCircle && hasAnyNewCircleActivity) ? "communityGlowPulse 2.2s ease-in-out infinite" : undefined,
+          };
+          const decor = (
+            <>
+              <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(228,199,155,0.11)" }} />
+              <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(228,199,155,0.13)" }} />
+              <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: BRISA_ALBA, boxShadow: `0 0 8px 2px ${BRISA_ALBA}99` }} />
+            </>
+          );
+          const title = (
+            <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>
+              ✦ Conec<span style={{ color: GOLD, fontSize: '1.2em' }}>✝</span>2
+            </div>
+          );
+          const cta = (text) => <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", marginTop: 10 }}>{text} ›</div>;
+
+          if (!user) {
+            return (
+              <div onClick={() => setAuthMode('login')} style={cardStyle}>
+                {decor}
+                <div style={{ position: "relative" }}>
+                  {title}
+                  <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5 }}>
+                    {lang === 'es' ? 'Nadie sube solo. Únete a un círculo y ora acompañado.' : 'No one climbs alone. Join a circle and pray together.'}
+                  </div>
+                  {cta(lang === 'es' ? 'Iniciar sesión' : 'Sign in')}
+                </div>
+              </div>
+            );
+          }
+
+          if (!mostActiveCircle) {
+            return (
+              <div onClick={() => { setTab(1); setPersonalSection('oracion'); setPersonalTab('circles'); }} style={cardStyle}>
+                {decor}
+                <div style={{ position: "relative" }}>
+                  {title}
+                  <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5 }}>
+                    {lang === 'es' ? 'Crea un círculo o únete a uno — la oración se sostiene mejor entre varios.' : 'Create a circle or join one — prayer holds better together.'}
+                  </div>
+                  {cta(lang === 'es' ? 'Crear o unirse' : 'Create or join')}
+                </div>
+              </div>
+            );
+          }
+
+          // Estado 3 — cambio de filosofía (20 jul 2026): "invitar sin exhibir".
+          // Nunca texto ni atribución de una intención real — esta tarjeta ya no
+          // lee NINGÚN documento de intenciones (se quitó esa consulta por
+          // completo); solo usa datos que ya vienen en el propio doc del
+          // círculo (miembros.length, circleLooksNew), así queda garantizado
+          // que no puede filtrarse contenido íntimo aquí bajo ningún escenario.
+          // Verde Zarza (brand book, "comunidad y confirmación") en vez del
+          // dorado que comparten las demás tarjetas de Inicio — para que se
+          // sienta como su propia categoría, no una variación del mismo patrón.
+          // Los estados 1 y 2 arriba siguen con cardStyle/decor/title sin tocar.
+          const mostActiveCircleIsNew = circleLooksNew(mostActiveCircle, circleLastSeen, user?.uid);
+          const memberCount = mostActiveCircle.miembros?.length || 1;
+          const activeCardStyle = {
+            position: "relative", background: BG_CARD, border: `1px solid ${VERDE_ZARZA}`,
+            borderRadius: 16, padding: "18px 20px", marginBottom: 16,
+            overflow: "hidden", cursor: "pointer",
+            animation: mostActiveCircleIsNew ? "communityGlowPulseVerde 2.2s ease-in-out infinite" : undefined,
+          };
+          return (
+            <>
+              <style>{`
+                @keyframes communityGlowPulseVerde {
+                  0%, 100% { box-shadow: 0 0 0 0 ${rgba(VERDE_ZARZA, 0.32)}, 0 2px 10px rgba(15,28,50,0.05); }
+                  50%      { box-shadow: 0 0 20px 5px ${rgba(VERDE_ZARZA, 0.32)}, 0 2px 10px rgba(15,28,50,0.05); }
+                }
+                @keyframes communityDecorPulse {
+                  0%, 100% { opacity: 0.55; }
+                  50%      { opacity: 1; }
+                }
+              `}</style>
+              <div onClick={() => { setTab(1); setPersonalSection('oracion'); setPersonalTab('circles'); openCircle(mostActiveCircle); }} style={activeCardStyle}>
+                {/* Mismo motivo decorativo que Parroquia/Santo del Día, teñido en
+                    Verde Zarza y con un pulso constante de opacidad ("algo vivo")
+                    — nunca el signo de Horeb, esa regla sigue intacta. */}
+                <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: rgba(VERDE_ZARZA, 0.16), animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
+                <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: rgba(VERDE_ZARZA, 0.2), animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
+                <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: VERDE_ZARZA, boxShadow: `0 0 8px 2px ${rgba(VERDE_ZARZA, 0.6)}`, animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
+                <div style={{ position: "relative" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <div style={{ fontSize: 19, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif" }}>{mostActiveCircle.nombre}</div>
+                    {mostActiveCircle.tipo === "publico" && <OfficialBadge size={14} />}
+                  </div>
+                  <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5 }}>
+                    {mostActiveCircleIsNew
+                      ? (lang === 'es' ? 'Tu círculo tiene algo nuevo.' : 'Your circle has something new.')
+                      : (lang === 'es' ? `${memberCount} ${memberCount === 1 ? 'persona' : 'personas'} en tu círculo.` : `${memberCount} ${memberCount === 1 ? 'person' : 'people'} in your circle.`)}
+                  </div>
+                  {cta(lang === 'es' ? 'Entrar al círculo' : 'Open circle')}
+                </div>
+              </div>
+            </>
+          );
+        })()}
+
+        {/* Separador — cierre silencioso del bloque "Tu comunidad" */}
+        <div style={{ height: 1, background: `${CREAM_DARK}1F`, margin: "28px 0" }} />
+
         {/* ── Bloque "Tu camino" ── */}
+        {sectionLabel(lang === 'es' ? 'Tu camino' : 'Your path')}
 
         {/* Oración Personal — card grande */}
         <div onClick={() => goToTab(oracionCard.tab)} style={{ position: "relative", borderRadius: 20, minHeight: 140, overflow: "hidden", marginBottom: 14, boxShadow: "0 8px 28px rgba(15,28,50,0.22)", cursor: "pointer", backgroundImage: `url(${oracionCard.img})`, backgroundSize: "cover", backgroundPosition: "center" }}>
@@ -2029,25 +2200,6 @@ export default function App() {
         setPublicCircles(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       } catch (e) {}
       setCircleLoading(false);
-    };
-
-    const loadIntenciones = async (circulo) => {
-      setCircleLoading(true);
-      try {
-        const snap = await getDocs(query(collection(db, "circulos", circulo.id, "intenciones"), orderBy("fecha", "desc")));
-        setCircleIntenciones(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      } catch (e) {}
-      setCircleLoading(false);
-    };
-
-    const openCircle = async (circulo) => {
-      setSelectedCircle(circulo);
-      setCircleView("inside");
-      setCircleIntenciones([]);
-      setConfirmDeleteCircle(false);
-      setEditingCircleInfo(false);
-      markCircleSeen(circulo.id);
-      await loadIntenciones(circulo);
     };
 
     const createCircle = async () => {
@@ -2720,7 +2872,10 @@ export default function App() {
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).map(c => (
                       <div key={c.id} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}` }}>
-                        <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{c.nombre}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>
+                          {c.nombre}
+                          <OfficialBadge size={13} />
+                        </div>
                         {c.descripcion && <div style={{ fontSize: 13, color: MUTED, marginTop: 3, marginBottom: 8 }}>{c.descripcion}</div>}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: MUTED }}><PeopleGlyph size={13} color={MUTED} /> {c.miembros?.length || 1}/10</div>
@@ -2746,6 +2901,7 @@ export default function App() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCircle?.nombre}</div>
+                          {selectedCircle?.tipo === "publico" && <OfficialBadge size={14} />}
                           {canEditCircle && (
                             <span onClick={startEditingCircleInfo} style={{ cursor: "pointer", display: "flex", flexShrink: 0, opacity: 0.85 }} title={lang === "es" ? "Editar nombre y descripción" : "Edit name and description"}>
                               <PencilGlyph size={14} color={MUTED} />

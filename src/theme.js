@@ -6,7 +6,7 @@ export const ALBA = "#E4C79B"; // Brisa de Alba (antes Luz del Alba #E8B45C)
 export const LINO = "#F5F1E8";
 export const CIELO = "#8497A6"; // Cielo de Altura (antes #7E97AB)
 export const PIEDRA = "#C7B79C"; // Arena del Monte (antes #B8AE9C)
-export const VERDE_ZARZA = "#7A8C6E"; // Nuevo del brand book — aún sin uso asignado
+export const VERDE_ZARZA = "#7A8C6E"; // Comunidad y confirmación (brand book). Primer uso: tarjeta "Tu comunidad" de Inicio (20 jul 2026)
 
 // Tonos derivados (no forman parte del brand book, se calculan a partir de la paleta
 // oficial para mantener gradientes y contrastes existentes sin introducir hex sueltos).

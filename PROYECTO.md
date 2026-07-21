@@ -48,7 +48,7 @@
 | Lino | `#F5F1E8` |
 | Cielo de Altura (CIELO) | `#8497A6` |
 | Arena del Monte (PIEDRA) | `#C7B79C` |
-| Verde Zarza | `#7A8C6E` — sin uso asignado |
+| Verde Zarza | `#7A8C6E` — comunidad y confirmación. En uso desde 20 jul 2026: tarjeta "Tu comunidad" de Inicio (estado con círculos) |
 
 - `theme.js` exporta `rgba(hex, alpha)` y `mix(colorA, colorB, ratio)` — no hardcodear colores
 - Tipografía: Cormorant (títulos), Work Sans (interfaz)
@@ -69,7 +69,7 @@
 - Tuteo, español neutro. *"El susurro, no el grito."* Invita, no ordena. Nunca rachas ni gamificación culposa.
 
 ## Secciones
-1. **Inicio** — Bloque "Hoy": Versículo → Evangelio → Santo del Día → Misas de tu parroquia. Bloque "Tu camino": Oración Personal → Joven Fe. **Pendiente: nuevo bloque "Tu comunidad" con Conec✝2, arriba de "Tu camino" — instrucción lista, sin enviar aún**
+1. **Inicio** — 3 bloques con etiqueta discreta arriba de cada uno (mayúsculas, Piedra, sin fondo/borde — `sectionLabel()`): **HOY** (Versículo → Evangelio → Santo del Día → Misas de tu parroquia) → **TU COMUNIDAD** (Conec✝2, 20 jul 2026 — ver detalle abajo) → **TU CAMINO** (Oración Personal → Joven Fe, sin cambios, solo desplazados)
 2. **Oración Personal** — Mi Oración (Crear Oración, Mis Oraciones, Diario, Conec✝2), Santo Rosario, Coronilla de la Divina Misericordia, Devocional
 3. Evangelio — "Ponlo en Práctica"
 4. **La Biblia** — buscador temático + navegación directa + resaltar/comentar versículos
@@ -107,15 +107,19 @@
 - **`tipo` queda fijo para siempre** tras crear el círculo — ni un admin puede cambiarlo (evita que un admin comprometido exponga círculos privados ajenos, o "adopte" uno como oficial)
 - **Borrar círculos públicos:** cualquier admin puede, sin importar quién lo creó — administración colectiva. Privados: sin cambios, solo el creador
   - **Bug encontrado y resuelto (20 jul 2026):** la regla ya lo permitía, pero **no existía ningún botón de borrar círculo en toda la app** (solo "abandonar", que quita la propia membresía, no borra el documento) — ni para admins ni para nadie. Agregado `deleteCircle()` + botón "Eliminar este círculo público" (solo si `selectedCircle.tipo === "publico" && isAdmin`, coincide con la regla), con paso de confirmación inline (mensaje + "Sí, eliminar"/"Cancelar") porque borra la sala completa para todos los miembros, no un solo mensaje — verificado que aparece incluso en un círculo público creado por *otro* admin
-- **Insignia "oficial":** decidida — marca de verificación (círculo dorado con check, inline junto al nombre). **Pendiente de implementar** en exploración + dentro del círculo
+- **Insignia "oficial" — implementada (20 jul 2026):** `OfficialBadge` (componente reutilizable, círculo dorado con check, NO el signo de Horeb que sigue reservado para splash/favicon/imágenes). Con la regla de admin vigente, `tipo === "publico"` ya implica oficial, sin campo extra. Aplicada en 3 lugares: lista de exploración de públicos, encabezado dentro del círculo, y la tarjeta "Tu comunidad" de Inicio (ver abajo)
 - **No se construyeron aún los círculos temáticos en sí** (Salud, Finanzas, Trabajo) — primero se cerró el permiso
 - **Confirmado (20 jul 2026):** Carlos ya está marcado `esAdmin: true` en Firestore, crear círculos públicos funciona
 - **Editar nombre/descripción (20 jul 2026):** ícono de lápiz (`PencilGlyph`, misma forma que el de comentar versículos en La Biblia) junto al nombre, dentro del círculo — solo visible si `canEditCircle` (privado → `creadorId === uid`; público → `isAdmin`, sin importar quién lo creó, mismo criterio que el borrado). Al tocarlo abre formulario inline (nombre + descripción, precargados) con "Guardar"/"Cancelar". `updateCircleInfo()` hace `updateDoc` con solo esos dos campos. Regla de Firestore ya publicada: tercer `allow update` en `circulos` con `affectedKeys().hasOnly(['nombre', 'descripcion'])` bajo el mismo criterio privado/público que el borrado — confirmado que no interfiere con las otras reglas de `update` ya existentes (Firestore las evalúa por separado). Verificado con 3 escenarios: privado (creador ve el lápiz), privado (no-creador no lo ve), público "Salud" creado por otro admin (lo ve igual, por ser admin, no por ser creador)
+- **Tarjeta "Tu comunidad" en Inicio (20 jul 2026):** entre "Hoy" y "Tu camino". 3 estados: sin sesión ("Nadie sube solo. Únete a un círculo y ora acompañado." → inicia sesión), con sesión sin círculos ("Crea un círculo o únete a uno — la oración se sostiene mejor entre varios." → tab Conec✝2) — estos dos mantienen el motivo decorativo dorado de Parroquia/Santo del Día, sin tocar. Con círculos: muestra el círculo con `ultimaIntencionFecha` más reciente (`mostActiveCircle`, fallback al primero si ninguno tiene actividad). Tocar la tarjeta lleva directo al círculo — para eso `loadIntenciones`/`openCircle` se subieron de `renderPersonalPrayer` a nivel de `App()`, ya que antes solo existían en ese closure
+  - **Filosofía del estado "con círculos": "invitar sin exhibir" (20 jul 2026, iteración final tras un primer intento con cita protagonista que se descartó por completo).** Esta tarjeta **nunca lee ningún documento de intenciones** — se quitó por completo esa consulta a Firestore, así queda garantizado en el propio código (no solo por convención) que ningún texto ni atribución de una intención real puede aparecer aquí bajo ningún escenario. Solo usa datos que ya vienen en el documento del círculo: nombre (tamaño real de título, como "San Elías Profeta" en Santo del Día) y un texto sereno agregado — "Tu círculo tiene algo nuevo." si `circleLooksNew` da true para ese círculo, si no "N personas en tu círculo." con `miembros.length`. Sin encabezado "✦ Conec✝2" (la etiqueta de sección ya cumple esa función). Sin comillas, sin "— Fulano", nunca
+  - **Debut de Verde Zarza** (`VERDE_ZARZA` en `theme.js`, "comunidad y confirmación" del brand book, primer uso en todo el proyecto): borde sólido (no tenue — ajustado tras feedback de que el primer intento era demasiado sutil), + el mismo motivo de círculos de luz difusos de Parroquia/Santo del Día pero teñido en Verde Zarza en vez de dorado, con un pulso constante de opacidad (`communityDecorPulse`, siempre activo, para transmitir "algo vivo") — nunca el signo de Horeb, esa regla de marca sigue intacta. Insignia oficial (si aplica) sigue junto al nombre. CTA "Entrar al círculo ›" se queda en dorado, coherente con el resto de la app. **Solo afecta este estado de esta tarjeta** — estados 1/2 de Inicio y la lista compacta "Mis Conec✝2" dentro del tab no se tocaron
+  - **Destello de novedad:** además del pulso ambiental de arriba, un segundo resplandor pulsante (`communityGlowPulseVerde`, box-shadow, 2.2s) solo cuando `circleLooksNew` es true **para ese círculo específico** (no el agregado `hasAnyNewCircleActivity` de todos los círculos — corregido para que la tarjeta no se equivoque si la novedad está en OTRO círculo distinto al mostrado). El punto de luz sutil (`LightDot`) sigue igual en el resto de la navegación. Verificado que el resplandor se apaga al visitar el círculo (mismo `markCircleSeen` optimista de siempre)
 - **Pendiente inmediato:** correr `list-public-circles.mjs` (ya en el repo, solo lectura, sin commitear todavía) para ver cuántos círculos públicos existen hoy de usuarios comunes y decidir qué hacer
 
 ### Visión — Conec✝2 + Parroquias (próxima fase grande)
 - **Idea central:** la parroquia ES un círculo de oración, el más grande y real. Unir ambos conceptos
-- Conec✝2 a Inicio: bloque "Tu comunidad", arriba de "Tu camino". 3 estados según sesión/círculos. Destello de novedad más notorio solo en esta tarjeta. **Instrucción ya armada, pendiente de enviar**
+- **Conec✝2 a Inicio: ✅ hecho (20 jul 2026)** — ver detalle en la sección Conec✝2 arriba
 - Ideas futuras: ancla diaria del círculo, ver quién rezó Rosario/Coronilla hoy, memoria/línea de tiempo del círculo
 
 ## Santo Rosario — alineado a la Santa Sede
@@ -219,7 +223,6 @@
 ### Funcionalidad futura
 - Push notifications reales — proyecto propio completo
 - Monetización — Fase 0: definir modelo (Cordada, Brisa, Semilla, Cumbre)
-- Decidir uso del Verde Zarza
 
 ### Seguridad — revisar en otra sesión
 - `circulos: allow read: if true` expone código de acceso y miembros de círculos privados
