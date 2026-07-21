@@ -397,6 +397,16 @@ function PlusGlyph({ size = 24, color = GOLD }) {
   );
 }
 
+// Misma forma que ya usaba el lápiz de comentar versículos en La Biblia.
+function PencilGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M4 20 L4 16 L15 5 L19 9 L8 20 Z" stroke={color} strokeWidth="1.8" strokeLinejoin="round"/>
+      <line x1="13" y1="7" x2="17" y2="11" stroke={color} strokeWidth="1.8"/>
+    </svg>
+  );
+}
+
 const ONBOARDING_SCREENS = {
   es: [
     { title: "Bienvenido a Horeb", text: "Tu compañero espiritual diario. Fe, oración y comunidad, siempre contigo.", icon: "logo" },
@@ -683,6 +693,11 @@ export default function App() {
   const [respondingId, setRespondingId] = useState(null);
   const [testimonioDraft, setTestimonioDraft] = useState("");
   const [confirmDeleteCircle, setConfirmDeleteCircle] = useState(false);
+  const [editingCircleInfo, setEditingCircleInfo] = useState(false);
+  const [editCircleName, setEditCircleName] = useState("");
+  const [editCircleDesc, setEditCircleDesc] = useState("");
+  const [editCircleSaving, setEditCircleSaving] = useState(false);
+  const [editCircleError, setEditCircleError] = useState("");
   const [verseExpanded, setVerseExpanded] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
     try {
@@ -2030,6 +2045,7 @@ export default function App() {
       setCircleView("inside");
       setCircleIntenciones([]);
       setConfirmDeleteCircle(false);
+      setEditingCircleInfo(false);
       markCircleSeen(circulo.id);
       await loadIntenciones(circulo);
     };
@@ -2258,6 +2274,36 @@ export default function App() {
         setCircleError(e.message);
       }
       setCircleLoading(false);
+    };
+
+    // Privados: solo el creador edita. Públicos: cualquier admin, sin importar
+    // quién lo creó — mismo criterio de "administración colectiva" que el
+    // borrado. Coincide con la regla de Firestore que solo permite tocar
+    // nombre/descripcion bajo esas mismas condiciones.
+    const startEditingCircleInfo = () => {
+      if (!selectedCircle) return;
+      setEditCircleName(selectedCircle.nombre || "");
+      setEditCircleDesc(selectedCircle.descripcion || "");
+      setEditCircleError("");
+      setEditingCircleInfo(true);
+    };
+
+    const updateCircleInfo = async () => {
+      if (!selectedCircle) return;
+      if (!editCircleName.trim()) { setEditCircleError(lang === "es" ? "Escribe un nombre para tu círculo" : "Name is required"); return; }
+      setEditCircleSaving(true);
+      setEditCircleError("");
+      try {
+        const updates = { nombre: editCircleName.trim(), descripcion: editCircleDesc.trim() };
+        await updateDoc(doc(db, "circulos", selectedCircle.id), updates);
+        setSelectedCircle(prev => ({ ...prev, ...updates }));
+        setMyCircles(prev => prev.map(c => c.id === selectedCircle.id ? { ...c, ...updates } : c));
+        setEditingCircleInfo(false);
+      } catch (e) {
+        console.error("[updateCircleInfo] Firestore error:", e.message);
+        setEditCircleError(e.message);
+      }
+      setEditCircleSaving(false);
     };
 
     const personalCards = [
@@ -2690,16 +2736,44 @@ export default function App() {
             ) : (
               /* Inside circle */
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                  <button onClick={() => { setCircleView("list"); setSelectedCircle(null); setCircleIntenciones([]); setConfirmDeleteCircle(false); }} style={{ background: "none", border: "none", color: CREAM, fontSize: 18, cursor: "pointer", fontWeight: "bold", padding: 0 }}>
-                    ←
-                  </button>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{selectedCircle?.nombre}</div>
-                    {selectedCircle?.descripcion && <div style={{ fontSize: 12, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCircle.descripcion}</div>}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: MUTED, flexShrink: 0 }}><PeopleGlyph size={13} color={MUTED} /> {selectedCircle?.miembros?.length || 1}/10</div>
-                </div>
+                {(() => {
+                  const canEditCircle = !!selectedCircle && (selectedCircle.tipo === "privado" ? selectedCircle.creadorId === user.uid : isAdmin);
+                  return !editingCircleInfo ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                      <button onClick={() => { setCircleView("list"); setSelectedCircle(null); setCircleIntenciones([]); setConfirmDeleteCircle(false); }} style={{ background: "none", border: "none", color: CREAM, fontSize: 18, cursor: "pointer", fontWeight: "bold", padding: 0 }}>
+                        ←
+                      </button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCircle?.nombre}</div>
+                          {canEditCircle && (
+                            <span onClick={startEditingCircleInfo} style={{ cursor: "pointer", display: "flex", flexShrink: 0, opacity: 0.85 }} title={lang === "es" ? "Editar nombre y descripción" : "Edit name and description"}>
+                              <PencilGlyph size={14} color={MUTED} />
+                            </span>
+                          )}
+                        </div>
+                        {selectedCircle?.descripcion && <div style={{ fontSize: 12, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedCircle.descripcion}</div>}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: MUTED, flexShrink: 0 }}><PeopleGlyph size={13} color={MUTED} /> {selectedCircle?.miembros?.length || 1}/10</div>
+                    </div>
+                  ) : (
+                    <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 16, border: `1px solid ${GOLD}66` }}>
+                      <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Nombre del círculo*" : "Circle name*"}</div>
+                      <input value={editCircleName} onChange={e => setEditCircleName(e.target.value)} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: CREAM, background: NAVY, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif", marginBottom: 12 }} />
+                      <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Descripción (opcional)" : "Description (optional)"}</div>
+                      <textarea value={editCircleDesc} onChange={e => setEditCircleDesc(e.target.value)} style={{ width: "100%", padding: "10px 12px", border: `1px solid ${CREAM_DARK}`, borderRadius: 10, fontSize: 14, color: CREAM, background: NAVY, minHeight: 60, boxSizing: "border-box", resize: "vertical", outline: "none", fontFamily: "Georgia, serif" }} />
+                      {editCircleError && <div style={{ color: "#c0392b", fontSize: 13, marginTop: 10 }}>{editCircleError}</div>}
+                      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                        <button onClick={updateCircleInfo} disabled={editCircleSaving || !editCircleName.trim()} style={{ padding: "9px 18px", background: !editCircleName.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !editCircleName.trim() ? MUTED : WHITE, border: "none", borderRadius: 20, fontSize: 13, fontWeight: "bold", cursor: editCircleName.trim() ? "pointer" : "default" }}>
+                          {editCircleSaving ? (lang === "es" ? "Guardando..." : "Saving...") : (lang === "es" ? "Guardar" : "Save")}
+                        </button>
+                        <button onClick={() => { setEditingCircleInfo(false); setEditCircleError(""); }} style={{ padding: "9px 18px", background: "none", border: `1px solid ${CREAM_DARK}`, color: MUTED, borderRadius: 20, fontSize: 13, cursor: "pointer" }}>
+                          {lang === "es" ? "Cancelar" : "Cancel"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Access code — visible only to the creator of a private circle */}
                 {selectedCircle?.tipo === "privado" && selectedCircle?.creadorId === user.uid && (
