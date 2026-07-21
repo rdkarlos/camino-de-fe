@@ -588,6 +588,7 @@ export default function App() {
   const [devocionalInitialTab, setDevocionalInitialTab] = useState(null);
   const [parroquias, setParroquias] = useState([]);
   const [userParroquiaId, setUserParroquiaId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [parroquiaExpanded, setParroquiaExpanded] = useState(false);
 
   // Entrada "limpia" a una sección desde fuera de ella (menú, accesos rápidos,
@@ -669,7 +670,7 @@ export default function App() {
   const [confirmedNewCircles, setConfirmedNewCircles] = useState({});
   const [newCircleName, setNewCircleName] = useState("");
   const [newCircleDesc, setNewCircleDesc] = useState("");
-  const [newCircleType, setNewCircleType] = useState("publico");
+  const [newCircleType, setNewCircleType] = useState("privado");
   const [joinCode, setJoinCode] = useState("");
   const [joinMode, setJoinMode] = useState("private");
   const [publicCircles, setPublicCircles] = useState([]);
@@ -932,6 +933,7 @@ export default function App() {
     if (!user) {
       setMyCircles([]); setCircleLastSeen({}); setCircleLastSeenLoaded(false); setConfirmedNewCircles({});
       setUserParroquiaId(null);
+      setIsAdmin(false);
       return;
     }
 
@@ -941,11 +943,14 @@ export default function App() {
         .then(snap => setMyCircles(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
         .catch(() => {});
       // Mismo doc de usuario que ya se leía para circleLastSeen — se
-      // aprovecha la lectura para tomar también parroquiaId, sin duplicarla.
+      // aprovecha la lectura para tomar también parroquiaId y esAdmin, sin
+      // duplicarla. esAdmin solo se setea a mano desde la consola de
+      // Firebase — nunca escribible por el cliente (ver regla de usuarios).
       getDoc(doc(db, "usuarios", user.uid))
         .then(snap => {
           setCircleLastSeen(snap.exists() ? (snap.data().circleLastSeen || {}) : {});
           setUserParroquiaId(snap.exists() ? (snap.data().parroquiaId || null) : null);
+          setIsAdmin(snap.exists() ? !!snap.data().esAdmin : false);
         })
         .catch(() => setCircleLastSeen({}))
         .finally(() => setCircleLastSeenLoaded(true));
@@ -2029,6 +2034,13 @@ export default function App() {
 
     const createCircle = async () => {
       if (!newCircleName.trim()) { setCircleError(lang === "es" ? "Escribe un nombre para tu círculo" : "Name is required"); return; }
+      // Defensa en cliente además de la regla de Firestore — solo admins
+      // pueden crear círculos públicos. La regla es la que de verdad protege
+      // esto; esto solo da un mensaje más amable que un error crudo de permisos.
+      if (newCircleType === "publico" && !isAdmin) {
+        setCircleError(lang === "es" ? "Solo cuentas administradoras pueden crear círculos públicos" : "Only admin accounts can create public circles");
+        return;
+      }
       setCircleLoading(true);
       setCircleError("");
       const codigo = newCircleType === "privado" ? generateCode() : "";
@@ -2048,7 +2060,7 @@ export default function App() {
         markCircleSeen(ref.id);
         setNewCircleName("");
         setNewCircleDesc("");
-        setNewCircleType("publico");
+        setNewCircleType(isAdmin ? "publico" : "privado");
         setCircleView("list");
       } catch (e) { setCircleError(e.message); }
       setCircleLoading(false);
@@ -2509,7 +2521,7 @@ export default function App() {
                     <>{lang === "es" ? "Mis" : "My"} {lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>}</>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => { setCircleError(""); setNewCircleName(""); setNewCircleDesc(""); setNewCircleType("publico"); setCircleView("create"); }} style={{ padding: "8px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
+                    <button onClick={() => { setCircleError(""); setNewCircleName(""); setNewCircleDesc(""); setNewCircleType(isAdmin ? "publico" : "privado"); setCircleView("create"); }} style={{ padding: "8px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
                       + {lang === "es" ? "Crear" : "Create"}
                     </button>
                     <button onClick={() => { setCircleError(""); setJoinCode(""); setJoinMode("private"); setPublicCircles([]); setCircleView("join"); }} style={{ padding: "8px 14px", background: BG_CARD, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
@@ -2571,7 +2583,9 @@ export default function App() {
                   <div style={{ fontSize: 12, color: MUTED, marginBottom: 10 }}>{lang === "es" ? "Tipo de círculo" : "Circle type"}</div>
                   <div style={{ display: "flex", gap: 8 }}>
                     {[
-                      ["publico", <GlobeGlyph key="g" size={14} color={newCircleType === "publico" ? GOLD : MUTED} />, lang === "es" ? "Público" : "Public"],
+                      // Público solo se ofrece a administradores designados (usuarios/{uid}.esAdmin) —
+                      // reforzado también en la regla de Firestore, esto no es la única barrera.
+                      ...(isAdmin ? [["publico", <GlobeGlyph key="g" size={14} color={newCircleType === "publico" ? GOLD : MUTED} />, lang === "es" ? "Público" : "Public"]] : []),
                       ["privado", <LockGlyph key="l" size={14} color={newCircleType === "privado" ? GOLD : MUTED} />, lang === "es" ? "Privado" : "Private"],
                     ].map(([type, icon, label]) => (
                       <button key={type} onClick={() => setNewCircleType(type)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${newCircleType === type ? NAVY : CREAM_DARK}`, background: newCircleType === type ? `${GOLD}18` : BG_CARD, color: newCircleType === type ? GOLD : MUTED, fontSize: 13, fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
