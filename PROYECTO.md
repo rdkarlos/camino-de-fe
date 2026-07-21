@@ -106,10 +106,11 @@
 - UI: el botón "Público" en "Crear círculo" solo se muestra si `isAdmin`
 - **`tipo` queda fijo para siempre** tras crear el círculo — ni un admin puede cambiarlo (evita que un admin comprometido exponga círculos privados ajenos, o "adopte" uno como oficial)
 - **Borrar círculos públicos:** cualquier admin puede, sin importar quién lo creó — administración colectiva. Privados: sin cambios, solo el creador
+  - **Bug encontrado y resuelto (20 jul 2026):** la regla ya lo permitía, pero **no existía ningún botón de borrar círculo en toda la app** (solo "abandonar", que quita la propia membresía, no borra el documento) — ni para admins ni para nadie. Agregado `deleteCircle()` + botón "Eliminar este círculo público" (solo si `selectedCircle.tipo === "publico" && isAdmin`, coincide con la regla), con paso de confirmación inline (mensaje + "Sí, eliminar"/"Cancelar") porque borra la sala completa para todos los miembros, no un solo mensaje — verificado que aparece incluso en un círculo público creado por *otro* admin
 - **Insignia "oficial":** decidida — marca de verificación (círculo dorado con check, inline junto al nombre). **Pendiente de implementar** en exploración + dentro del círculo
 - **No se construyeron aún los círculos temáticos en sí** (Salud, Finanzas, Trabajo) — primero se cerró el permiso
-- **Pendiente inmediato:** correr `list-public-circles.mjs` (ya en el repo, solo lectura) para ver cuántos círculos públicos existen hoy de usuarios comunes y decidir qué hacer
-- **Pendiente inmediato:** marcar tu cuenta como `esAdmin: true` a mano en Firestore
+- **Confirmado (20 jul 2026):** Carlos ya está marcado `esAdmin: true` en Firestore, crear círculos públicos funciona
+- **Pendiente inmediato:** correr `list-public-circles.mjs` (ya en el repo, solo lectura, sin commitear todavía) para ver cuántos círculos públicos existen hoy de usuarios comunes y decidir qué hacer
 
 ### Visión — Conec✝2 + Parroquias (próxima fase grande)
 - **Idea central:** la parroquia ES un círculo de oración, el más grande y real. Unir ambos conceptos

@@ -682,6 +682,7 @@ export default function App() {
   const [expandedWordsId, setExpandedWordsId] = useState(null);
   const [respondingId, setRespondingId] = useState(null);
   const [testimonioDraft, setTestimonioDraft] = useState("");
+  const [confirmDeleteCircle, setConfirmDeleteCircle] = useState(false);
   const [verseExpanded, setVerseExpanded] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
     try {
@@ -2028,6 +2029,7 @@ export default function App() {
       setSelectedCircle(circulo);
       setCircleView("inside");
       setCircleIntenciones([]);
+      setConfirmDeleteCircle(false);
       markCircleSeen(circulo.id);
       await loadIntenciones(circulo);
     };
@@ -2236,6 +2238,26 @@ export default function App() {
         setSelectedCircle(null);
         setCircleView("list");
       } catch (e) {}
+    };
+
+    // Solo círculos públicos, solo admins — coincide con la regla de Firestore
+    // (tipo == "publico" && esAdmin()), sin importar quién lo creó. Borra el
+    // círculo entero para todos los miembros, no solo la propia membresía —
+    // por eso pide confirmación inline antes de ejecutar (deleteIntencion no
+    // la pide porque borra un solo mensaje; esto borra la sala completa).
+    const deleteCircle = async () => {
+      if (!selectedCircle) return;
+      setCircleLoading(true);
+      try {
+        await deleteDoc(doc(db, "circulos", selectedCircle.id));
+        setMyCircles(prev => prev.filter(c => c.id !== selectedCircle.id));
+        setSelectedCircle(null);
+        setCircleView("list");
+      } catch (e) {
+        console.error("[deleteCircle] Firestore error:", e.message);
+        setCircleError(e.message);
+      }
+      setCircleLoading(false);
     };
 
     const personalCards = [
@@ -2669,7 +2691,7 @@ export default function App() {
               /* Inside circle */
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                  <button onClick={() => { setCircleView("list"); setSelectedCircle(null); setCircleIntenciones([]); }} style={{ background: "none", border: "none", color: CREAM, fontSize: 18, cursor: "pointer", fontWeight: "bold", padding: 0 }}>
+                  <button onClick={() => { setCircleView("list"); setSelectedCircle(null); setCircleIntenciones([]); setConfirmDeleteCircle(false); }} style={{ background: "none", border: "none", color: CREAM, fontSize: 18, cursor: "pointer", fontWeight: "bold", padding: 0 }}>
                     ←
                   </button>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -2868,6 +2890,34 @@ export default function App() {
                     <button onClick={leaveCircle} style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>
                       {lang === "es" ? <>Abandonar este Conec<span style={cx}>✝</span>2</> : <>Leave this Pray<span style={cx}>✝</span>2gether</>}
                     </button>
+                  </div>
+                )}
+
+                {/* Eliminar círculo — solo públicos, solo admins, coincide con la regla de Firestore (tipo=="publico" && esAdmin()), sin importar quién lo creó */}
+                {selectedCircle && selectedCircle.tipo === "publico" && isAdmin && (
+                  <div style={{ marginTop: 20, textAlign: "center" }}>
+                    {!confirmDeleteCircle ? (
+                      <button onClick={() => setConfirmDeleteCircle(true)} style={{ background: "none", border: "none", color: "#c0392b", fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>
+                        {lang === "es" ? "Eliminar este círculo público" : "Delete this public circle"}
+                      </button>
+                    ) : (
+                      <div style={{ background: `rgba(192, 57, 43, 0.1)`, border: `1px solid rgba(192, 57, 43, 0.4)`, borderRadius: 12, padding: "14px 16px" }}>
+                        <div style={{ fontSize: 13, color: CREAM, marginBottom: 10, lineHeight: 1.5 }}>
+                          {lang === "es"
+                            ? "¿Seguro? Se borra para todos los miembros y no se puede deshacer."
+                            : "Are you sure? This deletes it for every member and can't be undone."}
+                        </div>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                          <button onClick={deleteCircle} disabled={circleLoading} style={{ padding: "8px 16px", background: "#c0392b", color: WHITE, border: "none", borderRadius: 20, fontSize: 12.5, fontWeight: "bold", cursor: "pointer" }}>
+                            {circleLoading ? (lang === "es" ? "Eliminando..." : "Deleting...") : (lang === "es" ? "Sí, eliminar" : "Yes, delete")}
+                          </button>
+                          <button onClick={() => setConfirmDeleteCircle(false)} style={{ padding: "8px 16px", background: "none", border: `1px solid ${CREAM_DARK}`, color: MUTED, borderRadius: 20, fontSize: 12.5, cursor: "pointer" }}>
+                            {lang === "es" ? "Cancelar" : "Cancel"}
+                          </button>
+                        </div>
+                        {circleError && <div style={{ color: "#c0392b", fontSize: 12, marginTop: 8 }}>{circleError}</div>}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
