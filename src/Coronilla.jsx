@@ -28,34 +28,91 @@ Jesús le reveló después que esta oración no era solo para ella, sino para el
 
 Se reza con un rosario común, y es especialmente propia después de la Comunión, en la Hora de la Misericordia (3:00 p.m., recordando la muerte de Cristo en la cruz), y durante la Novena previa al Domingo de la Divina Misericordia.`;
 
-const SIGN_OF_CROSS = "En el nombre del Padre y del Hijo y del Espíritu Santo. Amén.";
-const OFFERING_PRAYER = "Padre Eterno, Te ofrezco el Cuerpo, la Sangre, el Alma y la Divinidad de Tu amadísimo Hijo, Nuestro Señor Jesucristo, como propiciación de nuestros pecados y los del mundo entero.";
-const MERCY_INVOCATION = "Por Su dolorosa Pasión, ten misericordia de nosotros y del mundo entero.";
+// Fuente de verdad: texto completo aportado por Carlos, copiado literal,
+// carácter por carácter, sin reformular (20/23 jul 2026). La reconstrucción
+// corrigió dos huecos de la versión anterior: solo tenía una década en vez
+// de cinco, y una versión corta de las oraciones de apertura.
+const SIGN_OF_CROSS = "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.";
+
+// Oración de Santa Faustina por los pecadores (Diario, 72) — partida en dos
+// pantallas por su extensión; la segunda es la continuación directa de la
+// primera, no una oración distinta.
+const FAUSTINA_PRAYER_1 = "Oh Jesús, Verdad eterna, nuestra Vida, te invoco y te ruego tu misericordia por los pobres pecadores. Oh dulcísimo Corazón de mi Señor, lleno de piedad y misericordia insondable, te suplico por los pobres pecadores. Oh Sagrado Corazón, Fuente de Misericordia de la que brotan rayos de gracias inconcebibles sobre toda la raza humana, te ruego luz para los pobres pecadores. Oh Jesús, recuerda tu propia y amarga Pasión y no permitas la pérdida de las almas redimidas a tan alto precio tu preciosísima Sangre. Oh Jesús, cuando considero el gran precio de tu Sangre, me regocijo en su inmensidad, pues una sola gota habría bastado para la salvación de todos los pecadores. Aunque el pecado es un abismo de maldad e ingratitud, el precio pagado por nosotros jamás podrá ser igualado. Por lo tanto, que cada alma confíe en la Pasión del Señor y ponga su esperanza en su misericordia. Dios no negará su misericordia a nadie. El cielo y la tierra pueden cambiar, pero la misericordia de Dios nunca se agotará. ¡Oh, qué inmensa alegría arde en mi corazón cuando contemplo Tu incomprensible bondad, oh Jesús! Deseo llevar a todos los pecadores a Tus pies para que glorifiquen Tu misericordia por los siglos de los siglos.";
+const FAUSTINA_PRAYER_2 = "Expiraste, Jesús, pero la fuente de la vida brotó para las almas, y el océano de la misericordia se abrió para el mundo entero. Oh Fuente de Vida, insondable Misericordia Divina, envuelve al mundo entero y derrama Tu gracia sobre nosotros.";
+
+const BLOOD_WATER_PRAYER = "¡Oh Sangre y Agua, que brotaste del Corazón de Jesús como fuente de misericordia para nosotros, en Ti confío!";
+
+// Grano Mayor y Granos Menores — texto corregido con la fuente completa;
+// difiere del que había antes (ver conversación: "como propiciación" →
+// "en expiación", "Por Su dolorosa Pasión" → "Por los méritos de su
+// dolorosa Pasión", entre otros).
+const OFFERING_PRAYER = "Padre Eterno, te ofrezco el Cuerpo y la Sangre, el Alma y la Divinidad de tu Amadísimo Hijo, Nuestro Señor Jesucristo, en expiación por nuestros pecados y los del mundo entero.";
+const MERCY_INVOCATION = "Por los méritos de su dolorosa Pasión, ten misericordia de nosotros y del mundo entero.";
+
 const HOLY_GOD_INVOCATION = "Santo Dios, Santo Fuerte, Santo Inmortal, ten misericordia de nosotros y del mundo entero.";
-const FINAL_PRAYER = "Oh Dios Eterno, en quien la misericordia es infinita y el tesoro de compasión inagotable, vuelve a nosotros Tu mirada bondadosa y aumenta Tu misericordia en nosotros, para que en momentos difíciles no nos desesperemos ni nos desalentemos, sino que, con gran confianza, nos sometamos a Tu santa voluntad, que es el Amor y la Misericordia mismos. Amén.";
+
+// Dos oraciones finales, ambas siempre visibles (no opcionales) — mismo
+// criterio que ya regía la única oración final anterior. Texto corregido
+// con la fuente completa; la fuente no incluye "Amén." en la primera, así
+// que no se agrega (copia literal, sin reformular).
+const FINAL_PRAYER_1 = "Dios eterno, en quien la misericordia es infinita y el tesoro de la compasión inagotable, míranos con bondad y aumenta tu misericordia en nosotros, para que en los momentos difíciles no desesperemos ni nos desanimemos, sino que con gran confianza nos sometamos a tu santa voluntad, que es Amor y Misericordia misma.";
+const FINAL_PRAYER_2 = "Oh Dios sumamente misericordioso, Bondad infinita, hoy toda la humanidad clama desde el abismo de su miseria a tu misericordia, a tu compasión, oh Dios; y es con su poderosa voz de miseria que clama. ¡Dios misericordioso, no rechaces la oración de los exiliados de esta tierra! Oh Señor, Bondad más allá de nuestro entendimiento, que conoces nuestra miseria de principio a fin, y sabes que por nuestro propio poder no podemos ascender a ti, te imploramos: anticípate a nosotros con tu gracia y sigue aumentando tu misericordia en nosotros, para que podamos cumplir fielmente tu santa voluntad durante toda nuestra vida y en la hora de la muerte. Que la omnipotencia de tu misericordia nos proteja de los dardos de los enemigos de nuestra salvación, para que, confiados como hijos tuyos, esperemos tu venida final, ese día que solo tú conoces. Y esperamos obtener todo lo que Jesús nos prometió, a pesar de toda nuestra miseria. Porque Jesús es nuestra esperanza: por su corazón misericordioso, como por una puerta abierta, pasamos al cielo.";
+
+const TOTAL_DECADES = 5;
+
+// Oraciones de apertura: Señal de la Cruz, Santa Faustina (2 pantallas),
+// Oh Sangre y Agua ×3, Padre Nuestro, Ave María, Credo — en ese orden,
+// entre la Señal de la Cruz y las 5 décadas.
+function buildOpeningPages(lang) {
+  const stepCount = 7;
+  return [
+    { part: 0, stepIndex: 0, stepCount, kind: "opening", title: lang === "es" ? "Señal de la Cruz" : "Sign of the Cross", text: SIGN_OF_CROSS },
+    { part: 0, stepIndex: 1, stepCount, kind: "opening", title: lang === "es" ? "Oración de Santa Faustina" : "St. Faustina's Prayer", text: FAUSTINA_PRAYER_1 },
+    { part: 0, stepIndex: 2, stepCount, kind: "opening", title: lang === "es" ? "Oración de Santa Faustina (continuación)" : "St. Faustina's Prayer (continued)", text: FAUSTINA_PRAYER_2 },
+    { part: 0, stepIndex: 3, stepCount, kind: "beads", counterId: "sangre-agua", total: 3, title: lang === "es" ? "Oh Sangre y Agua" : "O Blood and Water", text: BLOOD_WATER_PRAYER },
+    { part: 0, stepIndex: 4, stepCount, kind: "opening", title: lang === "es" ? "Padre Nuestro" : "Our Father", text: OUR_FATHER[lang] },
+    { part: 0, stepIndex: 5, stepCount, kind: "opening", title: lang === "es" ? "Ave María" : "Hail Mary", text: HAIL_MARY[lang] },
+    { part: 0, stepIndex: 6, stepCount, kind: "opening", title: lang === "es" ? "Credo de los Apóstoles" : "Apostles' Creed", text: APOSTLES_CREED[lang] },
+  ];
+}
+
+// 5 décadas — misma arquitectura que Rosario.jsx usa para sus 5 misterios:
+// mismo anillo de cuentas ("beads"), mismo patrón de repetición. A
+// diferencia de los misterios (que dependen del día de la semana), las
+// décadas de la Coronilla son siempre las mismas 5, en el mismo orden.
+function buildDecadePages(lang) {
+  const stepCount = TOTAL_DECADES * 2;
+  const pages = [];
+  for (let d = 0; d < TOTAL_DECADES; d++) {
+    pages.push({ part: 1, stepIndex: d * 2, stepCount, decadeIndex: d, kind: "single", title: lang === "es" ? "Grano Mayor" : "Large Bead", text: OFFERING_PRAYER });
+    pages.push({ part: 1, stepIndex: d * 2 + 1, stepCount, decadeIndex: d, kind: "beads", counterId: `granos-menores-${d}`, total: 10, title: lang === "es" ? "10 Granos Menores" : "10 Small Beads", text: MERCY_INVOCATION });
+  }
+  return pages;
+}
+
+function buildClosingPages(lang) {
+  return [
+    { part: 2, stepIndex: 0, stepCount: 4, kind: "beads", counterId: "santo-dios", total: 3, title: lang === "es" ? "3 veces" : "3 times", text: HOLY_GOD_INVOCATION },
+    { part: 2, stepIndex: 1, stepCount: 4, kind: "final", title: lang === "es" ? "Primera Oración Final" : "First Closing Prayer", text: FINAL_PRAYER_1 },
+    { part: 2, stepIndex: 2, stepCount: 4, kind: "final", title: lang === "es" ? "Segunda Oración Final" : "Second Closing Prayer", text: FINAL_PRAYER_2 },
+    { part: 2, stepIndex: 3, stepCount: 4, kind: "complete", title: lang === "es" ? "¡Has completado la Coronilla de la Divina Misericordia!" : "You have completed the Chaplet of Divine Mercy!", text: lang === "es" ? "Que la Divina Misericordia cubra al mundo entero." : "May Divine Mercy cover the whole world." },
+  ];
+}
 
 function buildPages(lang) {
-  const opening = [
-    { part: 0, stepIndex: 0, stepCount: 4, kind: "opening", title: lang === "es" ? "Señal de la Cruz" : "Sign of the Cross", text: SIGN_OF_CROSS },
-    { part: 0, stepIndex: 1, stepCount: 4, kind: "opening", title: lang === "es" ? "Padre Nuestro" : "Our Father", text: OUR_FATHER[lang] },
-    { part: 0, stepIndex: 2, stepCount: 4, kind: "opening", title: lang === "es" ? "Ave María" : "Hail Mary", text: HAIL_MARY[lang] },
-    { part: 0, stepIndex: 3, stepCount: 4, kind: "opening", title: lang === "es" ? "Credo de los Apóstoles" : "Apostles' Creed", text: APOSTLES_CREED[lang] },
-  ];
-  const body = [
-    { part: 1, stepIndex: 0, stepCount: 2, kind: "single", title: lang === "es" ? "Grano Mayor" : "Large Bead", text: OFFERING_PRAYER },
-    { part: 1, stepIndex: 1, stepCount: 2, kind: "beads", counterId: "granos-menores", total: 10, title: lang === "es" ? "10 Granos Menores" : "10 Small Beads", text: MERCY_INVOCATION },
-  ];
-  const closing = [
-    { part: 2, stepIndex: 0, stepCount: 3, kind: "beads", counterId: "invocacion-final", total: 3, title: lang === "es" ? "3 veces" : "3 times", text: HOLY_GOD_INVOCATION },
-    { part: 2, stepIndex: 1, stepCount: 3, kind: "final", title: lang === "es" ? "Oración Final" : "Closing Prayer", text: FINAL_PRAYER },
-    { part: 2, stepIndex: 2, stepCount: 3, kind: "complete", title: lang === "es" ? "¡Has completado la Coronilla de la Divina Misericordia!" : "You have completed the Chaplet of Divine Mercy!", text: lang === "es" ? "Que la Divina Misericordia cubra al mundo entero." : "May Divine Mercy cover the whole world." },
-  ];
-  return [...opening, ...body, ...closing];
+  return [...buildOpeningPages(lang), ...buildDecadePages(lang), ...buildClosingPages(lang)];
 }
 
 // Progreso en curso, persistido igual que el Rosario — misma razón (una
 // interrupción de sesión mata el estado en memoria) y mismo anclaje de
 // fecha a America/Bogota. Clave propia para no chocar con la del Rosario.
+//
+// Con 5 décadas, "en qué década vas" se deriva de pageIndex (cada página ya
+// sabe su propio decadeIndex), sin necesidad de guardar un campo aparte —
+// mismo mecanismo que usa Rosario.jsx para mysteryIndex (derivado de
+// pages[pageIndex], no guardado por separado). Solo mysteryKey se guarda
+// aparte allá porque afecta qué páginas se construyen según el día; aquí
+// las 5 décadas son siempre las mismas, así que no aplica un equivalente.
 const CORONILLA_PROGRESS_KEY = "lumora_coronilla_progress_v1";
 
 function todayDateKey() {
@@ -77,7 +134,7 @@ function loadSavedProgress() {
 
 function describeSavedPage(page, lang) {
   if (page.part === 0) return lang === "es" ? "las oraciones iniciales" : "the opening prayers";
-  if (page.part === 1) return lang === "es" ? "la Coronilla" : "the Chaplet";
+  if (page.part === 1) return lang === "es" ? `la Década ${page.decadeIndex + 1} de ${TOTAL_DECADES}` : `Decade ${page.decadeIndex + 1} of ${TOTAL_DECADES}`;
   return lang === "es" ? "el cierre" : "the closing";
 }
 
@@ -215,6 +272,13 @@ export default function Coronilla({ lang = "es", onHome }) {
           <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= page.part ? GOLD : CREAM_DARK, transition: "background 0.3s" }} />
         ))}
       </div>
+
+      {/* Insignia de década — mismo patrón que la insignia de misterio del Rosario */}
+      {page.part === 1 && (
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center", fontSize: 12, color: GOLD, marginBottom: 12, fontFamily: "'Cormorant', serif" }}>
+          ✦ {lang === "es" ? "Década" : "Decade"} {page.decadeIndex + 1} {lang === "es" ? `de ${TOTAL_DECADES}` : `of ${TOTAL_DECADES}`}
+        </div>
+      )}
 
       {/* Contenido central */}
       <div style={{ position: "relative", zIndex: 1, minHeight: "calc(100vh - 350px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflowY: "auto" }}>

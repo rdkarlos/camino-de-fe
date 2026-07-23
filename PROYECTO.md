@@ -131,8 +131,13 @@
 
 ## Coronilla de la Divina Misericordia
 - `src/Coronilla.jsx`, misma arquitectura que `Rosario.jsx`. Reutiliza oraciones exportadas, cero duplicación
-- Pantalla de historia (Santa Faustina, 1935), estructura fiel: Señal de la Cruz → apertura → Grano Mayor → 10 Granos Menores → Invocación ×3 → Oración Final
-- Persistencia propia (`lumora_coronilla_progress_v1`), textos verificados carácter por carácter
+- Pantalla de historia (Santa Faustina, 1935) — sin tocar
+- **Reconstrucción con fuente completa (23 jul 2026) — pendiente de aprobación de Carlos, no dar por cerrado.** La versión anterior estaba incompleta en dos puntos: solo una década (no cinco) y una versión corta de las oraciones de apertura. Estructura correcta ahora: Señal de la Cruz → Oración de Santa Faustina (Diario, 72, en 2 pantallas: la oración + su continuación "Expiraste, Jesús...") → Oh Sangre y Agua ×3 → Padre Nuestro/Ave María/Credo → **5 décadas** (Grano Mayor + 10 Granos Menores cada una, mismo anillo y mecanismo que el Rosario, insignia "Década X de 5") → Santo Dios ×3 → **2 oraciones finales** (ambas siempre visibles, ninguna opcional — la segunda es Diario, 1570) → cierre
+- El Grano Mayor y los Granos Menores cambiaron de texto con la fuente completa: "como propiciación" → "en expiación", "Por Su dolorosa Pasión" → "Por los méritos de su dolorosa Pasión", entre otras diferencias de fondo, no solo de puntuación
+- Persistencia: `pageIndex` + `counts` (por década: `granos-menores-{d}`) — la década se deriva de `pages[pageIndex].decadeIndex`, sin campo aparte, mismo mecanismo que usa `Rosario.jsx` para `mysteryIndex` (solo `mysteryKey` se guarda aparte allá porque afecta qué páginas se construyen según el día de la semana; las 5 décadas de la Coronilla no dependen del día, así que no aplica un equivalente). Verificado: salir a mitad de la Década 2 y volver ofrece retomar específicamente en "la Década 2 de 5", no un genérico "en curso"
+- Todos los textos nuevos verificados programáticamente contra la fuente literal (carácter por carácter, no solo revisión visual) — 9/9 coinciden exactamente
+- **Decidido (23 jul 2026):** Padre Nuestro, Ave María y Credo de los Apóstoles se quedan tal cual están exportados en `Rosario.jsx` — vatican.va es la fuente más autorizada para estas tres oraciones específicas, no la fuente nueva de la Coronilla. Sin cambios de código: Coronilla ya las importaba sin duplicar el texto
+- `Rosario.jsx` no se modificó — confirmado por diff, cero cambios
 
 ## Devocional — Oraciones (50 en 6 secciones)
 - Renombrado de "Oraciones Clásicas" a "Oraciones"
