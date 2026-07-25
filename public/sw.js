@@ -1,4 +1,4 @@
-const CACHE_NAME = 'camino-de-fe-v18';
+const CACHE_NAME = 'camino-de-fe-v19';
 
 // Manifest e íconos — nunca se sirven desde caché. Tras una migración de
 // marca (nombre, paleta, logo) deben reflejarse de inmediato; con

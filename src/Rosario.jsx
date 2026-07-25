@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NOCHE, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, NOCHE_DARK, rgba } from "./theme";
 import Horeb from "./Horeb";
 
@@ -230,14 +230,28 @@ export default function Rosario({ lang = "es", onHome }) {
   const goPrev = () => setPageIndex(p => Math.max(0, p - 1));
   const goRestart = () => { setAveCounts({}); setPageIndex(0); };
 
+  // advancingRef bloquea disparos duplicados del mismo toque (p. ej. touchstart
+  // + click sintetizados por el navegador para el mismo gesto en un dispositivo
+  // táctil real). Un ref se actualiza al instante — a diferencia de aveCounts
+  // (estado de React, que se aplica en lote) — así que el segundo disparo del
+  // mismo toque ya lo ve activado y no llega a programar un segundo goNext.
+  // Sin esto, dos disparos en la última cuenta programan dos setTimeout(goNext),
+  // y como goNext usa la forma funcional (lee el pageIndex más reciente), el
+  // segundo avanza la página una vez más sobre el resultado del primero — una
+  // página de más saltada por cada disparo duplicado. Mismo fix aplicado en
+  // Coronilla.jsx (handleBeadTap), donde se encontró y confirmó el bug primero.
+  const advancingRef = useRef(false);
+
   const handleAveMariaTap = (counterId, total) => {
+    if (advancingRef.current) return;
     const current = aveCounts[counterId] || 0;
     if (current >= total) return;
     if (navigator.vibrate) navigator.vibrate(50);
     const next = current + 1;
     setAveCounts(prev => ({ ...prev, [counterId]: next }));
     if (next === total) {
-      setTimeout(goNext, 400);
+      advancingRef.current = true;
+      setTimeout(() => { advancingRef.current = false; goNext(); }, 400);
     }
   };
 
