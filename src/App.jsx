@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "firebase/auth";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, doc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, where, getCountFromServer } from "firebase/firestore";
 import { products, formatPrice } from "./products";
 import Rosario from "./Rosario";
 import Coronilla from "./Coronilla";
@@ -419,6 +419,19 @@ function OfficialBadge({ size = 14 }) {
   );
 }
 
+// Puerta con flecha de salida — cerrar sesión no es una acción destructiva,
+// así que usa el mismo lenguaje de trazo fino que el resto de íconos, sin
+// tono de alarma.
+function LogoutGlyph({ size = 24, color = GOLD }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M10 4 H6 a1.5 1.5 0 0 0 -1.5 1.5 v13 A1.5 1.5 0 0 0 6 20 h4" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="10" y1="12" x2="20" y2="12" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M16.5 8 L20.5 12 L16.5 16" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 const ONBOARDING_SCREENS = {
   es: [
     { title: "Bienvenido a Horeb", text: "Tu compañero espiritual diario. Fe, oración y comunidad, siempre contigo.", icon: "logo" },
@@ -435,6 +448,45 @@ const ONBOARDING_SCREENS = {
 };
 
 const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1, $2') : r;
+
+// Frase cálida del resumen de perfil — nunca "0 respondidas" ni singular/plural
+// torpe. Omite una cláusula entera si su conteo es cero, en vez de forzarla.
+const buildProfileSummary = (stats, lang) => {
+  const { diario, oraciones, respondidas } = stats;
+  const es = lang === 'es';
+
+  if (diario === 0 && oraciones === 0) {
+    return es ? 'Tu camino en Horeb apenas comienza.' : "Your journey with Horeb is just beginning.";
+  }
+
+  const diarioClause = es
+    ? `${diario} ${diario === 1 ? 'entrada' : 'entradas'} en tu Diario`
+    : `${diario} ${diario === 1 ? 'entry' : 'entries'} in your Journal`;
+
+  let respondidaSuffix = '';
+  if (respondidas > 0) {
+    if (oraciones === 1 && respondidas === 1) {
+      respondidaSuffix = es ? ', ya respondida' : ', already answered';
+    } else if (respondidas === oraciones) {
+      respondidaSuffix = es ? ', todas ya respondidas' : ', all of them answered';
+    } else if (respondidas === 1) {
+      respondidaSuffix = es ? ', una de ellas ya respondida' : ', one of them already answered';
+    } else {
+      respondidaSuffix = es ? `, ${respondidas} de ellas ya respondidas` : `, ${respondidas} of them already answered`;
+    }
+  }
+  const oracionesClause = (es
+    ? `${oraciones} ${oraciones === 1 ? 'oración' : 'oraciones'}`
+    : `${oraciones} ${oraciones === 1 ? 'prayer' : 'prayers'}`) + respondidaSuffix;
+
+  if (diario > 0 && oraciones === 0) {
+    return es ? `Llevas ${diarioClause}.` : `You have ${diarioClause}.`;
+  }
+  if (diario === 0 && oraciones > 0) {
+    return es ? `Llevas ${oracionesClause}.` : `You have ${oracionesClause}.`;
+  }
+  return es ? `Llevas ${diarioClause} y ${oracionesClause}.` : `You have ${diarioClause} and ${oracionesClause}.`;
+};
 
 const SITE_URL = 'https://somoshoreb.com';
 
@@ -596,6 +648,7 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileStats, setProfileStats] = useState(null);
   const headerMenuRef = useRef(null);
   const [openReading, setOpenReading] = useState(null);
   const [showEnglishFallback, setShowEnglishFallback] = useState({});
@@ -1139,6 +1192,33 @@ export default function App() {
   };
 
   const handleLogout = async () => { await signOut(auth); };
+
+  // Resumen del menú de perfil — solo conteos agregados (getCountFromServer,
+  // no se descargan los documentos), se recalcula cada vez que se abre el
+  // menú para que refleje cambios recientes (nueva oración, nueva entrada de
+  // Diario) sin esperar a la próxima sesión.
+  useEffect(() => {
+    if (!menuOpen || !user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [diarioSnap, oracionesSnap, respondidasSnap] = await Promise.all([
+          getCountFromServer(collection(db, "usuarios", user.uid, "diario")),
+          getCountFromServer(collection(db, "usuarios", user.uid, "oraciones")),
+          getCountFromServer(query(collection(db, "usuarios", user.uid, "oraciones"), where("respondida", "==", true))),
+        ]);
+        if (cancelled) return;
+        setProfileStats({
+          diario: diarioSnap.data().count,
+          oraciones: oracionesSnap.data().count,
+          respondidas: respondidasSnap.data().count,
+        });
+      } catch (e) {
+        if (!cancelled) setProfileStats(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [menuOpen, user]);
 
   const handleLambClick = async () => {
     setLambLoading(true);
@@ -4912,19 +4992,41 @@ export default function App() {
             {/* Perfil */}
             <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
               {user ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: NAVY, color: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: 16, fontFamily: "'Cormorant', serif", flexShrink: 0 }}>
-                    {(user.displayName || user.email || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: CREAM, fontSize: 14, fontWeight: "bold", fontFamily: "'Work Sans', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {user.displayName || (lang === 'es' ? 'Usuario' : 'User')}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: NAVY, color: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: 16, fontFamily: "'Cormorant', serif", flexShrink: 0 }}>
+                      {(user.displayName || user.email || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()}
                     </div>
-                    <div style={{ color: MUTED, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: CREAM, fontSize: 14, fontWeight: "bold", fontFamily: "'Work Sans', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {user.displayName || (lang === 'es' ? 'Usuario' : 'User')}
+                      </div>
+                      <div style={{ color: MUTED, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                    </div>
                   </div>
-                  <button onClick={() => { handleLogout(); setMenuOpen(false); }} style={{ background: "rgba(220,90,90,0.12)", border: "1px solid rgba(220,90,90,0.4)", color: "#E08080", fontSize: 11, fontWeight: "bold", borderRadius: 8, padding: "6px 10px", cursor: "pointer", flexShrink: 0, fontFamily: "'Work Sans', sans-serif" }}>
-                    {lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
-                  </button>
+
+                  {/* Separador sutil */}
+                  <div style={{ height: 1, background: "rgba(255,255,255,0.08)", margin: "16px 0" }} />
+
+                  {/* Resumen del caminar — frase cálida y continua, nunca lenguaje de racha */}
+                  <div style={{ background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
+                    <div style={{ color: CREAM, fontSize: 14, lineHeight: 1.6, fontFamily: "'Work Sans', sans-serif" }}>
+                      {profileStats
+                        ? buildProfileSummary(profileStats, lang)
+                        : (lang === 'es' ? 'Cargando tu resumen…' : 'Loading your summary…')}
+                    </div>
+                  </div>
+
+                  {/* Cerrar sesión — discreto, no es una acción destructiva */}
+                  <div style={{ textAlign: "center" }}>
+                    <button
+                      onClick={() => { handleLogout(); setMenuOpen(false); }}
+                      style={{ background: "none", border: "none", color: MUTED, fontSize: 12.5, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px" }}
+                    >
+                      <LogoutGlyph size={15} color={MUTED} />
+                      {lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
