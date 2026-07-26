@@ -243,7 +243,7 @@
 
 ### Parroquias — siguiente fase
 - HABLAR CON EL PÁRROCO. Mensajes ya redactados
-- San José de Ríogrande · más parroquias si el directorio las tiene · canal "escríbenos"
+- San José de Ríogrande · más parroquias si el directorio las tiene · canal "escríbenos" (ya existe vía WhatsApp, ver Hecho)
 - Verificar usuarios: Firebase Console → Authentication → Users. Para tráfico sin cuenta, falta Google Analytics
 
 ### Contenido
@@ -285,4 +285,5 @@
 - Seguridad Firestore endurecida · Parroquias: selección + horarios · Compartir como imagen
 - **Rosario y Coronilla: bug de doble toque en dispositivo táctil corregido y verificado**
 - Santo del Día en Inicio · Cron verificado
+- **Honestidad de cobertura en Parroquias (26 jul 2026)**: la pantalla de selección (Configuración) y la tarjeta "Tu parroquia" en Inicio ya no insinúan cobertura nacional. Ambas dicen que hoy solo hay parroquias de Cajicá y que se suman más cada semana; Configuración además ofrece un enlace de WhatsApp (+57 301 296 4440, mensaje prellenado) para pedir que agreguen una parroquia. Verificado: build limpio, copy correcto en ambas pantallas (capturas), y el enlace decodifica al número y mensaje exactos. No se tocó `sw.js`.
 - **Conec✝2 completo: palabra al orar, testimonios, círculos públicos administrados, edición, insignia oficial, tarjeta en Inicio con Verde Zarza**

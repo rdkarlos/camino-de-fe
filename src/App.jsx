@@ -490,6 +490,11 @@ const buildProfileSummary = (stats, lang) => {
 
 const SITE_URL = 'https://somoshoreb.com';
 
+// Pedir parroquia por WhatsApp — cobertura hoy limitada a Cajicá (26 jul 2026).
+// Mensaje prellenado siempre en español: quien responde de este lado lo hace
+// en español, sin importar el idioma de la app.
+const PARROQUIA_WHATSAPP_URL = `https://wa.me/573012964440?text=${encodeURIComponent('Hola, quiero pedir que agreguen mi parroquia a Horeb: ')}`;
+
 const LAMB_BTN_SIZE = 50;
 const clampLambPos = ({ x, y }) => ({
   x: Math.min(Math.max(x, 0), Math.max(window.innerWidth - LAMB_BTN_SIZE, 0)),
@@ -1756,8 +1761,8 @@ export default function App() {
                 <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Tu parroquia' : 'Your parish'}</div>
                 <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5, marginBottom: 10 }}>
                   {lang === 'es'
-                    ? 'La misa es la fuente y la cumbre. Elige tu parroquia y que el camino al altar nunca te quede lejos.'
-                    : 'The Mass is the source and summit. Choose your parish so the way to the altar is never far.'}
+                    ? 'La misa es la fuente y la cumbre. Por ahora tenemos las parroquias de Cajicá, y vamos sumando más cada semana.'
+                    : 'The Mass is the source and summit. For now we cover parishes in Cajicá, and we\'re adding more each week.'}
                 </div>
                 <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif" }}>
                   {lang === 'es' ? 'Elegir mi parroquia' : 'Choose my parish'} ›
@@ -3528,6 +3533,16 @@ export default function App() {
             <div>
               <div style={{ fontSize: 12, color: MUTED, marginBottom: 12 }}>
                 {lang === 'es' ? 'Puedes cambiarla cuando quieras.' : 'You can change it anytime.'}
+              </div>
+              <div style={{ background: `${GOLD}14`, border: `1px solid ${GOLD}55`, borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
+                <div style={{ fontSize: 13, color: CREAM, lineHeight: 1.5, marginBottom: 10, fontFamily: "'Work Sans', sans-serif" }}>
+                  {lang === 'es'
+                    ? 'Por ahora tenemos las parroquias de Cajicá. Estamos sumando más cada semana — si la tuya no está, contános y la agregamos.'
+                    : "For now we have parishes in Cajicá. We're adding more each week — if yours isn't here, let us know and we'll add it."}
+                </div>
+                <a href={PARROQUIA_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", textDecoration: "none" }}>
+                  {lang === 'es' ? 'Pedir que agreguen mi parroquia' : 'Ask us to add my parish'} →
+                </a>
               </div>
               {parroquias.length === 0 ? (
                 <div style={{ fontSize: 13, color: MUTED, fontStyle: "italic" }}>
