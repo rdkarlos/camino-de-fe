@@ -668,6 +668,7 @@ export default function App() {
   const [devocionalInitialTab, setDevocionalInitialTab] = useState(null);
   const [parroquias, setParroquias] = useState([]);
   const [userParroquiaId, setUserParroquiaId] = useState(null);
+  const [parroquiaCityFilter, setParroquiaCityFilter] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [parroquiaExpanded, setParroquiaExpanded] = useState(false);
 
@@ -1761,8 +1762,8 @@ export default function App() {
                 <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Tu parroquia' : 'Your parish'}</div>
                 <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5, marginBottom: 10 }}>
                   {lang === 'es'
-                    ? 'La misa es la fuente y la cumbre. Por ahora tenemos las parroquias de Cajicá, y vamos sumando más cada semana.'
-                    : 'The Mass is the source and summit. For now we cover parishes in Cajicá, and we\'re adding more each week.'}
+                    ? 'La misa es la fuente y la cumbre. Por ahora tenemos parroquias en Cajicá y Cali, y vamos sumando más cada semana.'
+                    : 'The Mass is the source and summit. For now we cover parishes in Cajicá and Cali, and we\'re adding more each week.'}
                 </div>
                 <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif" }}>
                   {lang === 'es' ? 'Elegir mi parroquia' : 'Choose my parish'} ›
@@ -3537,8 +3538,8 @@ export default function App() {
               <div style={{ background: `${GOLD}14`, border: `1px solid ${GOLD}55`, borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
                 <div style={{ fontSize: 13, color: CREAM, lineHeight: 1.5, marginBottom: 10, fontFamily: "'Work Sans', sans-serif" }}>
                   {lang === 'es'
-                    ? 'Por ahora tenemos las parroquias de Cajicá. Estamos sumando más cada semana — si la tuya no está, contános y la agregamos.'
-                    : "For now we have parishes in Cajicá. We're adding more each week — if yours isn't here, let us know and we'll add it."}
+                    ? 'Por ahora tenemos parroquias en Cajicá y Cali. Estamos sumando más cada semana — si la tuya no está, contános y la agregamos.'
+                    : "For now we have parishes in Cajicá and Cali. We're adding more each week — if yours isn't here, let us know and we'll add it."}
                 </div>
                 <a href={PARROQUIA_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", textDecoration: "none" }}>
                   {lang === 'es' ? 'Pedir que agreguen mi parroquia' : 'Ask us to add my parish'} →
@@ -3548,30 +3549,76 @@ export default function App() {
                 <div style={{ fontSize: 13, color: MUTED, fontStyle: "italic" }}>
                   {lang === 'es' ? 'Cargando parroquias…' : 'Loading parishes…'}
                 </div>
-              ) : parroquias.map(p => {
-                const selected = p.id === userParroquiaId;
-                return (
-                  <div
-                    key={p.id}
-                    onClick={() => chooseParroquia(p.id)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, marginBottom: 8, cursor: "pointer", background: selected ? `${GOLD}1F` : NAVY, border: `1px solid ${selected ? GOLD : CREAM_DARK}` }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif" }}>{p.nombre}</div>
-                      <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{p.municipio}</div>
+              ) : (() => {
+                const renderParroquiaItem = (p) => {
+                  const selected = p.id === userParroquiaId;
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => chooseParroquia(p.id)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, marginBottom: 8, cursor: "pointer", background: selected ? `${GOLD}1F` : NAVY, border: `1px solid ${selected ? GOLD : CREAM_DARK}` }}
+                    >
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif" }}>{p.nombre}</div>
+                        <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{p.municipio}</div>
+                      </div>
+                      {selected && <span style={{ color: GOLD, fontSize: 16, flexShrink: 0, marginLeft: 10 }}>✓</span>}
                     </div>
-                    {selected && <span style={{ color: GOLD, fontSize: 16, flexShrink: 0, marginLeft: 10 }}>✓</span>}
+                  );
+                };
+                const cities = [...new Set(parroquias.map(p => p.municipio).filter(Boolean))];
+                const pillStyle = (active) => ({
+                  padding: "7px 16px", borderRadius: 20, fontSize: 12.5, fontWeight: "bold", cursor: "pointer",
+                  fontFamily: "'Work Sans', sans-serif",
+                  background: active ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD,
+                  color: active ? WHITE : CREAM,
+                  border: `1.5px solid ${active ? GOLD : CREAM_DARK}`,
+                });
+                return (
+                  <div>
+                    {cities.length > 1 && (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+                        <button onClick={() => setParroquiaCityFilter(null)} style={pillStyle(parroquiaCityFilter === null)}>
+                          {lang === 'es' ? 'Todas' : 'All'}
+                        </button>
+                        {cities.map(city => (
+                          <button key={city} onClick={() => setParroquiaCityFilter(city)} style={pillStyle(parroquiaCityFilter === city)}>
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {parroquiaCityFilter ? (
+                      parroquias.filter(p => p.municipio === parroquiaCityFilter).map(renderParroquiaItem)
+                    ) : cities.length > 1 ? (
+                      cities.map(city => (
+                        <div key={city} style={{ marginBottom: 6 }}>
+                          <div style={{ fontSize: 11, color: CREAM_DARK, textTransform: "uppercase", letterSpacing: 2, fontWeight: 700, marginBottom: 8 }}>{city}</div>
+                          {parroquias.filter(p => p.municipio === city).map(renderParroquiaItem)}
+                        </div>
+                      ))
+                    ) : (
+                      parroquias.map(renderParroquiaItem)
+                    )}
                   </div>
                 );
-              })}
+              })()}
               {(() => {
-                const fuenteInfo = parroquias.find(p => p.id === userParroquiaId) || parroquias[0];
+                const cities = [...new Set(parroquias.map(p => p.municipio).filter(Boolean))];
+                // Sin parroquia elegida, solo mostramos una fuente de respaldo
+                // cuando es inequívoca: filtrando a una ciudad, o si solo hay
+                // una ciudad en total. Con "Todas" y más de una ciudad, distintas
+                // parroquias pueden tener fuentes distintas — no hay una sola
+                // fuente honesta que mostrar.
+                const fuenteInfo = parroquias.find(p => p.id === userParroquiaId)
+                  || (parroquiaCityFilter ? parroquias.find(p => p.municipio === parroquiaCityFilter) : null)
+                  || (cities.length <= 1 ? parroquias[0] : null);
                 if (!fuenteInfo?.fuente) return null;
                 return (
                   <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5, marginTop: 10 }}>
                     {lang === 'es'
-                      ? `Estos horarios vienen del directorio de la Diócesis de Zipaquirá, actualizado el ${formatFuenteFecha(fuenteInfo.fuenteFecha, lang)}. Si algo cambió, escríbenos y lo corregimos.`
-                      : `These schedules come from the Diocese of Zipaquirá's directory, updated on ${formatFuenteFecha(fuenteInfo.fuenteFecha, lang)}. If something changed, let us know and we'll fix it.`}
+                      ? `La fuente de estos horarios es ${fuenteInfo.fuente}. Actualizado el ${formatFuenteFecha(fuenteInfo.fuenteFecha, lang)}. Si algo cambió, escríbenos y lo corregimos.`
+                      : `The source for these schedules is ${fuenteInfo.fuenteEn || fuenteInfo.fuente}. Updated on ${formatFuenteFecha(fuenteInfo.fuenteFecha, lang)}. If something changed, let us know and we'll fix it.`}
                   </div>
                 );
               })()}

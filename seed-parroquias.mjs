@@ -20,7 +20,8 @@ const serviceAccount = JSON.parse(
 const app = initializeApp({ credential: cert(serviceAccount) });
 const db = getFirestore(app);
 
-const FUENTE = 'Directorio de la Diócesis de Zipaquirá';
+const FUENTE = 'el directorio de la Diócesis de Zipaquirá';
+const FUENTE_EN = "the Diocese of Zipaquirá's directory";
 const FUENTE_FECHA = '2026-07-12';
 
 // Cada misa: { hora }, o { hora, lugar } cuando NO es en la iglesia principal.
@@ -41,10 +42,11 @@ const PARROQUIAS = [
       jueves: [{ hora: '6:00 a.m.' }, { hora: '6:00 p.m.' }],
       viernes: [{ hora: '6:00 a.m.' }, { hora: '6:00 p.m.' }],
       sabado: [{ hora: '6:00 p.m.' }],
-      domingo: [{ hora: '8:00 a.m.' }, { hora: '10:00 a.m.' }, { hora: '12:00 m.' }, { hora: '6:00 p.m.' }],
+      domingo: [{ hora: '8:00 a.m.' }, { hora: '10:00 a.m.' }, { hora: '12:00 m.' }, { hora: '4:00 p.m.' }, { hora: '6:00 p.m.' }],
     },
     horarioAtencion: 'Martes a viernes, 2:00 p.m. a 5:00 p.m.',
     fuente: FUENTE,
+    fuenteEn: FUENTE_EN,
     fuenteFecha: FUENTE_FECHA,
   },
   {
@@ -68,6 +70,7 @@ const PARROQUIAS = [
     },
     horarioAtencion: 'Lunes a viernes 9:00 a.m. a 12:00 m. y 2:00 p.m. a 5:00 p.m. | Sábados 9:00 a.m. a 12:00 m.',
     fuente: FUENTE,
+    fuenteEn: FUENTE_EN,
     fuenteFecha: FUENTE_FECHA,
   },
   {
@@ -99,7 +102,33 @@ const PARROQUIAS = [
     },
     horarioAtencion: 'Lunes a viernes 8:00 a.m. a 12:00 m. y 2:00 p.m. a 5:00 p.m.',
     fuente: FUENTE,
+    fuenteEn: FUENTE_EN,
     fuenteFecha: FUENTE_FECHA,
+  },
+  {
+    id: 'san-pio-x-cali',
+    nombre: 'Parroquia San Pío X',
+    municipio: 'Cali',
+    // Pertenece a la Arquidiócesis de Cali, no a la Diócesis de Zipaquirá —
+    // "arciprestazgo" es una subdivisión interna de Zipaquirá y no aplica aquí.
+    diocesis: 'Arquidiócesis de Cali',
+    horarioMisas: {
+      lunes: [{ hora: '7:00 a.m.' }, { hora: '6:00 p.m.' }],
+      martes: [{ hora: '7:00 a.m.' }, { hora: '6:00 p.m.' }],
+      miercoles: [{ hora: '7:00 a.m.' }, { hora: '6:00 p.m.' }],
+      // Excepción: la misa de la tarde del jueves es a las 7:00 p.m., no 6:00 p.m.
+      jueves: [{ hora: '7:00 a.m.' }, { hora: '7:00 p.m.' }],
+      viernes: [{ hora: '7:00 a.m.' }, { hora: '6:00 p.m.' }],
+      sabado: [{ hora: '7:00 a.m.' }, { hora: '6:00 p.m.' }],
+      domingo: [
+        { hora: '8:00 a.m.' }, { hora: '10:00 a.m.' }, { hora: '12:00 m.' },
+        { hora: '5:00 p.m.' }, { hora: '6:00 p.m.' }, { hora: '7:00 p.m.' },
+      ],
+    },
+    // Dato directo del sacerdote de la parroquia, no de un directorio web.
+    fuente: 'un dato proporcionado directamente por el sacerdote de la parroquia',
+    fuenteEn: 'information provided directly by the parish priest',
+    fuenteFecha: '2026-07-27',
   },
 ];
 
