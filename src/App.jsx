@@ -1809,6 +1809,15 @@ export default function App() {
           <div style={{ color: GOLD, fontSize: 22, fontWeight: "300", flexShrink: 0 }}>›</div>
         </div>
 
+        {/* Lecturas del Día — fila compacta: mismo tratamiento que Evangelio */}
+        <div onClick={() => goToTab(3)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "13px 16px", marginBottom: 10, cursor: "pointer" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            <span style={{ color: GOLD, fontSize: 17, flexShrink: 0 }}>✦</span>
+            <div style={{ fontSize: 14, fontWeight: 700, color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{lang === 'es' ? 'Lecturas del Día' : 'Daily Readings'}</div>
+          </div>
+          <div style={{ color: GOLD, fontSize: 22, fontWeight: "300", flexShrink: 0 }}>›</div>
+        </div>
+
         {/* Santo del Día + Misas de hoy — fila de dos columnas compactas */}
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
           <div
@@ -5032,16 +5041,24 @@ export default function App() {
                   <line x1="15.5" y1="14" x2="21" y2="15" stroke={c} strokeWidth="1"/>
                 </svg>
               ), label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
-            { icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <rect x="5" y="3" width="18" height="5" rx="2.5" stroke={c} strokeWidth="1.5"/>
-                  <rect x="7" y="7" width="14" height="15" stroke={c} strokeWidth="1.5"/>
-                  <rect x="5" y="21" width="18" height="5" rx="2.5" stroke={c} strokeWidth="1.5"/>
-                  <line x1="10" y1="11" x2="18" y2="11" stroke={c} strokeWidth="1"/>
-                  <line x1="10" y1="14.5" x2="18" y2="14.5" stroke={c} strokeWidth="1"/>
-                  <line x1="10" y1="18" x2="18" y2="18" stroke={c} strokeWidth="1"/>
+            {
+              // Conec✝2 — mismo ícono (personas + cruz) que ya usa el
+              // selector de pestañas dentro de Mi Oración, para que se
+              // reconozca como el mismo símbolo en toda la app. "Lecturas"
+              // se movió a su propia fila dentro de "Hoy" en Inicio.
+              icon: (c) => (
+                <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+                  <circle cx="8" cy="19" r="3.5" fill={c}/>
+                  <path d="M2 31 C2 21 14 21 14 31Z" fill={c}/>
+                  <circle cx="24" cy="19" r="3.5" fill={c}/>
+                  <path d="M18 31 C18 21 30 21 30 31Z" fill={c}/>
+                  <circle cx="16" cy="15" r="4.5" fill={c}/>
+                  <path d="M9 31 C9 19 23 19 23 31Z" fill={c}/>
+                  <rect x="14.8" y="1" width="2.4" height="8" rx="1.2" fill={GOLD}/>
+                  <rect x="11.5" y="3.8" width="9" height="2.4" rx="1.2" fill={GOLD}/>
                 </svg>
-              ), label: lang === 'es' ? "Lecturas"  : "Readings", idx: 3 },
+              ), label: <>Conec<span style={{ color: GOLD, fontSize: "1.15em" }}>✝</span>2</>, key: 'conec2',
+            },
             { icon: (c) => (
                 <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
                   <path d="M5 9 H23 L21 24 H7 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
@@ -5050,10 +5067,18 @@ export default function App() {
                   <line x1="11.5" y1="16.5" x2="16.5" y2="16.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 7 },
-          ].map(({ icon, label, idx }) => {
-            const isActive = tab === idx;
-            const isHovered = hoveredQuickBtn === idx;
-            const isPressed = pressedQuickBtn === idx;
+          ].map(({ icon, label, idx, key: itemKey }) => {
+            // Conec✝2 no es un simple cambio de tab — vive dentro de Mi
+            // Oración con un estado compuesto (tab + sección + sub-tab), así
+            // que necesita su propia condición de "activo" y su propio
+            // onClick en vez del goToTab(idx) genérico de los demás.
+            const id = itemKey ?? idx;
+            const isConec2 = id === 'conec2';
+            const isActive = isConec2
+              ? (tab === 1 && personalSection === 'oracion' && personalTab === 'circles')
+              : tab === idx;
+            const isHovered = hoveredQuickBtn === id;
+            const isPressed = pressedQuickBtn === id;
             const iconColor = isActive ? GOLD : MUTED;
             const bibleStyle = {
               background: isActive
@@ -5068,16 +5093,23 @@ export default function App() {
             const transition = `transform ${isPressed ? "0.1s" : "0.2s"} ease, background 0.2s ease, box-shadow 0.2s ease`;
             return (
               <button
-                key={idx}
-                onClick={() => { goToTab(idx); setMenuOpen(false); }}
-                onPointerEnter={() => setHoveredQuickBtn(idx)}
+                key={id}
+                onClick={() => {
+                  if (isConec2) { setTab(1); setPersonalSection('oracion'); setPersonalTab('circles'); }
+                  else { goToTab(idx); }
+                  setMenuOpen(false);
+                }}
+                onPointerEnter={() => setHoveredQuickBtn(id)}
                 onPointerLeave={() => { setHoveredQuickBtn(null); setPressedQuickBtn(null); }}
-                onPointerDown={() => setPressedQuickBtn(idx)}
+                onPointerDown={() => setPressedQuickBtn(id)}
                 onPointerUp={() => setPressedQuickBtn(null)}
                 onPointerCancel={() => setPressedQuickBtn(null)}
                 style={{ position: "relative", flex: 1, padding: "6px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center", transform, transition, ...bibleStyle }}
               >
-                {idx === 1 && hasAnyNewCircleActivity && <LightDot style={{ top: 4, right: 4 }} />}
+                {/* Antes vivía en "Oración" (único camino a Conec✝2); ahora
+                    que Conec✝2 tiene su propio acceso directo, la novedad de
+                    círculo se anuncia ahí, no en Oración Personal en general. */}
+                {isConec2 && hasAnyNewCircleActivity && <LightDot style={{ top: 4, right: 4 }} />}
                 <div style={{ marginBottom: 2, lineHeight: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>{icon(iconColor)}</div>
                 <div style={{ fontSize: 13, fontWeight: "600", fontFamily: "'Work Sans', sans-serif", letterSpacing: 0.2, whiteSpace: "nowrap" }}>{label}</div>
               </button>
