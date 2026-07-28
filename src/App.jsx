@@ -5059,8 +5059,8 @@ export default function App() {
         {/* Menú desplegable */}
         {menuOpen && (
           <div style={{ background: BG_MAIN, borderTop: "1px solid rgba(255,255,255,0.08)", maxHeight: "60vh", overflowY: "auto" }}>
-            {/* Perfil */}
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+            {/* Perfil — tarjeta propia, para que se lea como bloque aparte de la navegación de abajo */}
+            <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}44`, borderRadius: 16, margin: "14px 16px 26px", padding: "18px 20px" }}>
               {user ? (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -5079,7 +5079,7 @@ export default function App() {
                   <div style={{ height: 1, background: "rgba(255,255,255,0.08)", margin: "16px 0" }} />
 
                   {/* Resumen del caminar — frase cálida y continua, nunca lenguaje de racha */}
-                  <div style={{ background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
+                  <div style={{ background: `${GOLD}14`, border: `1px solid ${GOLD}66`, borderRadius: 14, padding: "14px 16px", marginBottom: 18 }}>
                     <div style={{ color: CREAM, fontSize: 14, lineHeight: 1.6, fontFamily: "'Work Sans', sans-serif" }}>
                       {profileStats
                         ? buildProfileSummary(profileStats, lang)
