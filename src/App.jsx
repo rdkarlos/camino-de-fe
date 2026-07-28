@@ -4949,7 +4949,7 @@ export default function App() {
             {!user ? (
               <button onClick={() => setAuthMode('login')} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 30, height: 30, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><PersonGlyph size={16} color={WHITE} /></button>
             ) : (
-              <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 30, height: 30, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title={lang === 'es' ? 'Salir' : 'Sign out'}><PersonGlyph size={16} color={WHITE} /></button>
+              <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 30, height: 30, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title={lang === 'es' ? 'Tu perfil' : 'Your profile'}><PersonGlyph size={16} color={WHITE} /></button>
             )}
             <button onClick={() => setShowCart(true)} style={{ background: cartCount > 0 ? GOLD : "rgba(255,255,255,0.1)", border: "none", color: cartCount > 0 ? NAVY_DARK : WHITE, width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
               <ShoppingBagGlyph size={16} color={cartCount > 0 ? NAVY_DARK : WHITE} />
