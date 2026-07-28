@@ -449,6 +449,24 @@ const ONBOARDING_SCREENS = {
 
 const formatRef = (r) => r ? String(r).replace(/(\d+):(\d+)/g, '$1, $2') : r;
 
+// Tamaño de fuente del Versículo del Día en el hero de Inicio, según
+// longitud — mismo espíritu que fitText() de shareImage.js (grande para
+// versículos cortos, más chico para los largos), pero por conteo de
+// caracteres en vez de medir en canvas: aquí el texto ya envuelve en un
+// <div> normal (el panel oscuro crece con el contenido), así que no hace
+// falta simular el wrap línea por línea. Calibrado contra el banco real de
+// 365 versículos (versiculos.js): el más corto tiene 13 caracteres ("Dios
+// es amor."), el más largo 134 (1 Juan 3, 17).
+const heroVerseFontSize = (text) => {
+  const len = (text || '').length;
+  const MAX_SIZE = 23, MIN_SIZE = 16;
+  const SHORT_LEN = 40, LONG_LEN = 134;
+  if (len <= SHORT_LEN) return MAX_SIZE;
+  if (len >= LONG_LEN) return MIN_SIZE;
+  const t = (len - SHORT_LEN) / (LONG_LEN - SHORT_LEN);
+  return Math.round(MAX_SIZE - t * (MAX_SIZE - MIN_SIZE));
+};
+
 // Frase cálida del resumen de perfil — nunca "0 respondidas" ni singular/plural
 // torpe. Omite una cláusula entera si su conteo es cero, en vez de forzarla.
 const buildProfileSummary = (stats, lang) => {
@@ -1721,7 +1739,7 @@ export default function App() {
           <div style={{ position: "relative", padding: "22px 22px 20px", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 230, boxSizing: "border-box" }}>
             <div style={{ background: "rgba(15,20,28,0.78)", borderRadius: 14, padding: "14px 16px" }}>
               <div style={{ fontSize: 12, color: GOLD, letterSpacing: "1.5px", marginBottom: 10, fontWeight: 700, textTransform: "uppercase" }}>✦ {lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-              <div style={{ fontSize: 22, fontWeight: 500, color: WHITE, lineHeight: 1.4, fontFamily: "'Cormorant', serif" }}>{dailyVerse.text}</div>
+              <div style={{ fontSize: heroVerseFontSize(dailyVerse.text), fontWeight: 500, color: WHITE, lineHeight: 1.4, fontFamily: "'Cormorant', serif" }}>{dailyVerse.text}</div>
               <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", marginTop: 12, fontFamily: "'Cormorant', serif" }}>— {formatRef(dailyVerse.ref)}</div>
             </div>
           </div>
