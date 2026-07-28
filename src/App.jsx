@@ -11,7 +11,7 @@ import Devocional, { getSantoHoy } from "./Devocional";
 import ComingSoon from "./ComingSoon";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
-import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, VERDE_ZARZA, rgba, mix } from "./theme";
+import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, VERDE_ZARZA, SOL_NUCLEO, SOL_MEDIO, SOL_BORDE, rgba, mix } from "./theme";
 import Horeb from "./Horeb";
 import HorebLoading from "./HorebLoading";
 import { generateLambShareImage, generateVerseShareImage, gospelExcerpt } from "./shareImage";
@@ -588,6 +588,34 @@ const todayParishDayKey = () => {
   return map[weekday];
 };
 
+// Hora actual en America/Bogota (0-23) — mismo patrón que todayParishDayKey().
+// %24 porque hour12:false a veces devuelve "24" en vez de "0" para medianoche.
+const bogotaHour = () => {
+  const h = parseInt(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Bogota', hour: 'numeric', hour12: false }).format(new Date()), 10);
+  return h % 24;
+};
+
+// Minutos desde medianoche, hora actual en America/Bogota — para encontrar
+// "la próxima misa" comparando contra horarioMisas.
+const bogotaNowMinutes = () => {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Bogota', hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(new Date());
+  const h = parseInt(parts.find(p => p.type === 'hour').value, 10) % 24;
+  const min = parseInt(parts.find(p => p.type === 'minute').value, 10);
+  return h * 60 + min;
+};
+
+// "6:00 a.m." / "12:00 m." / "7:00 p.m." -> minutos desde medianoche.
+const misaHoraAMinutos = (hora) => {
+  const m = (hora || '').match(/(\d{1,2}):(\d{2})\s*(a\.m\.|p\.m\.|m\.)/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const suf = m[3].toLowerCase();
+  if (suf === 'p.m.' && h !== 12) h += 12;
+  if (suf === 'a.m.' && h === 12) h = 0;
+  return h * 60 + min;
+};
+
 // Ancla el día del Diario a America/Bogota, mismo patrón — "YYYY-MM-DD",
 // usado también como ID determinístico del documento en Firestore.
 const todayDiarioKey = () =>
@@ -654,6 +682,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileStats, setProfileStats] = useState(null);
+  const [diasCaminando, setDiasCaminando] = useState(null);
   const headerMenuRef = useRef(null);
   const [openReading, setOpenReading] = useState(null);
   const [showEnglishFallback, setShowEnglishFallback] = useState({});
@@ -670,7 +699,6 @@ export default function App() {
   const [userParroquiaId, setUserParroquiaId] = useState(null);
   const [parroquiaCityFilter, setParroquiaCityFilter] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [parroquiaExpanded, setParroquiaExpanded] = useState(false);
 
   // Entrada "limpia" a una sección desde fuera de ella (menú, accesos rápidos,
   // tarjetas de Inicio): resetea la memoria de sub-navegación de Oración Personal
@@ -1226,6 +1254,20 @@ export default function App() {
     return () => { cancelled = true; };
   }, [menuOpen, user]);
 
+  // Eco del camino — días distintos con entrada de Diario. El ID de cada doc
+  // de "diario" ya es la fecha (ver todayDiarioKey()), así que el conteo
+  // agregado ES el número de días distintos: una sola lectura, sin descargar
+  // documentos. Una vez por sesión (al iniciar sesión), no en cada apertura
+  // del menú, para que el saludo lo tenga listo desde el arranque.
+  useEffect(() => {
+    if (!user) { setDiasCaminando(null); return; }
+    let cancelled = false;
+    getCountFromServer(collection(db, "usuarios", user.uid, "diario"))
+      .then(snap => { if (!cancelled) setDiasCaminando(snap.data().count); })
+      .catch(() => { if (!cancelled) setDiasCaminando(null); });
+    return () => { cancelled = true; };
+  }, [user?.uid]);
+
   const handleLambClick = async () => {
     setLambLoading(true);
     setLambOpen(true);
@@ -1634,7 +1676,12 @@ export default function App() {
     const parroquiaActual = parroquias.find(p => p.id === userParroquiaId) || null;
     const parroquiaTodayKey = todayParishDayKey();
     const parroquiaTodayMisas = parroquiaActual ? (parroquiaActual.horarioMisas?.[parroquiaTodayKey] || []) : [];
-    const parroquiaWeekGroups = parroquiaActual ? groupWeekSchedule(parroquiaActual.horarioMisas) : [];
+    // Próxima misa de hoy (comparando contra la hora actual); si ya pasaron
+    // todas, cae a la primera del día en vez de dejar la fila vacía.
+    const nextMisaHoy = parroquiaTodayMisas.find(m => {
+      const mins = misaHoraAMinutos(m.hora);
+      return mins !== null && mins >= bogotaNowMinutes();
+    }) || parroquiaTodayMisas[0] || null;
     // Etiqueta discreta de sección — solo para orientar el scroll, nunca
     // debe competir visualmente con las tarjetas: sin fondo, sin borde.
     const sectionLabel = (text) => (
@@ -1643,21 +1690,41 @@ export default function App() {
     return (
       <div>
         {sectionLabel(lang === 'es' ? 'Hoy' : 'Today')}
-        {/* Tarjeta versículo — ancho completo, clickeable */}
+        {/* Versículo del Día — tratamiento hero: degradado tipo amanecer (Alba
+            cálido arriba → Noche abajo) con el mismo halo radial de Horeb.jsx
+            (glowId: SOL_NUCLEO/SOL_MEDIO/SOL_BORDE) pero SIN el signo completo
+            — nunca el monte, nunca la brisa, solo el resplandor del sol como
+            motivo atmosférico.
+            Contraste del texto: un velo de card completa basado en % de
+            altura se rompe con versículos largos — el bloque de texto crece
+            hacia arriba y sus primeras líneas terminan sobre la zona clara
+            del degradado (o el halo) casi sin cobertura. En vez de eso, el
+            texto vive dentro de su propio panel oscuro que lo abraza (crece
+            con el contenido, nunca al revés), así el contraste es el mismo
+            sin importar cuánto mida el versículo ni dónde caiga el halo. */}
         <div
           onClick={() => setVerseExpanded(true)}
           style={{
-            background: `linear-gradient(135deg, ${BG_MAIN}, ${BG_CARD})`,
-            border: `1px solid ${GOLD}`,
-            borderRadius: 16, padding: "16px 18px", marginBottom: 16,
-            position: "relative", overflow: "hidden",
-            cursor: "pointer",
+            position: "relative", overflow: "hidden", borderRadius: 20, marginBottom: 16,
+            minHeight: 230, cursor: "pointer",
+            background: `linear-gradient(180deg, ${SOL_NUCLEO} 0%, ${ALBA} 32%, ${mix(ALBA, NOCHE, 0.6)} 68%, ${NOCHE} 100%)`,
           }}
         >
-          <div style={{ position: "absolute", top: -8, left: -4, opacity: 0.06 }}><BookGlyph size={56} color={GOLD} /></div>
-          <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
-          <div style={{ fontSize: 15, fontStyle: "italic", color: CREAM, lineHeight: 1.6 }}>"{dailyVerse.text}"</div>
-          <div style={{ fontSize: "0.8rem", color: GOLD, fontWeight: "bold", marginTop: 8 }}>— {formatRef(dailyVerse.ref)}</div>
+          <div style={{
+            position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)",
+            width: 220, height: 220, borderRadius: "50%", pointerEvents: "none",
+            background: `radial-gradient(circle, ${SOL_NUCLEO}B3 0%, ${SOL_MEDIO}4D 35%, ${SOL_BORDE}0D 65%, transparent 100%)`,
+          }} />
+          {/* Velo general tenue, solo para unificar el tono — la protección
+              real de contraste la da el panel de abajo, no este degradado. */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(15,20,28,0.1) 0%, rgba(15,20,28,0.2) 40%, rgba(15,20,28,0.5) 75%, rgba(15,20,28,0.75) 100%)" }} />
+          <div style={{ position: "relative", padding: "22px 22px 20px", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 230, boxSizing: "border-box" }}>
+            <div style={{ background: "rgba(15,20,28,0.78)", borderRadius: 14, padding: "14px 16px" }}>
+              <div style={{ fontSize: 12, color: GOLD, letterSpacing: "1.5px", marginBottom: 10, fontWeight: 700, textTransform: "uppercase" }}>✦ {lang === 'es' ? 'Versículo del Día' : 'Verse of the Day'}</div>
+              <div style={{ fontSize: 22, fontWeight: 500, color: WHITE, lineHeight: 1.4, fontFamily: "'Cormorant', serif" }}>{dailyVerse.text}</div>
+              <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", marginTop: 12, fontFamily: "'Cormorant', serif" }}>— {formatRef(dailyVerse.ref)}</div>
+            </div>
+          </div>
         </div>
 
         {/* Overlay versículo expandido */}
@@ -1710,115 +1777,42 @@ export default function App() {
         )}
         {/* ── Bloque "Hoy" — contenido diario, seguido ── */}
 
-        {/* Evangelio del Día — card compacta */}
-        <div onClick={() => goToTab(evangelioCard.tab)} style={{ position: "relative", height: 90, borderRadius: 14, overflow: "hidden", marginBottom: 10, cursor: "pointer", border: `1px solid ${CREAM_DARK}` }}>
-          {/* Imagen de fondo a 0.4 de opacidad */}
-          <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${evangelioCard.img})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.4 }} />
-          {/* Gradiente de izquierda a derecha */}
-          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(90deg, ${BG_CARD} 40%, transparent 100%)` }} />
-          {/* Contenido */}
-          <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", boxSizing: "border-box" }}>
-            <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
-              <div style={{ fontSize: 16, color: GOLD, fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>✝ {lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}</div>
+        {/* Evangelio del Día — fila compacta: título + flecha */}
+        <div onClick={() => goToTab(evangelioCard.tab)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "13px 16px", marginBottom: 10, cursor: "pointer" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            <span style={{ color: GOLD, fontSize: 17, flexShrink: 0 }}>✝</span>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>{lang === 'es' ? 'Evangelio del Día' : 'Gospel of the Day'}</div>
               {gospelData && (
-                <div style={{ fontSize: 16, color: WHITE, fontWeight: 700, fontFamily: "'Cormorant', serif", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{formatRef(lang === 'en' ? gospelData?.reference : reference)}</div>
+                <div style={{ fontSize: 12, color: MUTED, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{formatRef(lang === 'en' ? gospelData?.reference : reference)}</div>
               )}
-              <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{gospelData ? body.substring(0, 85) + "…" : evangelioCard.desc}</div>
             </div>
-            <div style={{ color: GOLD, fontSize: 26, fontWeight: "300", flexShrink: 0 }}>›</div>
           </div>
+          <div style={{ color: GOLD, fontSize: 22, fontWeight: "300", flexShrink: 0 }}>›</div>
         </div>
 
-        {/* Santo del Día — card, abre el detalle que ya existe en Devocional */}
-        <div
-          onClick={() => { setDevocionalInitialTab('santo'); setPersonalSection('devocional'); setTab(1); }}
-          style={{
-            position: "relative", background: BG_CARD, border: `1px solid ${GOLD}66`,
-            borderRadius: 16, padding: "16px 18px", marginBottom: 16,
-            overflow: "hidden", cursor: "pointer",
-          }}
-        >
-          {/* Resplandor atmosférico — esquina superior derecha, motivo decorativo (no la marca) */}
-          <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(228,199,155,0.11)" }} />
-          <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(228,199,155,0.13)" }} />
-          <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: BRISA_ALBA, boxShadow: `0 0 8px 2px ${BRISA_ALBA}99` }} />
-
-          <div style={{ position: "relative" }}>
-            <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Santo del Día' : 'Saint of the Day'}</div>
-            <div style={{ fontSize: 19, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", marginBottom: 6 }}>{santo.nombre}</div>
-            <div style={{ fontSize: 12.5, color: CREAM_DARK, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{santo.bio}</div>
-            <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", marginTop: 10 }}>{lang === 'es' ? 'Conocer su vida' : "Learn about the saint"} ›</div>
+        {/* Santo del Día + Misas de hoy — fila de dos columnas compactas */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+          <div
+            onClick={() => { setDevocionalInitialTab('santo'); setPersonalSection('devocional'); setTab(1); }}
+            style={{ flex: 1, minWidth: 0, background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 14, padding: "12px 14px", cursor: "pointer" }}
+          >
+            <div style={{ fontSize: 10, color: GOLD, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>{lang === 'es' ? 'Santo del Día' : 'Saint of the Day'}</div>
+            <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{santo.nombre}</div>
           </div>
-        </div>
-
-        {/* Tu parroquia — misas de hoy, o invitación a elegirla */}
-        <div style={{ position: "relative", background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 16, padding: "16px 18px", marginBottom: 16, overflow: "hidden" }}>
-          {!parroquiaActual ? (
-            <div onClick={() => goToTab(8)} style={{ position: "relative", cursor: "pointer" }}>
-              <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: "rgba(228,199,155,0.11)" }} />
-              <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: "rgba(228,199,155,0.13)" }} />
-              <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: BRISA_ALBA, boxShadow: `0 0 8px 2px ${BRISA_ALBA}99` }} />
-              <div style={{ position: "relative" }}>
-                <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Tu parroquia' : 'Your parish'}</div>
-                <div style={{ fontSize: 13, color: CREAM_DARK, lineHeight: 1.5, marginBottom: 10 }}>
-                  {lang === 'es'
-                    ? 'La misa es la fuente y la cumbre. Por ahora tenemos parroquias en Cajicá y Cali, y vamos sumando más cada semana.'
-                    : 'The Mass is the source and summit. For now we cover parishes in Cajicá and Cali, and we\'re adding more each week.'}
-                </div>
-                <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif" }}>
-                  {lang === 'es' ? 'Elegir mi parroquia' : 'Choose my parish'} ›
-                </div>
-              </div>
+          <div
+            onClick={() => goToTab(8)}
+            style={{ flex: 1, minWidth: 0, background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 14, padding: "12px 14px", cursor: "pointer" }}
+          >
+            <div style={{ fontSize: 10, color: GOLD, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>{lang === 'es' ? 'Misas de Hoy' : "Today's Masses"}</div>
+            <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {!parroquiaActual
+                ? (lang === 'es' ? 'Elegir parroquia ›' : 'Choose parish ›')
+                : nextMisaHoy
+                ? nextMisaHoy.hora
+                : (lang === 'es' ? 'Sin misas hoy' : 'No Masses today')}
             </div>
-          ) : !parroquiaExpanded ? (
-            <div>
-              <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>✦ {lang === 'es' ? 'Misas de hoy' : "Today's Masses"}</div>
-              <div style={{ fontSize: 13, color: CREAM_DARK, marginBottom: 12 }}>
-                {parroquiaActual.nombre} · {DAY_LABELS[lang][parroquiaTodayKey]}
-              </div>
-              {parroquiaTodayMisas.length > 0 ? (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                  {parroquiaTodayMisas.map((m, i) => (
-                    <div key={i} style={{ background: `${GOLD}1F`, border: `1px solid ${GOLD}59`, color: CREAM, borderRadius: 20, padding: "6px 12px", fontSize: 13, fontFamily: "'Work Sans', sans-serif" }}>
-                      {m.hora}{m.lugar ? ` · ${m.lugar}` : ""}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ fontSize: 13, color: MUTED, marginBottom: 12, fontStyle: "italic" }}>
-                  {lang === 'es' ? 'Sin misas programadas hoy.' : 'No Masses scheduled today.'}
-                </div>
-              )}
-              <div onClick={() => setParroquiaExpanded(true)} style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", cursor: "pointer" }}>
-                {lang === 'es' ? 'Ver la semana' : 'See the week'} ›
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", fontWeight: 700 }}>✦ {lang === 'es' ? 'Misas de hoy' : "Today's Masses"}</div>
-                <div onClick={() => setParroquiaExpanded(false)} style={{ fontSize: 12, color: MUTED, cursor: "pointer", flexShrink: 0, marginLeft: 10 }}>
-                  ‹ {lang === 'es' ? 'Ver menos' : 'See less'}
-                </div>
-              </div>
-              <div style={{ fontSize: 13, color: CREAM_DARK, marginBottom: 14 }}>{parroquiaActual.nombre}</div>
-              {parroquiaWeekGroups.map((g, i) => {
-                const isToday = g.days.includes(parroquiaTodayKey);
-                return (
-                  <div key={i} style={{ background: isToday ? `${GOLD}14` : "transparent", borderRadius: 10, padding: "8px 10px", marginBottom: 4 }}>
-                    <div style={{ fontSize: 13, fontWeight: "bold", color: isToday ? GOLD : CREAM, fontFamily: "'Cormorant', serif", marginBottom: 4 }}>
-                      {groupDayLabel(g.days, lang)}
-                    </div>
-                    <div style={{ fontSize: 12.5, color: CREAM_DARK, lineHeight: 1.6 }}>
-                      {g.misas.length > 0
-                        ? g.misas.map((m) => `${m.hora}${m.lugar ? ` (${m.lugar})` : ""}`).join(' · ')
-                        : (lang === 'es' ? 'Sin misa' : 'No Mass')}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Separador — cierre silencioso del bloque "Hoy" */}
@@ -3630,6 +3624,38 @@ export default function App() {
                   </div>
                 );
               })()}
+              {/* Horario completo de la semana de tu parroquia elegida — antes
+                  vivía como vista expandida en Inicio; con Inicio ahora
+                  comprimido a una fila, esta es la "vista completa de
+                  siempre" a la que esa fila lleva. */}
+              {userParroquiaId && (() => {
+                const miParroquia = parroquias.find(p => p.id === userParroquiaId);
+                if (!miParroquia) return null;
+                const todayKey = todayParishDayKey();
+                const weekGroups = groupWeekSchedule(miParroquia.horarioMisas);
+                return (
+                  <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${CREAM_DARK}33` }}>
+                    <div style={{ fontSize: 14, fontWeight: "bold", color: GOLD, fontFamily: "'Cormorant', serif", marginBottom: 10 }}>
+                      {lang === 'es' ? 'Horario de esta semana' : "This week's schedule"}
+                    </div>
+                    {weekGroups.map((g, i) => {
+                      const isToday = g.days.includes(todayKey);
+                      return (
+                        <div key={i} style={{ background: isToday ? `${GOLD}14` : "transparent", borderRadius: 10, padding: "8px 10px", marginBottom: 4 }}>
+                          <div style={{ fontSize: 13, fontWeight: "bold", color: isToday ? GOLD : CREAM, fontFamily: "'Cormorant', serif", marginBottom: 4 }}>
+                            {groupDayLabel(g.days, lang)}
+                          </div>
+                          <div style={{ fontSize: 12.5, color: CREAM_DARK, lineHeight: 1.6 }}>
+                            {g.misas.length > 0
+                              ? g.misas.map((m) => `${m.hora}${m.lugar ? ` (${m.lugar})` : ""}`).join(' · ')
+                              : (lang === 'es' ? 'Sin misa' : 'No Mass')}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -5041,14 +5067,32 @@ export default function App() {
           })}
         </div>
 
-        {/* Saludo sutil de estado de sesión */}
+        {/* Saludo sutil de estado de sesión — cambia según la hora real (America/Bogota) */}
         <div style={{ textAlign: "center", padding: "0 14px 9px" }}>
           {user ? (
-            <div style={{ fontSize: 12, fontStyle: "italic", color: GOLD, fontFamily: "'Work Sans', sans-serif" }}>
-              {lang === 'es'
-                ? `Que la paz del Señor esté contigo, ${user.displayName || (user.email ? user.email.split('@')[0] : '')} ✓`
-                : `May the Lord's peace be with you, ${user.displayName || (user.email ? user.email.split('@')[0] : '')} ✓`}
-            </div>
+            <>
+              <div style={{ fontSize: 12, fontStyle: "italic", color: GOLD, fontFamily: "'Work Sans', sans-serif" }}>
+                {(() => {
+                  const h = bogotaHour();
+                  const name = user.displayName || (user.email ? user.email.split('@')[0] : '');
+                  const bucket = h >= 5 && h < 12 ? 'morning' : h >= 12 && h < 19 ? 'afternoon' : 'night';
+                  const texts = {
+                    morning:   { es: `Buenos días, ${name} ✓`, en: `Good morning, ${name} ✓` },
+                    afternoon: { es: `Buenas tardes, ${name} ✓`, en: `Good afternoon, ${name} ✓` },
+                    night:     { es: `Que esta noche te encuentre en paz, ${name} ✓`, en: `May tonight find you in peace, ${name} ✓` },
+                  };
+                  return texts[bucket][lang];
+                })()}
+              </div>
+              {/* Eco del camino — espejo sereno, no racha: se omite del todo sin actividad */}
+              {diasCaminando > 0 && (
+                <div style={{ fontSize: 11, color: MUTED, marginTop: 2, fontFamily: "'Work Sans', sans-serif" }}>
+                  {lang === 'es'
+                    ? `Llevas ${diasCaminando} día${diasCaminando === 1 ? '' : 's'} caminando con Horeb`
+                    : `You've walked ${diasCaminando} day${diasCaminando === 1 ? '' : 's'} with Horeb`}
+                </div>
+              )}
+            </>
           ) : (
             <div onClick={() => setAuthMode('login')} style={{ fontSize: 12, color: MUTED, cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
               {lang === 'es' ? 'Inicia sesión para guardar tu progreso' : 'Sign in to save your progress'}
