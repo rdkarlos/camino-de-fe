@@ -3605,14 +3605,22 @@ export default function App() {
               })()}
               {(() => {
                 const cities = [...new Set(parroquias.map(p => p.municipio).filter(Boolean))];
-                // Sin parroquia elegida, solo mostramos una fuente de respaldo
-                // cuando es inequívoca: filtrando a una ciudad, o si solo hay
-                // una ciudad en total. Con "Todas" y más de una ciudad, distintas
-                // parroquias pueden tener fuentes distintas — no hay una sola
-                // fuente honesta que mostrar.
-                const fuenteInfo = parroquias.find(p => p.id === userParroquiaId)
-                  || (parroquiaCityFilter ? parroquias.find(p => p.municipio === parroquiaCityFilter) : null)
-                  || (cities.length <= 1 ? parroquias[0] : null);
+                // El filtro de ciudad manda sobre la parroquia guardada del
+                // usuario: si está viendo Cali, la fuente citada debe ser la
+                // de lo que tiene en pantalla, aunque su parroquia elegida sea
+                // de otra ciudad — si no, el texto queda pegado a "la tuya" y
+                // desmiente lo que el usuario está mirando. Sin filtro
+                // ("Todas"), sí usamos su parroquia elegida (es inequívoca);
+                // si tampoco hay selección, solo caemos a la primera de la
+                // lista cuando hay una sola ciudad en total.
+                let fuenteInfo;
+                if (parroquiaCityFilter) {
+                  fuenteInfo = parroquias.find(p => p.id === userParroquiaId && p.municipio === parroquiaCityFilter)
+                    || parroquias.find(p => p.municipio === parroquiaCityFilter);
+                } else {
+                  fuenteInfo = parroquias.find(p => p.id === userParroquiaId)
+                    || (cities.length <= 1 ? parroquias[0] : null);
+                }
                 if (!fuenteInfo?.fuente) return null;
                 return (
                   <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5, marginTop: 10 }}>
