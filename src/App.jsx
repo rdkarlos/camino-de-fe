@@ -5074,9 +5074,11 @@ export default function App() {
             // onClick en vez del goToTab(idx) genérico de los demás.
             const id = itemKey ?? idx;
             const isConec2 = id === 'conec2';
-            const isActive = isConec2
-              ? (tab === 1 && personalSection === 'oracion' && personalTab === 'circles')
-              : tab === idx;
+            const isInConec2 = tab === 1 && personalSection === 'oracion' && personalTab === 'circles';
+            // "Oración" también vive en tab 1, así que debe excluir
+            // explícitamente la combinación de Conec✝2 — si no, los dos
+            // botones se iluminan juntos (tab===1 es cierto para ambos).
+            const isActive = isConec2 ? isInConec2 : (tab === idx && !(idx === 1 && isInConec2));
             const isHovered = hoveredQuickBtn === id;
             const isPressed = pressedQuickBtn === id;
             const iconColor = isActive ? GOLD : MUTED;
