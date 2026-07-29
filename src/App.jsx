@@ -1694,12 +1694,35 @@ export default function App() {
     const parroquiaActual = parroquias.find(p => p.id === userParroquiaId) || null;
     const parroquiaTodayKey = todayParishDayKey();
     const parroquiaTodayMisas = parroquiaActual ? (parroquiaActual.horarioMisas?.[parroquiaTodayKey] || []) : [];
-    // Próxima misa de hoy (comparando contra la hora actual); si ya pasaron
-    // todas, cae a la primera del día en vez de dejar la fila vacía.
-    const nextMisaHoy = parroquiaTodayMisas.find(m => {
+    // Próxima misa de hoy (comparando contra la hora actual, America/Bogota).
+    const nowMins = bogotaNowMinutes();
+    const upcomingMisasHoy = parroquiaTodayMisas.filter(m => {
       const mins = misaHoraAMinutos(m.hora);
-      return mins !== null && mins >= bogotaNowMinutes();
-    }) || parroquiaTodayMisas[0] || null;
+      return mins !== null && mins >= nowMins;
+    });
+    // Si ya no quedan misas hoy, buscamos el próximo día con misa
+    // programada, empezando por mañana y avanzando hasta 6 días más —
+    // algunas parroquias podrían no tener misa todos los días (ninguna de
+    // las actuales hoy, pero no lo asumimos).
+    let misasProximoDia = null; // { misas, dayOffset, dayKey }
+    if (parroquiaActual && upcomingMisasHoy.length === 0) {
+      const todayIdx = DAY_KEYS.indexOf(parroquiaTodayKey);
+      for (let offset = 1; offset <= 6; offset++) {
+        const dayKey = DAY_KEYS[(todayIdx + offset) % 7];
+        const misas = parroquiaActual.horarioMisas?.[dayKey] || [];
+        if (misas.length > 0) { misasProximoDia = { misas, dayOffset: offset, dayKey }; break; }
+      }
+    }
+    const misasEsHoy = upcomingMisasHoy.length > 0;
+    const nextMisaHoy = upcomingMisasHoy[0] || misasProximoDia?.misas[0] || null;
+    // Cuántas misas quedan DESPUÉS de la próxima, en el mismo día que ella
+    // (hoy o el próximo día encontrado) — 0 si no hay más ese día.
+    const misasRestantesHoy = misasEsHoy
+      ? Math.max(0, upcomingMisasHoy.length - 1)
+      : Math.max(0, (misasProximoDia?.misas.length || 0) - 1);
+    const proximaMisaDiaLabel = misasProximoDia
+      ? (misasProximoDia.dayOffset === 1 ? (lang === 'es' ? 'Mañana' : 'Tomorrow') : DAY_LABELS[lang][misasProximoDia.dayKey])
+      : null;
     // Etiqueta discreta de sección — solo para orientar el scroll, nunca
     // debe competir visualmente con las tarjetas: sin fondo, sin borde.
     const sectionLabel = (text) => (
@@ -1831,13 +1854,30 @@ export default function App() {
             onClick={() => goToTab(8)}
             style={{ flex: 1, minWidth: 0, background: BG_CARD, border: `1px solid ${GOLD}66`, borderRadius: 14, padding: "12px 14px", cursor: "pointer" }}
           >
-            <div style={{ fontSize: 10, color: GOLD, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>{lang === 'es' ? 'Misas de Hoy' : "Today's Masses"}</div>
-            <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {!parroquiaActual
-                ? (lang === 'es' ? 'Elegir parroquia ›' : 'Choose parish ›')
-                : nextMisaHoy
-                ? nextMisaHoy.hora
-                : (lang === 'es' ? 'Sin misas hoy' : 'No Masses today')}
+            <div style={{ fontSize: 10, color: GOLD, letterSpacing: "1px", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>
+              {misasEsHoy
+                ? (lang === 'es' ? 'Misas de Hoy' : "Today's Masses")
+                : (lang === 'es' ? 'Próxima Misa' : 'Next Mass')}
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 6, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, fontFamily: "'Cormorant', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+                {!parroquiaActual
+                  ? (lang === 'es' ? 'Elegir parroquia ›' : 'Choose parish ›')
+                  : !nextMisaHoy
+                  ? (lang === 'es' ? 'Sin misas programadas' : 'No Masses scheduled')
+                  : misasEsHoy
+                  ? nextMisaHoy.hora
+                  : `${proximaMisaDiaLabel} · ${nextMisaHoy.hora}`}
+              </div>
+              {/* Señal de que hay más misas ese día (hoy o el próximo día
+                  encontrado) además de la próxima — sin desbordar la columna
+                  comprimida; toca la fila y sigue llevando a Configuración,
+                  donde vive el horario completo de la semana. */}
+              {parroquiaActual && nextMisaHoy && misasRestantesHoy > 0 && (
+                <div style={{ fontSize: 10.5, color: GOLD, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>
+                  +{misasRestantesHoy} {lang === 'es' ? 'más' : 'more'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1942,9 +1982,12 @@ export default function App() {
               <div onClick={() => { setTab(1); setPersonalSection('oracion'); setPersonalTab('circles'); openCircle(mostActiveCircle); }} style={activeCardStyle}>
                 {/* Mismo motivo decorativo que Parroquia/Santo del Día, teñido en
                     Verde Zarza y con un pulso constante de opacidad ("algo vivo")
-                    — nunca el signo de Horeb, esa regla sigue intacta. */}
-                <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: rgba(VERDE_ZARZA, 0.16), animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
-                <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: rgba(VERDE_ZARZA, 0.2), animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
+                    — nunca el signo de Horeb, esa regla sigue intacta. Opacidad
+                    igualada a la del resplandor dorado de esas tarjetas
+                    (0.11/0.13) — antes era más intensa (0.16/0.2) y competía
+                    con el contenido en vez de acompañarlo. */}
+                <div style={{ position: "absolute", top: -60, right: -60, width: 140, height: 140, borderRadius: "50%", background: rgba(VERDE_ZARZA, 0.11), animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
+                <div style={{ position: "absolute", top: -32, right: -32, width: 86, height: 86, borderRadius: "50%", background: rgba(VERDE_ZARZA, 0.13), animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
                 <div style={{ position: "absolute", top: 16, right: 20, width: 8, height: 8, borderRadius: "50%", background: VERDE_ZARZA, boxShadow: `0 0 8px 2px ${rgba(VERDE_ZARZA, 0.6)}`, animation: "communityDecorPulse 2.2s ease-in-out infinite" }} />
                 <div style={{ position: "relative" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -5030,17 +5073,6 @@ export default function App() {
                   <line x1="11" y1="18" x2="21" y2="18" stroke={c} strokeWidth="1.2"/>
                 </svg>
               ), label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 2 },
-            { icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <path d="M14 7 C11 6 7 7 5 9 L5 22 C7 20 11 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
-                  <path d="M14 7 C17 6 21 7 23 9 L23 22 C21 20 17 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
-                  <line x1="14" y1="7" x2="14" y2="21" stroke={c} strokeWidth="1.5"/>
-                  <line x1="7" y1="12" x2="12.5" y2="11" stroke={c} strokeWidth="1"/>
-                  <line x1="7" y1="15" x2="12.5" y2="14" stroke={c} strokeWidth="1"/>
-                  <line x1="15.5" y1="11" x2="21" y2="12" stroke={c} strokeWidth="1"/>
-                  <line x1="15.5" y1="14" x2="21" y2="15" stroke={c} strokeWidth="1"/>
-                </svg>
-              ), label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
             {
               // Conec✝2 — mismo ícono (personas + cruz) que ya usa el
               // selector de pestañas dentro de Mi Oración, para que se
@@ -5059,6 +5091,17 @@ export default function App() {
                 </svg>
               ), label: <>Conec<span style={{ color: GOLD, fontSize: "1.15em" }}>✝</span>2</>, key: 'conec2',
             },
+            { icon: (c) => (
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+                  <path d="M14 7 C11 6 7 7 5 9 L5 22 C7 20 11 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
+                  <path d="M14 7 C17 6 21 7 23 9 L23 22 C21 20 17 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
+                  <line x1="14" y1="7" x2="14" y2="21" stroke={c} strokeWidth="1.5"/>
+                  <line x1="7" y1="12" x2="12.5" y2="11" stroke={c} strokeWidth="1"/>
+                  <line x1="7" y1="15" x2="12.5" y2="14" stroke={c} strokeWidth="1"/>
+                  <line x1="15.5" y1="11" x2="21" y2="12" stroke={c} strokeWidth="1"/>
+                  <line x1="15.5" y1="14" x2="21" y2="15" stroke={c} strokeWidth="1"/>
+                </svg>
+              ), label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
             { icon: (c) => (
                 <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
                   <path d="M5 9 H23 L21 24 H7 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
