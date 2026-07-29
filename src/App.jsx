@@ -854,6 +854,8 @@ export default function App() {
   const [lectioLoading, setLectioLoading] = useState(false);
   const [lectioSaving, setLectioSaving] = useState(false);
   const [lectioExpandedEntries, setLectioExpandedEntries] = useState({});
+  const [lectioDeleteConfirmId, setLectioDeleteConfirmId] = useState(null);
+  const [lectioDeleting, setLectioDeleting] = useState(false);
   const [hoveredQuickBtn, setHoveredQuickBtn] = useState(null);
   const [pressedQuickBtn, setPressedQuickBtn] = useState(null);
   const [bibleView, setBibleView] = useState("books");
@@ -2755,7 +2757,7 @@ export default function App() {
       {
         id: "lectio",
         title: "Lectio Divina",
-        desc: lang === "es" ? "Medita el Evangelio del día, paso a paso" : "Meditate on today's Gospel, step by step",
+        desc: lang === "es" ? "Haz lectura santa, paso a paso" : "Practice sacred reading, step by step",
         icon: (
           // Libro abierto (misma familia visual que Evangelio/La Biblia) con
           // un punto de luz cayendo sobre las páginas — la Palabra que se
@@ -2880,6 +2882,57 @@ export default function App() {
         }
       };
 
+      // Igual criterio de permiso que Mis Oraciones: cualquier entrada se
+      // puede borrar, sin restricción de "solo hoy" o "solo reciente" (a
+      // diferencia del Diario, intencionalmente no borrable). Si la
+      // borrada es la de hoy, se limpia lectioHoy — eso ya hace que el
+      // render vuelva al formulario de los 5 pasos automáticamente, así que
+      // Carlos puede rehacer su Lectio Divina del día si quiere.
+      const deleteLectioEntry = async (entryId) => {
+        if (!user) return;
+        setLectioDeleting(true);
+        try {
+          await deleteDoc(doc(db, "usuarios", user.uid, "lectioDivina", entryId));
+          if (lectioHoy && lectioHoy.id === entryId) {
+            setLectioHoy(null);
+          } else {
+            setLectioEntradas(prev => prev.filter(e => e.id !== entryId));
+          }
+          setLectioDeleteConfirmId(null);
+        } catch (e) {
+          console.error("[firestore] error borrando lectio divina:", e.message);
+        } finally {
+          setLectioDeleting(false);
+        }
+      };
+
+      // Botón "Borrar" + su caja de confirmación en línea — mismo patrón
+      // que borrar un círculo completo en Conec✝2 (mensaje + "Sí, eliminar"
+      // / "Cancelar"), nunca un borrado instantáneo de un toque, porque es
+      // contenido reflexivo.
+      const lectioDeleteControl = (entryId) => (
+        lectioDeleteConfirmId === entryId ? (
+          <div style={{ background: `rgba(192, 57, 43, 0.1)`, border: `1px solid rgba(192, 57, 43, 0.4)`, borderRadius: 12, padding: "12px 14px", marginTop: 12 }}>
+            <div style={{ fontSize: 13, color: CREAM, marginBottom: 10, lineHeight: 1.5 }}>
+              {lang === "es" ? "¿Seguro? Esta entrada se borra para siempre." : "Are you sure? This entry is deleted permanently."}
+            </div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+              <button onClick={() => deleteLectioEntry(entryId)} disabled={lectioDeleting} style={{ padding: "8px 16px", background: "#c0392b", color: WHITE, border: "none", borderRadius: 20, fontSize: 12.5, fontWeight: "bold", cursor: "pointer" }}>
+                {lectioDeleting ? (lang === "es" ? "Eliminando..." : "Deleting...") : (lang === "es" ? "Sí, eliminar" : "Yes, delete")}
+              </button>
+              <button onClick={() => setLectioDeleteConfirmId(null)} style={{ padding: "8px 16px", background: "none", border: `1px solid ${CREAM_DARK}`, color: MUTED, borderRadius: 20, fontSize: 12.5, cursor: "pointer" }}>
+                {lang === "es" ? "Cancelar" : "Cancel"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => setLectioDeleteConfirmId(entryId)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: MUTED, fontSize: 12.5, cursor: "pointer", padding: "4px 2px", marginTop: 12, fontFamily: "'Work Sans', sans-serif" }}>
+            <TrashGlyph size={15} color={MUTED} />
+            {lang === "es" ? "Borrar esta entrada" : "Delete this entry"}
+          </button>
+        )
+      );
+
       const LECTIO_CAMPOS = ['corazon', 'mente', 'espiritu', 'alma', 'cuerpo'];
       // Mismo dato que "Evangelio del Día" en Home y en la pestaña Evangelio
       // — el pasaje completo (gospelData ya cargado app-wide), no el
@@ -2955,123 +3008,138 @@ export default function App() {
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HorebLoading size={32} /></div>
               <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tu Lectio Divina..." : "Loading your Lectio Divina..."}</div>
             </div>
-          ) : lectioHoy ? (
-            <div>
-              {/* Cierre visual del recorrido — las 5 dimensiones juntas */}
-              <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
-                  {LECTIO_PASOS.map(p => { const Icon = p.Icon; return <Icon key={p.key} size={30} color={p.color} />; })}
-                </div>
-                <div style={{ fontSize: 17, color: CREAM, fontFamily: "'Cormorant', serif", fontStyle: "italic" }}>
-                  {lang === "es" ? "Hoy oraste con todo tu ser." : "Today you prayed with your whole being."}
-                </div>
-                {lectioHoy.pasaje && (
-                  <div style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>{lectioHoy.pasaje}</div>
-                )}
-              </div>
-
-              {LECTIO_PASOS.map((paso, i) => (
-                <div key={paso.key}>{lectioStepCard(paso, { readOnlyText: lectioHoy[LECTIO_CAMPOS[i]] })}</div>
-              ))}
-
-              <div style={{ textAlign: "center", fontSize: 13, color: MUTED, margin: "18px 0 22px" }}>
-                {lang === "es" ? "Ya meditaste hoy. Vuelve mañana ✝" : "You already meditated today. Come back tomorrow ✝"}
-              </div>
-
-              {/* Entradas anteriores — solo lectura, plegadas por defecto */}
-              <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, marginBottom: 12, fontFamily: "'Work Sans', sans-serif" }}>
-                {lang === "es" ? "Entradas anteriores" : "Past entries"}
-              </div>
-              {lectioEntradas.length === 0 ? (
-                <div style={{ textAlign: "center", color: MUTED, fontSize: 13, padding: "20px 0" }}>
-                  {lang === "es" ? "Aún no tienes entradas anteriores." : "No past entries yet."}
-                </div>
-              ) : lectioEntradas.map(entry => {
-                const expanded = !!lectioExpandedEntries[entry.id];
-                return (
-                  <div key={entry.id} style={{ background: BG_CARD, borderRadius: 14, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}`, cursor: "pointer" }} onClick={() => setLectioExpandedEntries(prev => ({ ...prev, [entry.id]: !prev[entry.id] }))}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>{formatFirestoreDate(entry.fecha)}</div>
-                        {entry.pasaje && <div style={{ fontSize: 13, color: GOLD, fontStyle: "italic", fontFamily: "'Cormorant', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.pasaje}</div>}
-                      </div>
-                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                        {LECTIO_PASOS.map((p, i) => { const Icon = p.Icon; const hasText = !!entry[LECTIO_CAMPOS[i]]; return <Icon key={p.key} size={15} color={hasText ? p.color : `${p.color}44`} />; })}
-                      </div>
+          ) : (
+            <>
+              {lectioHoy ? (
+                <div>
+                  {/* Cierre visual del recorrido — las 5 dimensiones juntas */}
+                  <div style={{ textAlign: "center", marginBottom: 24 }}>
+                    <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+                      {LECTIO_PASOS.map(p => { const Icon = p.Icon; return <Icon key={p.key} size={30} color={p.color} />; })}
                     </div>
-                    {expanded && (
-                      <div style={{ marginTop: 14 }}>
-                        {LECTIO_PASOS.map((paso, i) => (
-                          <div key={paso.key} onClick={e => e.stopPropagation()} style={{ cursor: "default" }}>{lectioStepCard(paso, { readOnlyText: entry[LECTIO_CAMPOS[i]] })}</div>
-                        ))}
-                      </div>
+                    <div style={{ fontSize: 17, color: CREAM, fontFamily: "'Cormorant', serif", fontStyle: "italic" }}>
+                      {lang === "es" ? "Corazón, mente, espíritu, alma y cuerpo — hoy oraron juntos." : "Heart, mind, spirit, soul, and body — today they prayed together."}
+                    </div>
+                    {lectioHoy.pasaje && (
+                      <div style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>{lectioHoy.pasaje}</div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div>
-              {/* Barra de progreso segmentada, coloreada por paso alcanzado —
-                  mismo patrón que Coronilla, con el color propio de cada
-                  dimensión en vez de dorado genérico. */}
-              <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
-                {LECTIO_PASOS.map((p, i) => (
-                  <div key={p.key} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= lectioStep ? p.color : CREAM_DARK, transition: "background 0.3s" }} />
-                ))}
-              </div>
 
-              {/* Pasaje a meditar. En el paso de Lectura (Corazón) es el
-                  protagonista: el Evangelio puede ser largo (varias
-                  lecturas duplican varios versículos), así que lleva su
-                  propio scroll interno — nunca empuja la pregunta guía ni
-                  los botones de navegación fuera de la pantalla. En el
-                  resto de los pasos, solo la referencia, como recordatorio. */}
-              {lectioStep === 0 ? (
-                <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "14px 16px", marginBottom: 18 }}>
-                  <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
-                  <div style={{ fontSize: 15, color: GOLD, fontFamily: "'Cormorant', serif", fontWeight: "bold", marginBottom: 10 }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
-                  <div style={{ maxHeight: 280, overflowY: "auto", WebkitOverflowScrolling: "touch", paddingRight: 4 }}>
-                    <div style={{ fontSize: 17, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
-                      {gospelBodyFormatted || (lang === "es" ? "Cargando el Evangelio de hoy…" : "Loading today's Gospel…")}
-                    </div>
+                  {LECTIO_PASOS.map((paso, i) => (
+                    <div key={paso.key}>{lectioStepCard(paso, { readOnlyText: lectioHoy[LECTIO_CAMPOS[i]] })}</div>
+                  ))}
+
+                  <div style={{ textAlign: "center", fontSize: 13, color: MUTED, marginTop: 18 }}>
+                    {lang === "es" ? "Ya oraste hoy. Mañana puedes volver." : "You already prayed today. Come back tomorrow."}
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    {lectioDeleteControl(lectioHoy.id)}
                   </div>
                 </div>
               ) : (
-                <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
-                  <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
-                  <div style={{ fontSize: 13, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold" }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
+                <div>
+                  {/* Barra de progreso segmentada, coloreada por paso alcanzado —
+                      mismo patrón que Coronilla, con el color propio de cada
+                      dimensión en vez de dorado genérico. */}
+                  <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
+                    {LECTIO_PASOS.map((p, i) => (
+                      <div key={p.key} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= lectioStep ? p.color : CREAM_DARK, transition: "background 0.3s" }} />
+                    ))}
+                  </div>
+
+                  {/* Pasaje a meditar. En el paso de Lectura (Corazón) es el
+                      protagonista: el Evangelio puede ser largo (varias
+                      lecturas duplican varios versículos), así que lleva su
+                      propio scroll interno — nunca empuja la pregunta guía ni
+                      los botones de navegación fuera de la pantalla. En el
+                      resto de los pasos, solo la referencia, como recordatorio. */}
+                  {lectioStep === 0 ? (
+                    <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "14px 16px", marginBottom: 18 }}>
+                      <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
+                      <div style={{ fontSize: 15, color: GOLD, fontFamily: "'Cormorant', serif", fontWeight: "bold", marginBottom: 10 }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
+                      <div style={{ maxHeight: 280, overflowY: "auto", WebkitOverflowScrolling: "touch", paddingRight: 4 }}>
+                        <div style={{ fontSize: 17, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
+                          {gospelBodyFormatted || (lang === "es" ? "Cargando el Evangelio de hoy…" : "Loading today's Gospel…")}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
+                      <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
+                      <div style={{ fontSize: 13, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold" }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
+                    </div>
+                  )}
+
+                  {lectioStepCard(LECTIO_PASOS[lectioStep])}
+
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button
+                      onClick={() => setLectioStep(s => Math.max(0, s - 1))}
+                      disabled={lectioStep === 0}
+                      style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: lectioStep === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: lectioStep === 0 ? "default" : "pointer", fontFamily: "'Cormorant', serif", opacity: lectioStep === 0 ? 0.5 : 1 }}
+                    >
+                      ← {lang === "es" ? "Anterior" : "Back"}
+                    </button>
+                    {lectioStep < LECTIO_PASOS.length - 1 ? (
+                      <button
+                        onClick={() => setLectioStep(s => Math.min(LECTIO_PASOS.length - 1, s + 1))}
+                        style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: "pointer", fontFamily: "'Cormorant', serif" }}
+                      >
+                        {lang === "es" ? "Siguiente" : "Next"} →
+                      </button>
+                    ) : (
+                      <button
+                        onClick={saveLectioEntry}
+                        disabled={lectioSaving}
+                        style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: lectioSaving ? "default" : "pointer", fontFamily: "'Cormorant', serif" }}
+                      >
+                        {lectioSaving ? (lang === "es" ? "Guardando..." : "Saving...") : (lang === "es" ? "Terminar" : "Finish")}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {lectioStepCard(LECTIO_PASOS[lectioStep])}
-
-              <div style={{ display: "flex", gap: 10 }}>
-                <button
-                  onClick={() => setLectioStep(s => Math.max(0, s - 1))}
-                  disabled={lectioStep === 0}
-                  style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: lectioStep === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: lectioStep === 0 ? "default" : "pointer", fontFamily: "'Cormorant', serif", opacity: lectioStep === 0 ? 0.5 : 1 }}
-                >
-                  ← {lang === "es" ? "Anterior" : "Back"}
-                </button>
-                {lectioStep < LECTIO_PASOS.length - 1 ? (
-                  <button
-                    onClick={() => setLectioStep(s => Math.min(LECTIO_PASOS.length - 1, s + 1))}
-                    style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: "pointer", fontFamily: "'Cormorant', serif" }}
-                  >
-                    {lang === "es" ? "Siguiente" : "Next"} →
-                  </button>
-                ) : (
-                  <button
-                    onClick={saveLectioEntry}
-                    disabled={lectioSaving}
-                    style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: lectioSaving ? "default" : "pointer", fontFamily: "'Cormorant', serif" }}
-                  >
-                    {lectioSaving ? (lang === "es" ? "Guardando..." : "Saving...") : (lang === "es" ? "Terminar" : "Finish")}
-                  </button>
-                )}
+              {/* Entradas anteriores — siempre visibles bajo el resumen de
+                  hoy O el formulario guiado (borrar la de hoy, o aún no
+                  haberla hecho, no debe esconder el historial). Solo
+                  lectura, plegadas por defecto. */}
+              <div style={{ marginTop: 26 }}>
+                <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, marginBottom: 12, fontFamily: "'Work Sans', sans-serif" }}>
+                  {lang === "es" ? "Entradas anteriores" : "Past entries"}
+                </div>
+                {lectioEntradas.length === 0 ? (
+                  <div style={{ textAlign: "center", color: MUTED, fontSize: 13, padding: "20px 0" }}>
+                    {lang === "es" ? "Aún no tienes entradas anteriores." : "No past entries yet."}
+                  </div>
+                ) : lectioEntradas.map(entry => {
+                  const expanded = !!lectioExpandedEntries[entry.id];
+                  return (
+                    <div key={entry.id} style={{ background: BG_CARD, borderRadius: 14, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}`, cursor: "pointer" }} onClick={() => { setLectioExpandedEntries(prev => ({ ...prev, [entry.id]: !prev[entry.id] })); setLectioDeleteConfirmId(null); }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>{formatFirestoreDate(entry.fecha)}</div>
+                          {entry.pasaje && <div style={{ fontSize: 13, color: GOLD, fontStyle: "italic", fontFamily: "'Cormorant', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.pasaje}</div>}
+                        </div>
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                          {LECTIO_PASOS.map((p, i) => { const Icon = p.Icon; const hasText = !!entry[LECTIO_CAMPOS[i]]; return <Icon key={p.key} size={15} color={hasText ? p.color : `${p.color}44`} />; })}
+                        </div>
+                      </div>
+                      {expanded && (
+                        <div style={{ marginTop: 14 }}>
+                          {LECTIO_PASOS.map((paso, i) => (
+                            <div key={paso.key} onClick={e => e.stopPropagation()} style={{ cursor: "default" }}>{lectioStepCard(paso, { readOnlyText: entry[LECTIO_CAMPOS[i]] })}</div>
+                          ))}
+                          <div onClick={e => e.stopPropagation()} style={{ textAlign: "center", cursor: "default" }}>
+                            {lectioDeleteControl(entry.id)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+            </>
           )}
         </div>
       );
