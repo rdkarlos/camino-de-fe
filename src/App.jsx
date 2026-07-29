@@ -11,7 +11,7 @@ import Devocional, { getSantoHoy } from "./Devocional";
 import ComingSoon from "./ComingSoon";
 import JovenFe from "./JovenFe";
 import VERSICULOS from "./versiculos";
-import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, VERDE_ZARZA, SOL_NUCLEO, SOL_MEDIO, SOL_BORDE, rgba, mix } from "./theme";
+import { NOCHE, CARD, ALBA, LINO, CIELO, PIEDRA, ALBA_LIGHT, ALBA_DARK, NOCHE_DARK, BRISA_ALBA, VERDE_ZARZA, SOL_NUCLEO, SOL_MEDIO, SOL_BORDE, CORAZON_ROSA, ALMA_VIOLETA, rgba, mix } from "./theme";
 import Horeb from "./Horeb";
 import HorebLoading from "./HorebLoading";
 import { generateLambShareImage, generateVerseShareImage, gospelExcerpt } from "./shareImage";
@@ -432,6 +432,88 @@ function LogoutGlyph({ size = 24, color = GOLD }) {
   );
 }
 
+// Cinco íconos de Lectio Divina, uno por dimensión — trazo fino (1.5-1.8px),
+// sin relleno salvo pequeños puntos de luz/acento (mismo criterio que ya usan
+// otros íconos del archivo, ej. el punto dorado de PencilGlyph o el trazo de
+// LightDot). Colores propios por dimensión, nunca el degradado dorado
+// genérico del resto de la app.
+function HeartGlyph({ size = 24, color = CORAZON_ROSA }) {
+  // Corazón — Lectura. Contorno simple, sin relleno.
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <path d="M20 33 C20 33 6 24 6 14.5 C6 9 10 6 14.5 6 C17.5 6 20 8 20 11 C20 8 22.5 6 25.5 6 C30 6 34 9 34 14.5 C34 24 20 33 20 33 Z" stroke={color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function BookLightGlyph({ size = 24, color = CIELO }) {
+  // Mente — Meditación. Libro abierto (misma familia visual que BookGlyph)
+  // con líneas de luz saliendo hacia arriba, como si la Palabra iluminara.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 8 C9 7 5 8 3 10 L3 21 C5 19 9 18 12 20 Z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M12 8 C15 7 19 8 21 10 L21 21 C19 19 15 18 12 20 Z" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
+      <line x1="12" y1="8" x2="12" y2="20" stroke={color} strokeWidth="1.6"/>
+      <line x1="12" y1="1" x2="12" y2="4.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="7.3" y1="2.3" x2="9.3" y2="5.3" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+      <line x1="16.7" y1="2.3" x2="14.7" y2="5.3" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function BreezeGlyph({ size = 24, color = ALBA }) {
+  // Espíritu — Oración. Adaptación del motivo de "la brisa" de Horeb.jsx
+  // (tres líneas horizontales, cada vez más angostas) a un ícono pequeño,
+  // con un punto de luz arriba y opacidad decreciente para que se sientan
+  // desvanecer.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="4.5" r="1.3" fill={color}/>
+      <line x1="5" y1="10.5" x2="19" y2="10.5" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="7.5" y1="14.5" x2="16.5" y2="14.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" opacity="0.7"/>
+      <line x1="9.5" y1="18.5" x2="14.5" y2="18.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" opacity="0.45"/>
+    </svg>
+  );
+}
+
+function StillLightGlyph({ size = 24, color = ALMA_VIOLETA }) {
+  // Alma — Contemplación. Quietud: línea horizontal tenue, halo tenue, y un
+  // único punto de luz sólido en el centro.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <line x1="2" y1="12" x2="22" y2="12" stroke={color} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+      <circle cx="12" cy="12" r="7.2" stroke={color} strokeWidth="1.2" opacity="0.4"/>
+      <circle cx="12" cy="12" r="2.1" fill={color}/>
+    </svg>
+  );
+}
+
+function MustardSeedGlyph({ size = 24, color = VERDE_ZARZA }) {
+  // Cuerpo — Compromiso. Semilla de mostaza (Mt 13, 31-32): tallo, hoja y
+  // semilla pequeña, dentro de un círculo punteado tenue que sugiere el
+  // potencial de crecimiento.
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9.5" stroke={color} strokeWidth="1.2" strokeDasharray="1.5 2.5" opacity="0.4"/>
+      <line x1="12" y1="17" x2="12" y2="8" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M12 10.5 C14.2 9.3 16.3 9.8 16.8 11.8 C14.6 12.4 12.5 11.8 12 10.5 Z" stroke={color} strokeWidth="1.4" strokeLinejoin="round"/>
+      <circle cx="12" cy="17.5" r="1.7" fill={color}/>
+    </svg>
+  );
+}
+
+// Lectio Divina — 5 pasos. Texto fuente literal (pregunta y explicación):
+// no se traduce ni se parafrasea, mismo criterio que ya usa PREGUNTAS_DIARIO
+// (que también se muestra en español sin importar el idioma de la interfaz)
+// — es contenido devocional dado por Carlos, no texto de interfaz.
+const LECTIO_PASOS = [
+  { key: 'corazon',  dimension: 'Corazón',  nombre: 'Lectura',       pregunta: '¿Qué dice el texto?',                    explicacion: 'Leer el texto de manera atenta y respetuosa. Sin prisas.',                                    color: CORAZON_ROSA, Icon: HeartGlyph },
+  { key: 'mente',    dimension: 'Mente',    nombre: 'Meditación',    pregunta: '¿Qué me dice el texto?',                 explicacion: 'Reflejarse en la Palabra. Interiorizar el mensaje. Ahondar en la propia vida.',               color: CIELO,         Icon: BookLightGlyph },
+  { key: 'espiritu', dimension: 'Espíritu', nombre: 'Oración',       pregunta: '¿Qué me hace decirle a Dios?',           explicacion: 'Orar la Palabra: Pido, alabo, agradezco, suplico.',                                          color: ALBA,          Icon: BreezeGlyph },
+  { key: 'alma',     dimension: 'Alma',     nombre: 'Contemplación', pregunta: '¿Qué me da a conocer?',                  explicacion: 'Dios se me da a conocer con la experiencia del corazón.',                                    color: ALMA_VIOLETA,  Icon: StillLightGlyph },
+  { key: 'cuerpo',   dimension: 'Cuerpo',   nombre: 'Compromiso',    pregunta: '¿Qué camino de vida me invita a tomar?', explicacion: 'Ver la realidad con la mirada de Dios. Configuración con Cristo y vida en el Espíritu.',      color: VERDE_ZARZA,   Icon: MustardSeedGlyph },
+];
+
 const ONBOARDING_SCREENS = {
   es: [
     { title: "Bienvenido a Horeb", text: "Tu compañero espiritual diario. Fe, oración y comunidad, siempre contigo.", icon: "logo" },
@@ -761,6 +843,13 @@ export default function App() {
   const [diarioLoading, setDiarioLoading] = useState(false);
   const [diarioTexto, setDiarioTexto] = useState("");
   const [diarioSaving, setDiarioSaving] = useState(false);
+  const [lectioStep, setLectioStep] = useState(0); // 0-4, uno de los 5 pasos guiados
+  const [lectioRespuestas, setLectioRespuestas] = useState(['', '', '', '', '']);
+  const [lectioHoy, setLectioHoy] = useState(null);
+  const [lectioEntradas, setLectioEntradas] = useState([]);
+  const [lectioLoading, setLectioLoading] = useState(false);
+  const [lectioSaving, setLectioSaving] = useState(false);
+  const [lectioExpandedEntries, setLectioExpandedEntries] = useState({});
   const [hoveredQuickBtn, setHoveredQuickBtn] = useState(null);
   const [pressedQuickBtn, setPressedQuickBtn] = useState(null);
   const [bibleView, setBibleView] = useState("books");
@@ -1048,6 +1137,44 @@ export default function App() {
     loadDiario();
     return () => { cancelled = true; };
   }, [personalTab, user]);
+
+  // Carga Lectio Divina: mismo patrón que el Diario — una sola query
+  // ordenada por fecha, la entrada de hoy se separa comparando su ID
+  // ("YYYY-MM-DD", America/Bogota) contra todayDiarioKey(). Vive bajo
+  // personalSection (no personalTab), porque es una tarjeta de nivel
+  // superior en Oración Personal, no una pestaña del switcher de Mi Oración.
+  useEffect(() => {
+    if (personalSection !== "lectio" || !user) return;
+    let cancelled = false;
+    const loadLectio = async () => {
+      setLectioLoading(true);
+      try {
+        const todayKey = todayDiarioKey();
+        const snap = await getDocs(query(collection(db, "usuarios", user.uid, "lectioDivina"), orderBy("fecha", "desc")));
+        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (!cancelled) {
+          setLectioHoy(docs.find(d => d.id === todayKey) || null);
+          setLectioEntradas(docs.filter(d => d.id !== todayKey));
+        }
+      } catch (e) {
+        console.error("[firestore] error cargando lectio divina:", e.message);
+      } finally {
+        if (!cancelled) setLectioLoading(false);
+      }
+    };
+    loadLectio();
+    return () => { cancelled = true; };
+  }, [personalSection, user]);
+
+  // Recorrido guiado siempre arranca fresco al entrar a la tarjeta — no hay
+  // borrador persistido entre pasos (a diferencia del progreso de
+  // Rosario/Coronilla), así que se reinicia cada vez que se abre la sección.
+  useEffect(() => {
+    if (personalSection === "lectio") {
+      setLectioStep(0);
+      setLectioRespuestas(['', '', '', '', '']);
+    }
+  }, [personalSection]);
 
   // Carga temprana de "mis círculos" + su lastSeen, en cuanto haya sesión —
   // no espera a que el usuario entre al tab Conec✝2, porque el rastro de luz
@@ -2622,6 +2749,24 @@ export default function App() {
         ),
       },
       {
+        id: "lectio",
+        title: "Lectio Divina",
+        desc: lang === "es" ? "Medita el Evangelio del día, paso a paso" : "Meditate on today's Gospel, step by step",
+        icon: (
+          // Libro abierto (misma familia visual que Evangelio/La Biblia) con
+          // un punto de luz cayendo sobre las páginas — la Palabra que se
+          // abre e ilumina. En dorado, como sus hermanas de esta lista; los
+          // 5 colores de las dimensiones quedan reservados para adentro.
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <path d="M13 9 C10.5 8 6.5 9 4.5 11 L4.5 21 C6.5 19 10.5 18 13 20 Z" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round"/>
+            <path d="M13 9 C15.5 8 19.5 9 21.5 11 L21.5 21 C19.5 19 15.5 18 13 20 Z" stroke={GOLD} strokeWidth="1.5" strokeLinejoin="round"/>
+            <line x1="13" y1="9" x2="13" y2="20" stroke={GOLD} strokeWidth="1.5"/>
+            <circle cx="13" cy="3.2" r="1.3" fill={GOLD}/>
+            <line x1="13" y1="5" x2="13" y2="6.8" stroke={GOLD} strokeWidth="1.3" strokeLinecap="round"/>
+          </svg>
+        ),
+      },
+      {
         id: "rosario",
         title: lang === "es" ? "Santo Rosario" : "Holy Rosary",
         desc: lang === "es" ? "Reza el rosario con los misterios del día" : "Pray the rosary with today's mysteries",
@@ -2700,6 +2845,209 @@ export default function App() {
               <div style={{ color: GOLD, fontSize: 26, fontWeight: 300, flexShrink: 0 }}>›</div>
             </div>
           ))}
+        </div>
+      );
+    }
+
+    if (personalSection === "lectio") {
+      // Una entrada por día — si lectioHoy ya existe, no hace nada
+      // (inmutable, mismo criterio que Diario).
+      const saveLectioEntry = async () => {
+        if (!user || lectioHoy) return;
+        setLectioSaving(true);
+        try {
+          const todayKey = todayDiarioKey();
+          const { reference: pasaje } = gospelData ? cleanGospelText(gospelData.text) : { reference: '' };
+          const entry = {
+            fecha: serverTimestamp(),
+            pasaje,
+            corazon: lectioRespuestas[0].trim(),
+            mente: lectioRespuestas[1].trim(),
+            espiritu: lectioRespuestas[2].trim(),
+            alma: lectioRespuestas[3].trim(),
+            cuerpo: lectioRespuestas[4].trim(),
+          };
+          await setDoc(doc(db, "usuarios", user.uid, "lectioDivina", todayKey), entry);
+          setLectioHoy({ id: todayKey, ...entry, fecha: new Date() });
+        } catch (e) {
+          console.error("[firestore] error guardando lectio divina:", e.message);
+        } finally {
+          setLectioSaving(false);
+        }
+      };
+
+      const LECTIO_CAMPOS = ['corazon', 'mente', 'espiritu', 'alma', 'cuerpo'];
+      const { reference: gospelRef } = gospelData ? cleanGospelText(gospelData.text) : { reference: '' };
+
+      // Tarjeta de un paso del recorrido, o de una respuesta ya guardada —
+      // mismo tratamiento visual en ambos casos (borde izquierdo + resplandor
+      // difuso muy tenue en el color de la dimensión), solo cambia si trae
+      // textarea editable o texto de solo lectura.
+      const lectioStepCard = (paso, { readOnlyText } = {}) => {
+        const Icon = paso.Icon;
+        return (
+          <div style={{ position: "relative", background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderLeft: `3px solid ${paso.color}`, borderRadius: 14, padding: "20px 18px", marginBottom: readOnlyText !== undefined ? 10 : 18, overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: rgba(paso.color, 0.13), pointerEvents: "none" }} />
+            <div style={{ position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: readOnlyText !== undefined ? 8 : 14 }}>
+                <Icon size={readOnlyText !== undefined ? 20 : 28} color={paso.color} />
+                <div>
+                  <div style={{ fontSize: 10.5, color: paso.color, textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>{paso.dimension}</div>
+                  <div style={{ fontSize: 13.5, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold" }}>{paso.nombre}</div>
+                </div>
+              </div>
+              {readOnlyText === undefined && (
+                <>
+                  <div style={{ fontSize: 18, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: 600, lineHeight: 1.4, marginBottom: 10 }}>
+                    {paso.pregunta}
+                  </div>
+                  <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.6, marginBottom: 16 }}>
+                    {paso.explicacion}
+                  </div>
+                  <textarea
+                    value={lectioRespuestas[lectioStep]}
+                    onChange={e => { const val = e.target.value; setLectioRespuestas(prev => prev.map((v, i) => i === lectioStep ? val : v)); }}
+                    maxLength={1000}
+                    placeholder={lang === "es" ? "Escribe si quieres, o continúa en silencio..." : "Write if you'd like, or continue in silence..."}
+                    style={{ width: "100%", minHeight: 110, padding: "12px 14px", border: `1px solid ${CREAM_DARK}`, borderRadius: 12, fontSize: 14, color: CREAM, background: NAVY, fontFamily: "'Georgia', serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6, outline: "none" }}
+                  />
+                </>
+              )}
+              {readOnlyText !== undefined && (
+                readOnlyText ? (
+                  <div style={{ fontSize: 13, color: CREAM, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{readOnlyText}</div>
+                ) : (
+                  <div style={{ fontSize: 12.5, color: MUTED, fontStyle: "italic" }}>{lang === "es" ? "En silencio." : "In silence."}</div>
+                )
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div>
+          {backButton}
+          {!user ? (
+            <div style={{ textAlign: "center", padding: "48px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HeartGlyph size={44} color={MUTED} /></div>
+              <div style={{ fontSize: 14, color: CREAM, marginBottom: 10, fontFamily: "'Work Sans', sans-serif" }}>
+                {lang === "es" ? "Crea una cuenta para guardar tu Lectio Divina y llevarla contigo." : "Create an account to save your Lectio Divina and carry it with you."}
+              </div>
+              <button onClick={() => setAuthMode("register")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", marginBottom: 8 }}>
+                {lang === "es" ? "Crear cuenta" : "Create account"}
+              </button>
+              <div onClick={() => setAuthMode("login")} style={{ fontSize: 12, color: MUTED, cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
+                {lang === "es" ? "¿Ya tienes cuenta? " : "Already have an account? "}
+                <span style={{ color: GOLD, fontWeight: "bold" }}>{lang === "es" ? "Inicia sesión" : "Sign in"}</span>
+              </div>
+            </div>
+          ) : lectioLoading ? (
+            <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HorebLoading size={32} /></div>
+              <div style={{ fontSize: 14 }}>{lang === "es" ? "Cargando tu Lectio Divina..." : "Loading your Lectio Divina..."}</div>
+            </div>
+          ) : lectioHoy ? (
+            <div>
+              {/* Cierre visual del recorrido — las 5 dimensiones juntas */}
+              <div style={{ textAlign: "center", marginBottom: 24 }}>
+                <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+                  {LECTIO_PASOS.map(p => { const Icon = p.Icon; return <Icon key={p.key} size={30} color={p.color} />; })}
+                </div>
+                <div style={{ fontSize: 17, color: CREAM, fontFamily: "'Cormorant', serif", fontStyle: "italic" }}>
+                  {lang === "es" ? "Hoy oraste con todo tu ser." : "Today you prayed with your whole being."}
+                </div>
+                {lectioHoy.pasaje && (
+                  <div style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>{lectioHoy.pasaje}</div>
+                )}
+              </div>
+
+              {LECTIO_PASOS.map((paso, i) => (
+                <div key={paso.key}>{lectioStepCard(paso, { readOnlyText: lectioHoy[LECTIO_CAMPOS[i]] })}</div>
+              ))}
+
+              <div style={{ textAlign: "center", fontSize: 13, color: MUTED, margin: "18px 0 22px" }}>
+                {lang === "es" ? "Ya meditaste hoy. Vuelve mañana ✝" : "You already meditated today. Come back tomorrow ✝"}
+              </div>
+
+              {/* Entradas anteriores — solo lectura, plegadas por defecto */}
+              <div style={{ fontSize: 14, fontWeight: "bold", color: CREAM, marginBottom: 12, fontFamily: "'Work Sans', sans-serif" }}>
+                {lang === "es" ? "Entradas anteriores" : "Past entries"}
+              </div>
+              {lectioEntradas.length === 0 ? (
+                <div style={{ textAlign: "center", color: MUTED, fontSize: 13, padding: "20px 0" }}>
+                  {lang === "es" ? "Aún no tienes entradas anteriores." : "No past entries yet."}
+                </div>
+              ) : lectioEntradas.map(entry => {
+                const expanded = !!lectioExpandedEntries[entry.id];
+                return (
+                  <div key={entry.id} style={{ background: BG_CARD, borderRadius: 14, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}`, cursor: "pointer" }} onClick={() => setLectioExpandedEntries(prev => ({ ...prev, [entry.id]: !prev[entry.id] }))}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>{formatFirestoreDate(entry.fecha)}</div>
+                        {entry.pasaje && <div style={{ fontSize: 13, color: GOLD, fontStyle: "italic", fontFamily: "'Cormorant', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.pasaje}</div>}
+                      </div>
+                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                        {LECTIO_PASOS.map((p, i) => { const Icon = p.Icon; const hasText = !!entry[LECTIO_CAMPOS[i]]; return <Icon key={p.key} size={15} color={hasText ? p.color : `${p.color}44`} />; })}
+                      </div>
+                    </div>
+                    {expanded && (
+                      <div style={{ marginTop: 14 }}>
+                        {LECTIO_PASOS.map((paso, i) => (
+                          <div key={paso.key} onClick={e => e.stopPropagation()} style={{ cursor: "default" }}>{lectioStepCard(paso, { readOnlyText: entry[LECTIO_CAMPOS[i]] })}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div>
+              {/* Barra de progreso segmentada, coloreada por paso alcanzado —
+                  mismo patrón que Coronilla, con el color propio de cada
+                  dimensión en vez de dorado genérico. */}
+              <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
+                {LECTIO_PASOS.map((p, i) => (
+                  <div key={p.key} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= lectioStep ? p.color : CREAM_DARK, transition: "background 0.3s" }} />
+                ))}
+              </div>
+
+              {/* Pasaje a meditar — visible en todos los pasos */}
+              <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
+                <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
+                <div style={{ fontSize: 13, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold" }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
+              </div>
+
+              {lectioStepCard(LECTIO_PASOS[lectioStep])}
+
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setLectioStep(s => Math.max(0, s - 1))}
+                  disabled={lectioStep === 0}
+                  style={{ flex: 1, padding: "12px", background: NAVY_DARK, color: lectioStep === 0 ? CREAM_DARK : CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: lectioStep === 0 ? "default" : "pointer", fontFamily: "'Cormorant', serif", opacity: lectioStep === 0 ? 0.5 : 1 }}
+                >
+                  ← {lang === "es" ? "Anterior" : "Back"}
+                </button>
+                {lectioStep < LECTIO_PASOS.length - 1 ? (
+                  <button
+                    onClick={() => setLectioStep(s => Math.min(LECTIO_PASOS.length - 1, s + 1))}
+                    style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: CREAM, border: `1px solid ${GOLD}`, borderRadius: 12, fontSize: 14, cursor: "pointer", fontFamily: "'Cormorant', serif" }}
+                  >
+                    {lang === "es" ? "Siguiente" : "Next"} →
+                  </button>
+                ) : (
+                  <button
+                    onClick={saveLectioEntry}
+                    disabled={lectioSaving}
+                    style={{ flex: 1, padding: "12px", background: `linear-gradient(135deg, #1a6b3a, #0f4a28)`, color: WHITE, border: "none", borderRadius: 12, fontSize: 14, fontWeight: "bold", cursor: lectioSaving ? "default" : "pointer", fontFamily: "'Cormorant', serif" }}
+                  >
+                    {lectioSaving ? (lang === "es" ? "Guardando..." : "Saving...") : (lang === "es" ? "Terminar" : "Finish")}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       );
     }

@@ -7,6 +7,8 @@ export const LINO = "#F5F1E8";
 export const CIELO = "#8497A6"; // Cielo de Altura (antes #7E97AB)
 export const PIEDRA = "#C7B79C"; // Arena del Monte (antes #B8AE9C)
 export const VERDE_ZARZA = "#7A8C6E"; // Comunidad y confirmación (brand book). Primer uso: tarjeta "Tu comunidad" de Inicio (20 jul 2026)
+export const CORAZON_ROSA = "#C99B8E"; // Lectio Divina — paso 1, Corazón / Lectura (28 jul 2026)
+export const ALMA_VIOLETA = "#7C86A8"; // Lectio Divina — paso 4, Alma / Contemplación (28 jul 2026)
 
 // Tonos derivados (no forman parte del brand book, se calculan a partir de la paleta
 // oficial para mantener gradientes y contrastes existentes sin introducir hex sueltos).
