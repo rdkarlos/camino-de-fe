@@ -815,6 +815,44 @@ export default function App() {
     setDevocionalInitialTab(null);
     setTab(i);
   };
+
+  // Botón/gesto "atrás" del sistema (Android back / iOS swipe-back) navega
+  // entre secciones principales en vez de minimizar la app — Nivel 1,
+  // deliberadamente acotado al índice `tab` que ya controla goToTab().
+  // No rastrea personalSection/personalTab (Rosario, Coronilla, Devocional,
+  // las pestañas de Mi Oración): eso es sub-navegación, fuera de alcance.
+  //
+  // firstTabEffectRef evita que el primer render (montaje) empuje una
+  // entrada de historial redundante para el tab inicial — solo la ancla con
+  // replaceState, así el primer "atrás" real ya sale de la app en vez de
+  // quedarse en un Inicio duplicado.
+  // isPoppingRef evita el ciclo inverso: cuando popstate ya movió `tab`,
+  // el efecto que "empuja" no debe volver a empujar esa misma entrada.
+  const firstTabEffectRef = useRef(true);
+  const isPoppingRef = useRef(false);
+
+  useEffect(() => {
+    if (firstTabEffectRef.current) {
+      firstTabEffectRef.current = false;
+      window.history.replaceState({ tab }, '', window.location.pathname);
+      return;
+    }
+    if (isPoppingRef.current) {
+      isPoppingRef.current = false;
+      return;
+    }
+    window.history.pushState({ tab }, '', window.location.pathname);
+  }, [tab]);
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      isPoppingRef.current = true;
+      goToTab(event.state?.tab ?? 0);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [hoveredPersonalCard, setHoveredPersonalCard] = useState(null);
   const [pressedPersonalCard, setPressedPersonalCard] = useState(null);
   const [selectedMood, setSelectedMood] = useState(null);
