@@ -665,9 +665,13 @@ const LightDot = ({ style }) => (
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
-  const refMatch = clean.match(/Lectura del santo Evangelio según san ([\w\s]+?)\s*([\d:,\s\-–—]+)\n/i);
+  // El "." se agregó al set de caracteres permitidos en la cita — las
+  // lecturas combinadas del Leccionario (ej. "Lucas 15, 1-3. 11-32") lo usan
+  // para separar rangos de versículos; sin él, la referencia completa no
+  // hacía match y la línea de cita se quedaba pegada al cuerpo sin recortar.
+  const refMatch = clean.match(/Lectura del santo Evangelio según san ([\w\s]+?)\s*([\d:,.\s\-–—]+)\n/i);
   const reference = refMatch ? `${refMatch[1].trim()} ${refMatch[2].trim()}` : '';
-  const body = clean.replace(/Lectura del santo Evangelio según san [\w\s]+?\s*[\d:,\s\-–—]+\n/i, '').trim();
+  const body = clean.replace(/Lectura del santo Evangelio según san [\w\s]+?\s*[\d:,.\s\-–—]+\n/i, '').trim();
   return { reference, body };
 };
 
@@ -2877,7 +2881,11 @@ export default function App() {
       };
 
       const LECTIO_CAMPOS = ['corazon', 'mente', 'espiritu', 'alma', 'cuerpo'];
-      const { reference: gospelRef } = gospelData ? cleanGospelText(gospelData.text) : { reference: '' };
+      // Mismo dato que "Evangelio del Día" en Home y en la pestaña Evangelio
+      // — el pasaje completo (gospelData ya cargado app-wide), no el
+      // Versículo del Día (que es una cita corta y una fuente distinta).
+      const { reference: gospelRef, body: gospelBody } = gospelData ? cleanGospelText(gospelData.text) : { reference: '', body: '' };
+      const gospelBodyFormatted = gospelBody ? gospelBody.replace(/\. ([A-ZÁÉÍÓÚ«"A-Z])/g, ".\n\n$1").trim() : '';
 
       // Tarjeta de un paso del recorrido, o de una respuesta ya guardada —
       // mismo tratamiento visual en ambos casos (borde izquierdo + resplandor
@@ -3013,11 +3021,28 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Pasaje a meditar — visible en todos los pasos */}
-              <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
-                <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
-                <div style={{ fontSize: 13, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold" }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
-              </div>
+              {/* Pasaje a meditar. En el paso de Lectura (Corazón) es el
+                  protagonista: el Evangelio puede ser largo (varias
+                  lecturas duplican varios versículos), así que lleva su
+                  propio scroll interno — nunca empuja la pregunta guía ni
+                  los botones de navegación fuera de la pantalla. En el
+                  resto de los pasos, solo la referencia, como recordatorio. */}
+              {lectioStep === 0 ? (
+                <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "14px 16px", marginBottom: 18 }}>
+                  <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
+                  <div style={{ fontSize: 15, color: GOLD, fontFamily: "'Cormorant', serif", fontWeight: "bold", marginBottom: 10 }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
+                  <div style={{ maxHeight: 280, overflowY: "auto", WebkitOverflowScrolling: "touch", paddingRight: 4 }}>
+                    <div style={{ fontSize: 17, lineHeight: 1.8, color: CREAM, fontFamily: "'Work Sans', sans-serif", whiteSpace: "pre-wrap" }}>
+                      {gospelBodyFormatted || (lang === "es" ? "Cargando el Evangelio de hoy…" : "Loading today's Gospel…")}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ background: BG_CARD, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
+                  <div style={{ fontSize: 10, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>{lang === "es" ? "Evangelio del día" : "Gospel of the day"}</div>
+                  <div style={{ fontSize: 13, color: CREAM, fontFamily: "'Cormorant', serif", fontWeight: "bold" }}>{gospelRef || (lang === "es" ? "Cargando…" : "Loading…")}</div>
+                </div>
+              )}
 
               {lectioStepCard(LECTIO_PASOS[lectioStep])}
 
