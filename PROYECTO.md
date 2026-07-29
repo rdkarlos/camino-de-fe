@@ -217,7 +217,7 @@
 - `src/santos.js`, `src/versiculos.js`, `src/JovenFe.jsx`, `src/shareImage.js`
 - `seed-parroquias.mjs`, `list-public-circles.mjs` (nuevo, solo lectura, pendiente de correr)
 - `api/gospel.js`, `api/spiritual-guide.js`, `api/cron-reflexion.js`, `api/order.js`, `api/confirm-payment.js`
-- `public/sw.js` — **verificar número real de versión al actualizar este documento** (hubo una inconsistencia: un commit mencionaba "v19" sin tocar el archivo; el bug de doble toque del 25 jul debía subir a v20 — confirmar cuál es el estado real antes de seguir documentando como si fuera un número fijo)
+- `public/sw.js` (**v20** desde el 25 jul 2026 — fix del doble toque en Rosario/Coronilla. Todos los cambios posteriores confirmaron explícitamente "no se tocó sw.js", así que sigue en v20)
 - `public/favicon.svg`, `public/manifest.json`, `generate-icons.js`
 
 ## Variables de entorno en Vercel
@@ -227,7 +227,14 @@
 
 ### Verificación inmediata (tuya)
 - Confirmar que el resumen del menú de perfil (Diario, oraciones, respondidas) coincide con la realidad — crear oración de prueba, marcarla respondida, escribir en el Diario, verificar que los números suben
-- Verificar el número real de versión en `public/sw.js` y anotarlo con certeza en este documento
+
+### Home — Paso 2 (su propia conversación futura)
+- **Navegación inferior tipo tab bar** — decidido explícitamente como proyecto separado del rediseño de Home (27-28 jul 2026). Toca la navegación global (vive en cada pantalla de la app), no solo Home. Requiere decidir qué 5 elementos van fijos abajo (hoy hay 5 accesos rápidos arriba: Oración, Evangelio, Conec✝2, La Biblia, Tienda — con Lecturas ya movida dentro de "Hoy" y Tienda en construcción, podría no haber espacio para todo sin dejar algo fuera). Mockups A (navegación arriba, como hoy) y B (navegación abajo) ya se compararon — se optó por A por ahora, dejando B pendiente de retomar con calma.
+
+### Home — ajustes menores pendientes de otra sesión
+- "Lecturas del Día" (fila compacta) no muestra ninguna referencia/subtítulo, a diferencia de "Evangelio del Día" que sí muestra la cita — agregarle algo, aunque sea genérico
+- Diferenciar visualmente los bordes entre las filas comprimidas (Evangelio, Lecturas) y las tarjetas de dos columnas (Santo, Misas) — hoy comparten el mismo tratamiento y la jerarquía entre ambos tipos se siente menos clara de lo que podría ser
+- El ícono de Conec✝2 en accesos rápidos (personas + cruz) tiene un estilo más "cargado" que sus vecinos de trazo simple — revisar
 
 ### Conec✝2 — próximos pasos
 - Correr `list-public-circles.mjs` y decidir qué hacer con círculos públicos existentes de usuarios comunes
@@ -236,14 +243,14 @@
 ### Conec✝2 — funcionalidad futura
 - Ancla diaria del círculo, ver quién rezó Rosario/Coronilla hoy, memoria/línea de tiempo del círculo
 
-### Interfaz — pendiente de esta sesión
+### Interfaz — pendiente
 - Fecha visible en Inicio y/o Diario — pedida, no construida
 - Revisar específicamente la pantalla de login (Google/email) si sigue sintiéndose incompleta
 - Tema claro: descartado conscientemente, ver nota en sección Marca
 
 ### Parroquias — siguiente fase
 - HABLAR CON EL PÁRROCO. Mensajes ya redactados
-- San José de Ríogrande · más parroquias si el directorio las tiene · canal "escríbenos" (ya existe vía WhatsApp, ver Hecho)
+- San José de Ríogrande · más parroquias si el directorio las tiene · canal "escríbenos" (ya existe vía WhatsApp)
 - Verificar usuarios: Firebase Console → Authentication → Users. Para tráfico sin cuenta, falta Google Analytics
 
 ### Contenido
@@ -253,6 +260,7 @@
 - Rosario: citas bíblicas oficiales en inglés
 - 🕊️ (paloma) de Home — retomar con otro enfoque
 - `CalmGlyph` de "Ansiedad" — diseño temporal, mejorar
+- Lectio Divina: `CLASSIC_PRAYERS`-style — traducir los 5 pasos al inglés (hoy se muestran en español siempre, decisión deliberada de contenido devocional, igual que las 90 preguntas del Diario)
 
 ### Funcionalidad futura
 - Push notifications reales — proyecto propio completo
