@@ -662,6 +662,33 @@ const LightDot = ({ style }) => (
   />
 );
 
+// ── Indicador genérico de "función nueva" ──────────────────────────────
+// Registro por dispositivo (localStorage, no requiere sesión) de qué
+// funciones marcadas como "nuevas" ya visitó el usuario. Reutilizable sin
+// escribir lógica nueva cada vez: para marcar una función futura como
+// nueva, solo hace falta (1) un id único, (2) agregarlo a NEW_FEATURE_IDS,
+// (3) usar isNewFeature(id) para mostrar el <LightDot/> y
+// markFeatureVisited(id) en su onClick — el indicador aparece y desaparece
+// solo, sin condicionales nuevas por función.
+//
+// "Nueva" se define como "el usuario nunca la visitó", nunca por fecha de
+// lanzamiento — así, usuarios que ya usaban la app antes de agregar una
+// función también la ven marcada como nueva (nunca la visitaron), y no
+// hace falta lógica especial para "usuarios existentes".
+//
+// Se apaga al abrir la sección, sin importar si el usuario completa la
+// acción principal — mismo criterio que ya usa el rastro de Conec✝2.
+const SEEN_FEATURES_KEY = 'horeb_seen_features';
+const NEW_FEATURE_IDS = ['lectio-divina'];
+
+const loadSeenFeatures = () => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(SEEN_FEATURES_KEY) || '[]'));
+  } catch {
+    return new Set();
+  }
+};
+
 const cleanGospelText = (text) => {
   if (!text) return { reference: '', body: '' };
   let clean = text.replace('Evangelio del día', '').trim();
@@ -803,6 +830,23 @@ export default function App() {
   const [userParroquiaId, setUserParroquiaId] = useState(null);
   const [parroquiaCityFilter, setParroquiaCityFilter] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [seenFeatures, setSeenFeatures] = useState(loadSeenFeatures);
+
+  // ¿Debe mostrarse el punto de "nueva" para esta función? Ver definición
+  // de NEW_FEATURE_IDS/SEEN_FEATURES_KEY arriba.
+  const isNewFeature = (id) => NEW_FEATURE_IDS.includes(id) && !seenFeatures.has(id);
+
+  // Se apaga para siempre en este dispositivo — se llama al abrir la
+  // sección, nunca al completar su acción principal.
+  const markFeatureVisited = (id) => {
+    if (!NEW_FEATURE_IDS.includes(id) || seenFeatures.has(id)) return;
+    setSeenFeatures(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      try { localStorage.setItem(SEEN_FEATURES_KEY, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
 
   // Entrada "limpia" a una sección desde fuera de ella (menú, accesos rápidos,
   // tarjetas de Inicio): resetea la memoria de sub-navegación de Oración Personal
@@ -2794,6 +2838,7 @@ export default function App() {
       },
       {
         id: "lectio",
+        featureId: "lectio-divina",
         title: "Lectio Divina",
         desc: lang === "es" ? "Haz lectura santa, paso a paso" : "Practice sacred reading, step by step",
         icon: (
@@ -2864,7 +2909,7 @@ export default function App() {
           {personalCards.map(c => (
             <div
               key={c.id}
-              onClick={() => { if (c.id === "devocional") setDevocionalInitialTab(null); setPersonalSection(c.id); }}
+              onClick={() => { if (c.featureId) markFeatureVisited(c.featureId); if (c.id === "devocional") setDevocionalInitialTab(null); setPersonalSection(c.id); }}
               onPointerEnter={() => setHoveredPersonalCard(c.id)}
               onPointerLeave={() => { setHoveredPersonalCard(null); setPressedPersonalCard(null); }}
               onPointerDown={() => setPressedPersonalCard(c.id)}
@@ -2879,6 +2924,7 @@ export default function App() {
               }}
             >
               {c.id === "oracion" && hasAnyNewCircleActivity && <LightDot style={{ top: 10, right: 10 }} />}
+              {c.featureId && isNewFeature(c.featureId) && <LightDot style={{ top: 10, right: 10 }} />}
               <div style={{ width: 52, height: 52, borderRadius: 12, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {c.icon}
               </div>
