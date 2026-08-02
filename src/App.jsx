@@ -407,6 +407,22 @@ function PencilGlyph({ size = 24, color = GOLD }) {
   );
 }
 
+// Cruz de marca — reemplaza el carácter "✝" suelto usado en "Conec✝2" y en
+// el ícono de "Crear Oración". Ese carácter no lleva selector de variación de
+// emoji (debería tener presentación de texto por defecto), pero en algunas
+// fuentes de sistema igual se dibuja con su glifo a color, ignorando el
+// `color` de CSS — mismo problema ya resuelto para el ícono del login
+// reemplazándolo por SVG. `size` acepta también unidades em para fluir con
+// el texto (rem/em no rompen el viewBox, solo el tamaño final renderizado).
+function CrossGlyph({ size = 24, color = GOLD, style }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ display: "inline-block", flexShrink: 0, ...style }}>
+      <rect x="10.2" y="2" width="3.6" height="20" rx="1.6" fill={color} />
+      <rect x="4" y="7.2" width="16" height="3.6" rx="1.6" fill={color} />
+    </svg>
+  );
+}
+
 // Insignia de círculo oficial — marca de verificación en dorado de marca, no
 // el signo de Horeb (reservado para splash/favicon/imágenes, nunca tarjetas).
 // Con la regla de admin ya vigente, tipo === "publico" implica oficial.
@@ -2129,7 +2145,7 @@ export default function App() {
           );
           const title = (
             <div style={{ fontSize: 16, color: GOLD, letterSpacing: "0.5px", marginBottom: 8, fontWeight: 700 }}>
-              ✦ Conec<span style={{ color: GOLD, fontSize: '1.2em' }}>✝</span>2
+              ✦ Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2
             </div>
           );
           const cta = (text) => <div style={{ fontSize: 13, color: GOLD, fontWeight: "bold", fontFamily: "'Cormorant', serif", marginTop: 10 }}>{text} ›</div>;
@@ -2548,9 +2564,6 @@ export default function App() {
         setDiarioSaving(false);
       }
     };
-
-    // Shared style for the gold cross in the brand name
-    const cx = {color: GOLD, fontSize: '1.2em'};
 
     // Circles helpers
     const generateCode = () => {
@@ -3257,7 +3270,10 @@ export default function App() {
         {/* Tab switcher */}
         <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
           {[
-            ["builder", "✝", lang === "es" ? "Crear Oración" : "Crear"],
+            ["builder", (() => {
+                const sel = personalTab === "builder";
+                return <CrossGlyph size={22} color={sel ? CREAM : MUTED} />;
+              })(), lang === "es" ? "Crear Oración" : "Crear"],
             ["book", (() => {
                 const sel = personalTab === "book";
                 const c = sel ? CREAM : MUTED;
@@ -3303,7 +3319,7 @@ export default function App() {
                     <rect x="11.5" y="3.8" width="9" height="2.4" rx="1.2" fill={cr}/>
                   </svg>
                 );
-              })(), lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>],
+              })(), lang === "es" ? <>Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>],
           ].map(([key, icon, label]) => (
             <button key={key} onClick={() => setPersonalTab(key)} style={{ position: "relative", flex: 1, padding: "9px 4px", borderRadius: 12, background: personalTab === key ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: personalTab === key ? WHITE : MUTED, border: `1px solid ${personalTab === key ? GOLD+"66" : CREAM_DARK}`, fontSize: 11, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", textAlign: "center", lineHeight: 1.3 }}>
               {key === "circles" && hasAnyNewCircleActivity && <LightDot style={{ top: 4, right: 4 }} />}
@@ -3403,7 +3419,7 @@ export default function App() {
               <div style={{ textAlign: "center", padding: "48px 20px" }}>
                 <div style={{ fontSize: 44, marginBottom: 12 }}>🔵</div>
                 <div style={{ fontSize: 14, color: CREAM, marginBottom: 16, fontFamily: "'Work Sans', sans-serif" }}>
-                  {lang === "es" ? <>Inicia sesión para unirte a Conec<span style={cx}>✝</span>2 de Oración</> : <>Sign in to join Pray<span style={cx}>✝</span>2gether</>}
+                  {lang === "es" ? <>Inicia sesión para unirte a Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2 de Oración</> : <>Sign in to join Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>}
                 </div>
                 <button onClick={() => setAuthMode("login")} style={{ padding: "10px 28px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 14, fontWeight: "bold", cursor: "pointer", fontFamily: "'Work Sans', sans-serif" }}>
                   {lang === "es" ? "Iniciar sesión" : "Sign in"}
@@ -3413,7 +3429,7 @@ export default function App() {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                   <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, fontFamily: "'Work Sans', sans-serif" }}>
-                    <>{lang === "es" ? "Mis" : "My"} {lang === "es" ? <>Conec<span style={cx}>✝</span>2</> : <>Pray<span style={cx}>✝</span>2gether</>}</>
+                    <>{lang === "es" ? "Mis" : "My"} {lang === "es" ? <>Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>}</>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => { setCircleError(""); setNewCircleName(""); setNewCircleDesc(""); setNewCircleType(isAdmin ? "publico" : "privado"); setCircleView("create"); }} style={{ padding: "8px 14px", background: `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: WHITE, border: "none", borderRadius: 20, fontSize: 12, fontWeight: "bold", cursor: "pointer" }}>
@@ -3427,13 +3443,13 @@ export default function App() {
                 {circleLoading ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
                     <div style={{ fontSize: 32, marginBottom: 12 }}>🔵</div>
-                    <div style={{ fontSize: 14 }}>{lang === "es" ? <>Cargando Conec<span style={cx}>✝</span>2...</> : <>Loading Pray<span style={cx}>✝</span>2gether...</>}</div>
+                    <div style={{ fontSize: 14 }}>{lang === "es" ? <>Cargando Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2...</> : <>Loading Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether...</>}</div>
                   </div>
                 ) : myCircles.length === 0 ? (
                   <div style={{ textAlign: "center", color: MUTED, padding: "48px 20px" }}>
-                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><HorebLoading size={44} /></div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}><PeopleGlyph size={44} color={MUTED} /></div>
                     <div style={{ fontSize: 15, color: CREAM, marginBottom: 8, fontFamily: "'Work Sans', sans-serif" }}>
-                      {lang === "es" ? <>Todavía no tienes un Conec<span style={cx}>✝</span>2</> : <>You're not in any Pray<span style={cx}>✝</span>2gether yet</>}
+                      {lang === "es" ? <>Todavía no tienes un Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>You're not in any Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether yet</>}
                     </div>
                     <div style={{ fontSize: 13 }}>{lang === "es" ? "Crea uno o únete a uno para orar juntos" : "Create or join one to pray together"}</div>
                   </div>
@@ -3464,7 +3480,7 @@ export default function App() {
                   ← {lang === "es" ? "Volver" : "Back"}
                 </button>
                 <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, marginBottom: 16, fontFamily: "'Work Sans', sans-serif" }}>
-                  {lang === "es" ? <>Crear Conec<span style={cx}>✝</span>2</> : <>Create Pray<span style={cx}>✝</span>2gether</>}
+                  {lang === "es" ? <>Crear Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>Create Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>}
                 </div>
                 <div style={{ background: BG_CARD, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${CREAM_DARK}` }}>
                   <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{lang === "es" ? "Nombre del círculo*" : "Circle name*"}</div>
@@ -3502,7 +3518,7 @@ export default function App() {
                 {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
                 <button onClick={createCircle} disabled={circleLoading || !newCircleName.trim()} style={{ width: "100%", padding: 13, background: !newCircleName.trim() ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: !newCircleName.trim() ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: newCircleName.trim() ? "pointer" : "default", fontFamily: "'Work Sans', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   <HorebLoading size={18} />
-                  {circleLoading ? (lang === "es" ? "Creando..." : "Creating...") : (lang === "es" ? <>Crear Conec<span style={cx}>✝</span>2</> : <>Create Pray<span style={cx}>✝</span>2gether</>)}
+                  {circleLoading ? (lang === "es" ? "Creando..." : "Creating...") : (lang === "es" ? <>Crear Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>Create Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>)}
                 </button>
               </div>
             ) : circleView === "join" ? (
@@ -3511,12 +3527,12 @@ export default function App() {
                   ← {lang === "es" ? "Volver" : "Back"}
                 </button>
                 <div style={{ fontSize: 16, fontWeight: "bold", color: CREAM, marginBottom: 16, fontFamily: "'Work Sans', sans-serif" }}>
-                  {lang === "es" ? <>Unirse a un Conec<span style={cx}>✝</span>2</> : <>Join a Pray<span style={cx}>✝</span>2gether</>}
+                  {lang === "es" ? <>Unirse a un Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>Join a Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>}
                 </div>
                 <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
                   {[
                     ["private", <LockGlyph key="l" size={13} color={joinMode === "private" ? WHITE : MUTED} />, lang === "es" ? "Código privado" : "Private code"],
-                    ["public", <GlobeGlyph key="g" size={13} color={joinMode === "public" ? WHITE : MUTED} />, lang === "es" ? <>Conec<span style={cx}>✝</span>2 públicos</> : <>Public Pray<span style={cx}>✝</span>2gether</>],
+                    ["public", <GlobeGlyph key="g" size={13} color={joinMode === "public" ? WHITE : MUTED} />, lang === "es" ? <>Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2 públicos</> : <>Public Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>],
                   ].map(([mode, icon, label]) => (
                     <button key={mode} onClick={() => { setJoinMode(mode); if (mode === "public") loadPublicCircles(); }} style={{ flex: 1, padding: "9px 8px", borderRadius: 12, background: joinMode === mode ? `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})` : BG_CARD, color: joinMode === mode ? WHITE : MUTED, border: `1px solid ${joinMode === mode ? NAVY : CREAM_DARK}`, fontSize: 12, fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                       {icon} {label}
@@ -3531,19 +3547,19 @@ export default function App() {
                     </div>
                     {circleError && <div style={{ color: "#c0392b", fontSize: 13, marginBottom: 10 }}>{circleError}</div>}
                     <button onClick={joinCircleByCode} disabled={circleLoading || joinCode.length < 6} style={{ width: "100%", padding: 13, background: joinCode.length < 6 ? CREAM_DARK : `linear-gradient(135deg, ${NAVY}, ${NAVY_DARK})`, color: joinCode.length < 6 ? MUTED : WHITE, border: "none", borderRadius: 12, fontSize: 15, fontWeight: "bold", cursor: joinCode.length >= 6 ? "pointer" : "default", fontFamily: "'Work Sans', sans-serif" }}>
-                      {circleLoading ? (lang === "es" ? "Buscando..." : "Searching...") : (lang === "es" ? <>Unirse al Conec<span style={cx}>✝</span>2</> : <>Join Pray<span style={cx}>✝</span>2gether</>)}
+                      {circleLoading ? (lang === "es" ? "Buscando..." : "Searching...") : (lang === "es" ? <>Unirse al Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>Join Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>)}
                     </button>
                   </div>
                 ) : (
                   <div>
                     {circleLoading ? (
                       <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
-                        <div style={{ fontSize: 14 }}>{lang === "es" ? <>Cargando Conec<span style={cx}>✝</span>2...</> : <>Loading Pray<span style={cx}>✝</span>2gether...</>}</div>
+                        <div style={{ fontSize: 14 }}>{lang === "es" ? <>Cargando Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2...</> : <>Loading Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether...</>}</div>
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).length === 0 ? (
                       <div style={{ textAlign: "center", color: MUTED, padding: "32px 20px" }}>
                         <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}><GlobeGlyph size={36} color={MUTED} /></div>
-                        <div style={{ fontSize: 14 }}>{lang === "es" ? <>No hay Conec<span style={cx}>✝</span>2 públicos disponibles</> : <>No public Pray<span style={cx}>✝</span>2gether available</>}</div>
+                        <div style={{ fontSize: 14 }}>{lang === "es" ? <>No hay Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2 públicos disponibles</> : <>No public Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether available</>}</div>
                       </div>
                     ) : publicCircles.filter(c => !myCircles.find(m => m.id === c.id)).map(c => (
                       <div key={c.id} style={{ background: BG_CARD, borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: `1px solid ${CREAM_DARK}` }}>
@@ -3793,7 +3809,7 @@ export default function App() {
                 {selectedCircle && selectedCircle.creadorId !== user.uid && (
                   <div style={{ marginTop: 20, textAlign: "center" }}>
                     <button onClick={leaveCircle} style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>
-                      {lang === "es" ? <>Abandonar este Conec<span style={cx}>✝</span>2</> : <>Leave this Pray<span style={cx}>✝</span>2gether</>}
+                      {lang === "es" ? <>Abandonar este Conec<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2</> : <>Leave this Pray<CrossGlyph size="1.2em" style={{ verticalAlign: "-0.15em" }} />2gether</>}
                     </button>
                   </div>
                 )}
@@ -5614,7 +5630,7 @@ export default function App() {
                   <rect x="14.8" y="1" width="2.4" height="8" rx="1.2" fill={GOLD}/>
                   <rect x="11.5" y="3.8" width="9" height="2.4" rx="1.2" fill={GOLD}/>
                 </svg>
-              ), label: <>Conec<span style={{ color: GOLD, fontSize: "1.15em" }}>✝</span>2</>, key: 'conec2',
+              ), label: <>Conec<CrossGlyph size="1.15em" style={{ verticalAlign: "-0.15em" }} />2</>, key: 'conec2',
             },
             { icon: (c) => (
                 <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
