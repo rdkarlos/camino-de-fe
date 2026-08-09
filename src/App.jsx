@@ -269,18 +269,6 @@ function PersonGlyph({ size = 24, color = GOLD }) {
   );
 }
 
-function ShoppingBagGlyph({ size = 24, color = GOLD }) {
-  // Misma forma que el ComingSoon de Tienda y navIcons[7].
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M5 8 H19 L17.5 21 H6.5 Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>
-      <path d="M9 8 C9 4.5 15 4.5 15 8" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="12" y1="12.5" x2="12" y2="16.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="10" y1="14.5" x2="14" y2="14.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
 function CandleGlyph({ size = 24, color = GOLD }) {
   // Misma forma que el ComingSoon de Novenas en Devocional.jsx.
   return (
@@ -419,6 +407,106 @@ function CrossGlyph({ size = 24, color = GOLD, style }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ display: "inline-block", flexShrink: 0, ...style }}>
       <rect x="10.2" y="2" width="3.6" height="20" rx="1.6" fill={color} />
       <rect x="4" y="7.2" width="16" height="3.6" rx="1.6" fill={color} />
+    </svg>
+  );
+}
+
+// Íconos de la barra de navegación inferior — cada uno acepta `filled` para
+// alternar entre contorno (inactivo) y relleno sólido (activo), mismas
+// siluetas que ya usaba la fila de accesos rápidos del header. El color de
+// las líneas "talladas" sobre el relleno usa NAVY_DARK (mismo recurso visual
+// que ya usa OfficialBadge para su check sobre fondo dorado).
+function TabPrayerGlyph({ size = 22, color = GOLD, filled = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      {filled ? (
+        <>
+          <circle cx="14" cy="5" r="2.5" fill={color}/>
+          <rect x="12.5" y="4" width="3" height="20" rx="1.5" fill={color}/>
+          <rect x="5" y="11" width="18" height="3" rx="1.5" fill={color}/>
+        </>
+      ) : (
+        <>
+          <circle cx="14" cy="5" r="2.5" stroke={color} strokeWidth="1.4"/>
+          <rect x="12.5" y="4" width="3" height="20" rx="1.5" stroke={color} strokeWidth="1.4"/>
+          <rect x="5" y="11" width="18" height="3" rx="1.5" stroke={color} strokeWidth="1.4"/>
+        </>
+      )}
+    </svg>
+  );
+}
+
+function TabGospelGlyph({ size = 22, color = GOLD, filled = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      {filled ? <rect x="6" y="4" width="16" height="21" rx="2" fill={color}/> : <rect x="6" y="4" width="16" height="21" rx="2" stroke={color} strokeWidth="1.5"/>}
+      <line x1="9" y1="4" x2="9" y2="25" stroke={filled ? NAVY_DARK : color} strokeWidth="1"/>
+      <line x1="11" y1="10" x2="21" y2="10" stroke={filled ? NAVY_DARK : color} strokeWidth="1.2"/>
+      <line x1="11" y1="14" x2="21" y2="14" stroke={filled ? NAVY_DARK : color} strokeWidth="1.2"/>
+      <line x1="11" y1="18" x2="21" y2="18" stroke={filled ? NAVY_DARK : color} strokeWidth="1.2"/>
+    </svg>
+  );
+}
+
+function TabConec2Glyph({ size = 22, color = GOLD, filled = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      {filled ? (
+        <>
+          <circle cx="8" cy="19" r="3.5" fill={color}/>
+          <path d="M2 31 C2 21 14 21 14 31Z" fill={color}/>
+          <circle cx="24" cy="19" r="3.5" fill={color}/>
+          <path d="M18 31 C18 21 30 21 30 31Z" fill={color}/>
+          <circle cx="16" cy="15" r="4.5" fill={color}/>
+          <path d="M9 31 C9 19 23 19 23 31Z" fill={color}/>
+        </>
+      ) : (
+        <>
+          <circle cx="8" cy="19" r="3.5" stroke={color} strokeWidth="1.3"/>
+          <path d="M2 31 C2 21 14 21 14 31Z" stroke={color} strokeWidth="1.3"/>
+          <circle cx="24" cy="19" r="3.5" stroke={color} strokeWidth="1.3"/>
+          <path d="M18 31 C18 21 30 21 30 31Z" stroke={color} strokeWidth="1.3"/>
+          <circle cx="16" cy="15" r="4.5" stroke={color} strokeWidth="1.3"/>
+          <path d="M9 31 C9 19 23 19 23 31Z" stroke={color} strokeWidth="1.3"/>
+        </>
+      )}
+      {/* Cruz chica — dorada fija en ambos estados, igual que en el header */}
+      <rect x="14.8" y="1" width="2.4" height="8" rx="1.2" fill={GOLD}/>
+      <rect x="11.5" y="3.8" width="9" height="2.4" rx="1.2" fill={GOLD}/>
+    </svg>
+  );
+}
+
+function TabBibleGlyph({ size = 22, color = GOLD, filled = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      {filled ? (
+        <>
+          <path d="M14 7 C11 6 7 7 5 9 L5 22 C7 20 11 19 14 21 Z" fill={color}/>
+          <path d="M14 7 C17 6 21 7 23 9 L23 22 C21 20 17 19 14 21 Z" fill={color}/>
+        </>
+      ) : (
+        <>
+          <path d="M14 7 C11 6 7 7 5 9 L5 22 C7 20 11 19 14 21 Z" stroke={color} strokeWidth="1.5"/>
+          <path d="M14 7 C17 6 21 7 23 9 L23 22 C21 20 17 19 14 21 Z" stroke={color} strokeWidth="1.5"/>
+        </>
+      )}
+      <line x1="14" y1="7" x2="14" y2="21" stroke={filled ? NAVY_DARK : color} strokeWidth={filled ? "1.3" : "1.5"}/>
+      <line x1="7" y1="12" x2="12.5" y2="11" stroke={filled ? NAVY_DARK : color} strokeWidth="1"/>
+      <line x1="7" y1="15" x2="12.5" y2="14" stroke={filled ? NAVY_DARK : color} strokeWidth="1"/>
+      <line x1="15.5" y1="11" x2="21" y2="12" stroke={filled ? NAVY_DARK : color} strokeWidth="1"/>
+      <line x1="15.5" y1="14" x2="21" y2="15" stroke={filled ? NAVY_DARK : color} strokeWidth="1"/>
+    </svg>
+  );
+}
+
+function TabShopGlyph({ size = 22, color = GOLD, filled = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      {filled ? <path d="M5 9 H23 L21 24 H7 Z" fill={color}/> : <path d="M5 9 H23 L21 24 H7 Z" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>}
+      <path d="M10 9 C10 5 18 5 18 9" stroke={filled ? NAVY_DARK : color} strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="14" y1="14" x2="14" y2="19" stroke={filled ? NAVY_DARK : GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="11.5" y1="16.5" x2="16.5" y2="16.5" stroke={filled ? NAVY_DARK : GOLD} strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -612,9 +700,13 @@ const SITE_URL = 'https://somoshoreb.com';
 const PARROQUIA_WHATSAPP_URL = `https://wa.me/573012964440?text=${encodeURIComponent('Hola, quiero pedir que agreguen mi parroquia a Horeb: ')}`;
 
 const LAMB_BTN_SIZE = 50;
+// Alto de la barra de navegación inferior fija — todo lo que necesita esquivarla
+// (límite de arrastre del Cordero, offset del botón flotante de Inicio) deriva
+// de esta única constante en vez de números sueltos repetidos.
+const BOTTOM_TAB_BAR_HEIGHT = 66;
 const clampLambPos = ({ x, y }) => ({
   x: Math.min(Math.max(x, 0), Math.max(window.innerWidth - LAMB_BTN_SIZE, 0)),
-  y: Math.min(Math.max(y, 0), Math.max(window.innerHeight - LAMB_BTN_SIZE, 0)),
+  y: Math.min(Math.max(y, 0), Math.max(window.innerHeight - LAMB_BTN_SIZE - BOTTOM_TAB_BAR_HEIGHT, 0)),
 });
 
 // Heurística general para detectar texto en español: no depende de un libro
@@ -931,7 +1023,7 @@ export default function App() {
         return clampLambPos(saved);
       }
     } catch {}
-    return clampLambPos({ x: 20, y: window.innerHeight - 80 - LAMB_BTN_SIZE });
+    return clampLambPos({ x: 20, y: window.innerHeight - (BOTTOM_TAB_BAR_HEIGHT + 16) - LAMB_BTN_SIZE });
   });
   const [lambDragging, setLambDragging] = useState(false);
   const lambDragRef = useRef({ pointerId: null, startX: 0, startY: 0, origX: 0, origY: 0, dragging: false, moved: false, isTouch: false, longPressTimer: null });
@@ -954,7 +1046,6 @@ export default function App() {
   const [lectioExpandedEntries, setLectioExpandedEntries] = useState({});
   const [lectioDeleteConfirmId, setLectioDeleteConfirmId] = useState(null);
   const [lectioDeleting, setLectioDeleting] = useState(false);
-  const [hoveredQuickBtn, setHoveredQuickBtn] = useState(null);
   const [pressedQuickBtn, setPressedQuickBtn] = useState(null);
   const [bibleView, setBibleView] = useState("books");
   const [bibleTestament, setBibleTestament] = useState("ot");
@@ -5547,23 +5638,117 @@ export default function App() {
         </div>
       )}
 
-      {/* Botón Inicio fijo */}
-      {tab !== 0 && tab !== 4 && !(tab === 1 && personalSection === "rosario") && (
-        <button
-          onClick={() => goToTab(0)}
-          title={lang === "es" ? "Inicio" : "Home"}
-          style={{
-            position: "fixed", bottom: 20, right: 20, zIndex: 60,
-            width: 44, height: 44, borderRadius: "50%",
-            background: NAVY_DARK, border: `1.5px solid ${GOLD}44`,
-            color: GOLD, fontSize: 20, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 14px rgba(15,28,50,0.4)",
-          }}
-        >
-          {navIcons[0](GOLD)}
-        </button>
-      )}
+      {/* La barra de navegación inferior se oculta solo dentro de Rosario/
+          Coronilla — esas dos vistas ya tienen su propia barra fija de
+          navegación (prev/siguiente/inicio) al mismo borde inferior; mostrar
+          las dos apiladas sería redundante y visualmente competiría. En
+          cualquier otra pantalla (incluida Inicio) queda siempre visible. */}
+      {(() => {
+        const bottomBarVisible = !(tab === 1 && (personalSection === "rosario" || personalSection === "coronilla"));
+        return (
+          <>
+            {/* Botón Inicio fijo */}
+            {tab !== 0 && tab !== 4 && !(tab === 1 && personalSection === "rosario") && (
+              <button
+                onClick={() => goToTab(0)}
+                title={lang === "es" ? "Inicio" : "Home"}
+                style={{
+                  position: "fixed", bottom: bottomBarVisible ? 20 + BOTTOM_TAB_BAR_HEIGHT : 20, right: 20, zIndex: 60,
+                  width: 44, height: 44, borderRadius: "50%",
+                  background: NAVY_DARK, border: `1.5px solid ${GOLD}44`,
+                  color: GOLD, fontSize: 20, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 4px 14px rgba(15,28,50,0.4)",
+                  transition: "bottom 0.2s ease",
+                }}
+              >
+                {navIcons[0](GOLD)}
+              </button>
+            )}
+
+            {/* ── BARRA DE NAVEGACIÓN INFERIOR ──
+                Reemplaza los "accesos rápidos" que antes vivían dentro del
+                header (se perdían al hacer scroll). Misma lógica de
+                idx/isActive/onClick que tenía esa fila — solo cambió dónde
+                vive en el árbol y cómo se pinta el ícono (contorno↔relleno
+                en vez de recolor de una forma fija). */}
+            {bottomBarVisible && (
+              <div style={{
+                position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 50,
+                background: NAVY, borderTop: `1px solid ${CREAM_DARK}33`,
+                display: "flex", padding: "8px 6px calc(10px + env(safe-area-inset-bottom, 0px))",
+                boxShadow: "0 -4px 14px rgba(15,28,50,0.25)",
+              }}>
+                {[
+                  { Glyph: TabPrayerGlyph, label: lang === 'es' ? "Oración" : "Prayer", idx: 1 },
+                  { Glyph: TabGospelGlyph, label: lang === 'es' ? "Evangelio" : "Gospel", idx: 2 },
+                  {
+                    // Conec✝2 no es un simple cambio de tab — vive dentro de Mi
+                    // Oración con un estado compuesto (tab + sección + sub-tab),
+                    // así que necesita su propia condición de "activo" y su
+                    // propio onClick en vez del goToTab(idx) genérico de los demás.
+                    Glyph: TabConec2Glyph,
+                    label: <>Conec<CrossGlyph size="1.15em" style={{ verticalAlign: "-0.15em" }} />2</>,
+                    key: 'conec2',
+                  },
+                  { Glyph: TabBibleGlyph, label: lang === 'es' ? "La Biblia" : "Bible", idx: 6 },
+                  { Glyph: TabShopGlyph, label: lang === 'es' ? "Tienda" : "Shop", idx: 7 },
+                ].map(({ Glyph, label, idx, key: itemKey }) => {
+                  const id = itemKey ?? idx;
+                  const isConec2 = id === 'conec2';
+                  const isInConec2 = tab === 1 && personalSection === 'oracion' && personalTab === 'circles';
+                  // "Oración" también vive en tab 1, así que debe excluir
+                  // explícitamente la combinación de Conec✝2 — si no, los dos
+                  // botones se iluminan juntos (tab===1 es cierto para ambos).
+                  const isActive = isConec2 ? isInConec2 : (tab === idx && !(idx === 1 && isInConec2));
+                  const isPressed = pressedQuickBtn === id;
+                  const transform = isPressed ? "scale(0.94)" : "none";
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => {
+                        if (isConec2) { setTab(1); setPersonalSection('oracion'); setPersonalTab('circles'); }
+                        else { goToTab(idx); }
+                        setMenuOpen(false);
+                      }}
+                      onPointerDown={() => setPressedQuickBtn(id)}
+                      onPointerUp={() => setPressedQuickBtn(null)}
+                      onPointerCancel={() => setPressedQuickBtn(null)}
+                      onPointerLeave={() => setPressedQuickBtn(null)}
+                      style={{
+                        position: "relative", flex: 1, padding: "6px 4px",
+                        background: "none", border: "none", cursor: "pointer",
+                        textAlign: "center", transform, transition: `transform ${isPressed ? "0.1s" : "0.2s"} ease`,
+                      }}
+                    >
+                      {/* Antes vivía en "Oración" (único camino a Conec✝2); ahora
+                          que Conec✝2 tiene su propio acceso directo, la novedad
+                          de círculo se anuncia ahí, no en Oración Personal en
+                          general. Mismo patrón sirve para cualquier ítem futuro
+                          que use isNewFeature(id). */}
+                      {isConec2 && hasAnyNewCircleActivity && <LightDot style={{ top: 2, right: 8 }} />}
+                      {/* Badge de carrito — hoy la Tienda es un "próximamente" sin
+                          UI real de compra, así que cartCount siempre es 0 en la
+                          práctica; queda listo para cuando exista una Tienda real. */}
+                      {idx === 7 && cartCount > 0 && (
+                        <span aria-hidden="true" style={{
+                          position: "absolute", top: 0, right: 8, minWidth: 15, height: 15, padding: "0 3px",
+                          borderRadius: 8, background: GOLD, color: NAVY_DARK, fontSize: 9, fontWeight: "bold",
+                          display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
+                        }}>{cartCount}</span>
+                      )}
+                      <div style={{ marginBottom: 3, lineHeight: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <Glyph size={22} color={isActive ? GOLD : MUTED} filled={isActive} />
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: isActive ? 700 : 600, color: isActive ? GOLD : MUTED, fontFamily: "'Work Sans', sans-serif", letterSpacing: 0.2, whiteSpace: "nowrap" }}>{label}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* ── HEADER ── */}
       <div ref={headerMenuRef} style={{ background: NAVY, borderBottom: `1px solid ${CREAM_DARK}33`, color: WHITE, position: "sticky", top: 0, zIndex: 40, borderRadius: 24, margin: 8 }}>
@@ -5588,119 +5773,7 @@ export default function App() {
             ) : (
               <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "rgba(255,255,255,0.1)", border: "none", width: 30, height: 30, borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }} title={lang === 'es' ? 'Tu perfil' : 'Your profile'}><PersonGlyph size={16} color={WHITE} /></button>
             )}
-            <button onClick={() => setShowCart(true)} style={{ background: cartCount > 0 ? GOLD : "rgba(255,255,255,0.1)", border: "none", color: cartCount > 0 ? NAVY_DARK : WHITE, width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
-              <ShoppingBagGlyph size={16} color={cartCount > 0 ? NAVY_DARK : WHITE} />
-              {cartCount > 0 && <span style={{ fontSize: 9 }}>{cartCount}</span>}
-            </button>
           </div>
-        </div>
-
-        {/* Accesos rápidos — 5 ítems que llenan el ancho */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 5, padding: "7px 10px 9px" }}>
-          {[
-            { icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <circle cx="14" cy="5" r="2.5" fill={c}/>
-                  <rect x="12.5" y="4" width="3" height="20" rx="1.5" fill={c}/>
-                  <rect x="5" y="11" width="18" height="3" rx="1.5" fill={c}/>
-                </svg>
-              ), label: lang === 'es' ? "Oración"   : "Prayer",   idx: 1 },
-            { icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <rect x="6" y="4" width="16" height="21" rx="2" stroke={c} strokeWidth="1.5"/>
-                  <line x1="9" y1="4" x2="9" y2="25" stroke={c} strokeWidth="1"/>
-                  <line x1="11" y1="10" x2="21" y2="10" stroke={c} strokeWidth="1.2"/>
-                  <line x1="11" y1="14" x2="21" y2="14" stroke={c} strokeWidth="1.2"/>
-                  <line x1="11" y1="18" x2="21" y2="18" stroke={c} strokeWidth="1.2"/>
-                </svg>
-              ), label: lang === 'es' ? "Evangelio" : "Gospel",  idx: 2 },
-            {
-              // Conec✝2 — mismo ícono (personas + cruz) que ya usa el
-              // selector de pestañas dentro de Mi Oración, para que se
-              // reconozca como el mismo símbolo en toda la app. "Lecturas"
-              // se movió a su propia fila dentro de "Hoy" en Inicio.
-              icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-                  <circle cx="8" cy="19" r="3.5" fill={c}/>
-                  <path d="M2 31 C2 21 14 21 14 31Z" fill={c}/>
-                  <circle cx="24" cy="19" r="3.5" fill={c}/>
-                  <path d="M18 31 C18 21 30 21 30 31Z" fill={c}/>
-                  <circle cx="16" cy="15" r="4.5" fill={c}/>
-                  <path d="M9 31 C9 19 23 19 23 31Z" fill={c}/>
-                  <rect x="14.8" y="1" width="2.4" height="8" rx="1.2" fill={GOLD}/>
-                  <rect x="11.5" y="3.8" width="9" height="2.4" rx="1.2" fill={GOLD}/>
-                </svg>
-              ), label: <>Conec<CrossGlyph size="1.15em" style={{ verticalAlign: "-0.15em" }} />2</>, key: 'conec2',
-            },
-            { icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <path d="M14 7 C11 6 7 7 5 9 L5 22 C7 20 11 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
-                  <path d="M14 7 C17 6 21 7 23 9 L23 22 C21 20 17 19 14 21 Z" stroke={c} strokeWidth="1.5"/>
-                  <line x1="14" y1="7" x2="14" y2="21" stroke={c} strokeWidth="1.5"/>
-                  <line x1="7" y1="12" x2="12.5" y2="11" stroke={c} strokeWidth="1"/>
-                  <line x1="7" y1="15" x2="12.5" y2="14" stroke={c} strokeWidth="1"/>
-                  <line x1="15.5" y1="11" x2="21" y2="12" stroke={c} strokeWidth="1"/>
-                  <line x1="15.5" y1="14" x2="21" y2="15" stroke={c} strokeWidth="1"/>
-                </svg>
-              ), label: lang === 'es' ? "La Biblia" : "Bible",    idx: 6 },
-            { icon: (c) => (
-                <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-                  <path d="M5 9 H23 L21 24 H7 Z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M10 9 C10 5 18 5 18 9" stroke={c} strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="14" y1="14" x2="14" y2="19" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="11.5" y1="16.5" x2="16.5" y2="16.5" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              ), label: lang === 'es' ? "Tienda"    : "Shop",     idx: 7 },
-          ].map(({ icon, label, idx, key: itemKey }) => {
-            // Conec✝2 no es un simple cambio de tab — vive dentro de Mi
-            // Oración con un estado compuesto (tab + sección + sub-tab), así
-            // que necesita su propia condición de "activo" y su propio
-            // onClick en vez del goToTab(idx) genérico de los demás.
-            const id = itemKey ?? idx;
-            const isConec2 = id === 'conec2';
-            const isInConec2 = tab === 1 && personalSection === 'oracion' && personalTab === 'circles';
-            // "Oración" también vive en tab 1, así que debe excluir
-            // explícitamente la combinación de Conec✝2 — si no, los dos
-            // botones se iluminan juntos (tab===1 es cierto para ambos).
-            const isActive = isConec2 ? isInConec2 : (tab === idx && !(idx === 1 && isInConec2));
-            const isHovered = hoveredQuickBtn === id;
-            const isPressed = pressedQuickBtn === id;
-            const iconColor = isActive ? GOLD : MUTED;
-            const bibleStyle = {
-              background: isActive
-                ? rgba(GOLD, 0.28)
-                : isHovered
-                  ? "rgba(255,255,255,0.22)"
-                  : "rgba(255,255,255,0.12)",
-              border: `1px solid ${isActive ? rgba(GOLD, 0.5) : "rgba(255,255,255,0.2)"}`,
-              color: isActive ? GOLD : "rgba(255,255,255,0.75)",
-            };
-            const transform = isPressed ? "scale(0.95)" : isHovered ? "translateY(-2px)" : "none";
-            const transition = `transform ${isPressed ? "0.1s" : "0.2s"} ease, background 0.2s ease, box-shadow 0.2s ease`;
-            return (
-              <button
-                key={id}
-                onClick={() => {
-                  if (isConec2) { setTab(1); setPersonalSection('oracion'); setPersonalTab('circles'); }
-                  else { goToTab(idx); }
-                  setMenuOpen(false);
-                }}
-                onPointerEnter={() => setHoveredQuickBtn(id)}
-                onPointerLeave={() => { setHoveredQuickBtn(null); setPressedQuickBtn(null); }}
-                onPointerDown={() => setPressedQuickBtn(id)}
-                onPointerUp={() => setPressedQuickBtn(null)}
-                onPointerCancel={() => setPressedQuickBtn(null)}
-                style={{ position: "relative", flex: 1, padding: "6px 4px", borderRadius: 10, cursor: "pointer", textAlign: "center", transform, transition, ...bibleStyle }}
-              >
-                {/* Antes vivía en "Oración" (único camino a Conec✝2); ahora
-                    que Conec✝2 tiene su propio acceso directo, la novedad de
-                    círculo se anuncia ahí, no en Oración Personal en general. */}
-                {isConec2 && hasAnyNewCircleActivity && <LightDot style={{ top: 4, right: 4 }} />}
-                <div style={{ marginBottom: 2, lineHeight: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>{icon(iconColor)}</div>
-                <div style={{ fontSize: 13, fontWeight: "600", fontFamily: "'Work Sans', sans-serif", letterSpacing: 0.2, whiteSpace: "nowrap" }}>{label}</div>
-              </button>
-            );
-          })}
         </div>
 
         {/* Saludo sutil de estado de sesión — cambia según la hora real (America/Bogota) */}
@@ -5812,7 +5885,7 @@ export default function App() {
       </div>
 
       {/* ── CONTENIDO ── */}
-      <div key={tab} className="section-fade" style={{ padding: "20px 20px 52px" }}>
+      <div key={tab} className="section-fade" style={{ padding: "20px 20px 92px" }}>
         {tab !== 0 && (
           <div style={{ fontSize: 19, fontWeight: "bold", color: CREAM, marginBottom: 18, borderLeft: `4px solid ${GOLD}`, paddingLeft: 12, fontFamily: "'Work Sans', sans-serif" }}>
             {t.nav[tab]}
