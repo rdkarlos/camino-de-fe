@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import VERSICULOS from '../src/versiculos.js';
 
 // Cuenta de servicio de Firebase Admin — nunca se sube al repo, viaja
 // codificada en base64 en la variable de entorno de Vercel. El SDK admin
@@ -45,36 +46,6 @@ async function generateReflection(gospelRef, gospelText, lang) {
   if (!response.ok) throw new Error(`Anthropic API error (${lang}): ${rawData}`);
   const data = JSON.parse(rawData);
   return data.content?.[0]?.text ?? '';
-}
-
-async function generateVerse(gospelText) {
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-
-  const userMessage = `Based on today's gospel: ${gospelText}, suggest ONE Bible verse (not from the same passage) that complements the message. Respond ONLY in this exact JSON format: {"texto": "verse text here", "referencia": "Book Chapter, Verse"}. No other text.`;
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 200,
-      messages: [{ role: 'user', content: userMessage }],
-    }),
-  });
-
-  const rawData = await response.text();
-  if (!response.ok) throw new Error(`Anthropic API error (verse): ${rawData}`);
-  const data = JSON.parse(rawData);
-  const text = data.content?.[0]?.text ?? '';
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('No se pudo parsear el versículo generado');
-  const verse = JSON.parse(match[0]);
-  if (!verse.texto || !verse.referencia) throw new Error('Versículo generado incompleto');
-  return verse;
 }
 
 async function cleanOldReflections(today) {
@@ -131,12 +102,8 @@ export default async function handler(req, res) {
 
     const baseUrl = process.env.SITE_URL || 'https://camino-de-fe-seven.vercel.app';
 
-    let gospelEs = null;
-    if (!existingEs.exists || !existingVerse.exists) {
-      gospelEs = await getGospel(baseUrl, 'es', day, month, year);
-    }
-
     if (!existingEs.exists) {
+      const gospelEs = await getGospel(baseUrl, 'es', day, month, year);
       const textoEs = await generateReflection(gospelEs.reference, gospelEs.text, 'es');
       await db.collection('reflexiones').doc(idEs).set({
         texto: textoEs, fecha: today, evangelio: gospelEs.reference || '',
@@ -152,7 +119,8 @@ export default async function handler(req, res) {
     }
 
     if (!existingVerse.exists) {
-      const verse = await generateVerse(gospelEs.text);
+      const key = today.slice(5); // MM-DD, misma lógica que getVersiculoHoy() en App.jsx
+      const verse = VERSICULOS[key] || VERSICULOS['01-01'];
       await db.collection('versiculos').doc(today).set({
         texto: verse.texto, referencia: verse.referencia, fecha: today,
       });
