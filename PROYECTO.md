@@ -151,11 +151,23 @@ Tarjeta en Oración Personal, debajo de "Mi Oración". Medita el Evangelio del D
 ### El problema
 Carlos notó "Jehová" en el Versículo del Día — señal de traducción protestante. Confirmado: **LBLA (La Biblia de las Américas)**, usada en TODA la app (Versículo del Día, La Biblia, Evangelio del Día, Lecturas del Día), es traducción evangélica de la Lockman Foundation, sin aprobación católica.
 
+**Corrección (28 ago 2026):** el "Jehová" que vio Carlos NO venía de LBLA ni de `versiculos.js` — ver hallazgo completo más abajo, "Cron de reflexión diaria — generación libre de versículos, corregido". El problema de fondo de LBLA (sin aprobación católica, sin deuterocanónicos) sigue vigente y es lo que describe el resto de esta sección.
+
 **Alcance del código, confirmado por búsqueda exacta en el repo:**
-- `versiculos.js` — banco propio de 366 versículos, texto estático escrito a mano. **Origen exacto desconocido** — no se generó en esta sesión ni hay registro de sesiones anteriores que lo confirmen; probablemente basado en LBLA. Requiere su propia auditoría completa cuando se resuelva la fuente.
+- `versiculos.js` — banco propio de 366 versículos, texto estático escrito a mano. **Origen exacto desconocido** — no se generó en esta sesión ni hay registro de sesiones anteriores que lo confirmen; probablemente basado en LBLA. Requiere su propia auditoría completa cuando se resuelva la fuente. Búsqueda exhaustiva (28 ago 2026) confirma que ninguna de las 366 entradas contiene "Jehová"/"Jehova" — esa palabra específica queda descartada para este archivo, pero la auditoría de fondo (fidelidad de traducción, estilo) sigue pendiente.
 - `api/gospel.js:12` — `const BIBLE_ID = 'e3f420b9665abaeb-01'` — alimenta Evangelio + Lecturas (mismo endpoint para ambos)
 - `src/App.jsx:4291` — mismo Bible ID, alimenta "La Biblia" (7 llamadas más abajo la reutilizan)
 - **Total: 2 líneas de código a cambiar** para redirigir Evangelio+Lecturas+La Biblia a una nueva traducción, una vez se consiga una fuente legítima. El Versículo del Día (366 entradas estáticas) es tarea aparte, más grande.
+
+### Cron de reflexión diaria — generación libre de versículos, corregido (28 ago 2026)
+
+**Causa real del "Jehová" que vio Carlos.** No era LBLA ni `versiculos.js`. El "Versículo del Día" tiene tres capas: el banco curado (`versiculos.js`, vía `getVersiculoHoy()` en `App.jsx`), y por encima de ese banco, un documento en Firestore (`versiculos/{fecha}`) que gana prioridad si existe (`cronVerse || versiculoBanco`). Ese documento lo escribía `api/cron-reflexion.js`, corriendo diario por cron (`vercel.json`), con una función `generateVerse()` que le pedía a Claude: *"suggest ONE Bible verse... respond ONLY in JSON {texto, referencia}"* — sin ninguna traducción de referencia, sin fuente, sin verificación. Al no tener restricción de traducción, Claude recordaba la redacción más citada de un versículo dado, que para muchos versículos muy conocidos (ej. Salmo 27:1, "Jehová es mi luz y mi salvación") es abrumadoramente Reina-Valera en el material con el que se entrenó — de ahí "Jehová", pisando la entrada ya correcta del banco curado (`01-31`, Salmo 27:1, "El Señor es mi luz y mi salvación") sin dejar rastro en el repo, porque Firestore no versiona y el propio cron borra el documento del día anterior (`cleanOldVersiculos`).
+
+**Corrección aplicada:** se eliminó `generateVerse()` por completo. El cron ahora calcula la misma clave `MM-DD` (misma lógica de zona horaria `America/Bogota` que usa `getVersiculoHoy()`) y toma la entrada directo de `versiculos.js`, con el mismo fallback a `'01-01'`. El documento que el cron guarda en Firestore es ahora idéntico al que la app ya mostraría sin el cron — ya no hay generación libre en ninguna ruta del Versículo del Día.
+
+**Confirmado con búsqueda exhaustiva:** `versiculos.js` nunca contuvo "Jehová"/"Jehova" en ninguna de sus 366 entradas. El banco curado nunca fue el problema.
+
+**Nota aparte, sin tocar:** `api/spiritual-guide.js` también usa Claude, pero para el chat de orientación ("Ponlo en Práctica"), no para citar versículos como texto bíblico literal — no es el mismo riesgo, no se tocó.
 
 ### Investigación de fuentes — TODAS descartadas hoy, con motivo verificado
 
