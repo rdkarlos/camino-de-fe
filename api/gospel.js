@@ -200,6 +200,25 @@ export default async function handler(req, res) {
       .trim();
   };
 
+  // Universalis ofusca los campos "text" del JSONP como un literal de string
+  // seguido de una cadena .split("x").join("y") (anti-scraping): no es JSON
+  // válido tal cual. Se resuelve cada cadena antes de hacer JSON.parse.
+  const deobfuscateUniversalis = (jsonStr) => {
+    const chainRe = /"((?:\\.|[^"\\])*)"((?:\s*\.split\("(?:\\.|[^"\\])*"\)\.join\("(?:\\.|[^"\\])*"\))+)/g;
+    const stepRe = /\.split\("((?:\\.|[^"\\])*)"\)\.join\("((?:\\.|[^"\\])*)"\)/g;
+    return jsonStr.replace(chainRe, (full, baseLit, chain) => {
+      let value = JSON.parse(`"${baseLit}"`);
+      let step;
+      stepRe.lastIndex = 0;
+      while ((step = stepRe.exec(chain)) !== null) {
+        const from = JSON.parse(`"${step[1]}"`);
+        const to = JSON.parse(`"${step[2]}"`);
+        value = value.split(from).join(to);
+      }
+      return JSON.stringify(value);
+    });
+  };
+
   try {
     const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
     const universalisUrl = `https://universalis.com/latinamerica/${dateStr}/jsonpmass.js`;
@@ -208,7 +227,7 @@ export default async function handler(req, res) {
 
     // Quitar wrapper JSONP: universalisCallback({...})
     const jsonStr = raw.replace(/^universalisCallback\s*\(/, '').replace(/\)\s*;?\s*$/, '');
-    const data = JSON.parse(jsonStr);
+    const data = JSON.parse(deobfuscateUniversalis(jsonStr));
 
     const gospelData  = data.Mass_G;
     const reading1Data = data.Mass_R1 || null;

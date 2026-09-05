@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import axios from "axios";
 import { initializeApp } from "firebase/app";
@@ -911,6 +911,7 @@ export default function App() {
   const [openPrayer, setOpenPrayer] = useState(null);
   const [cart, setCart] = useState([]);
   const [gospelData, setGospelData] = useState(null);
+  const [gospelError, setGospelError] = useState(false);
   const [cronVerse, setCronVerse] = useState(null);
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState(null);
@@ -1206,7 +1207,7 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => {
+  const loadGospel = useCallback(() => {
     const today = new Date();
     const day = today.getDate();
     const month = today.getMonth() + 1;
@@ -1214,8 +1215,9 @@ export default function App() {
     const cacheKey = `gospel_v4_${lang}_${day}_${month}_${year}`;
     try {
       const cached = sessionStorage.getItem(cacheKey);
-      if (cached) { setGospelData(JSON.parse(cached)); return; }
+      if (cached) { setGospelData(JSON.parse(cached)); setGospelError(false); return; }
     } catch(e) {}
+    setGospelError(false);
     axios.get(`/api/gospel?lang=${lang}&day=${day}&month=${month}&year=${year}`)
       .then(res => {
         if (res.data.success) {
@@ -1224,10 +1226,18 @@ export default function App() {
           if (safeToCache) {
             try { sessionStorage.setItem(cacheKey, JSON.stringify(res.data)); } catch(e) {}
           }
+        } else {
+          console.error('[gospel] respuesta sin éxito:', res.data.error);
+          setGospelError(true);
         }
       })
-      .catch(() => {});
+      .catch((e) => {
+        console.error('[gospel] error de red o servidor:', e.message);
+        setGospelError(true);
+      });
   }, [lang]);
+
+  useEffect(() => { loadGospel(); }, [loadGospel]);
 
   useEffect(() => {
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
@@ -2401,6 +2411,16 @@ export default function App() {
   };
 
   const renderGospel = () => {
+    if (gospelError && !gospelData) {
+      return (
+        <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
+          <div style={{ marginBottom: 14 }}>{lang === 'es' ? 'No se pudo cargar el Evangelio de hoy.' : "Couldn't load today's Gospel."}</div>
+          <button onClick={loadGospel} style={{ background: GOLD, color: NAVY_DARK, border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: "bold", cursor: "pointer" }}>
+            {lang === 'es' ? 'Reintentar' : 'Retry'}
+          </button>
+        </div>
+      );
+    }
     if (!gospelData) {
       return (
         <div>
@@ -2461,6 +2481,16 @@ export default function App() {
     if (gospelData?.reading1) sections.push({ key: 'r1', title: lang === 'es' ? 'Primera lectura' : 'First reading', ref: gospelData.reading1.reference, text: gospelData.reading1.text, refEn: gospelData.reading1.referenceEn, textEn: gospelData.reading1.textEn, icon: iconScroll });
     if (gospelData?.psalm) sections.push({ key: 'ps', title: lang === 'es' ? 'Salmo responsorial' : 'Responsorial psalm', ref: gospelData.psalm.reference, text: gospelData.psalm.text, refEn: gospelData.psalm.referenceEn, textEn: gospelData.psalm.textEn, icon: iconLyre });
     if (gospelData?.reading2) sections.push({ key: 'r2', title: lang === 'es' ? 'Segunda lectura' : 'Second reading', ref: gospelData.reading2.reference, text: gospelData.reading2.text, refEn: gospelData.reading2.referenceEn, textEn: gospelData.reading2.textEn, icon: iconBook });
+    if (gospelError && !gospelData) {
+      return (
+        <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>
+          <div style={{ marginBottom: 14 }}>{lang === 'es' ? 'No se pudieron cargar las lecturas de hoy.' : "Couldn't load today's readings."}</div>
+          <button onClick={loadGospel} style={{ background: GOLD, color: NAVY_DARK, border: "none", borderRadius: 10, padding: "10px 20px", fontWeight: "bold", cursor: "pointer" }}>
+            {lang === 'es' ? 'Reintentar' : 'Retry'}
+          </button>
+        </div>
+      );
+    }
     if (!gospelData) return <div style={{ textAlign: "center", color: MUTED, padding: 40 }}>{lang === 'es' ? 'Cargando lecturas...' : 'Loading readings...'}</div>;
     return (
       <div>
