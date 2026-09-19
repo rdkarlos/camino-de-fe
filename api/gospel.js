@@ -8,8 +8,27 @@ export default async function handler(req, res) {
   const year  = parseInt(req.query.year)  || new Date().getFullYear();
   const lang  = req.query.lang || 'es';
 
-  const API_KEY  = '8z-olVvbUPzjg2OtXjSks';
-  const BIBLE_ID = 'e3f420b9665abaeb-01';
+  // BibleGet I/O — Libro del Pueblo de Dios (BLPD), católica con imprimatur
+  // y los 7 deuterocanónicos. Verificado en vivo: canon de 73 libros,
+  // Juan 3:16 y Tobías 3:11 con texto real. Ver PROYECTO.md para el
+  // detalle completo de la investigación de fuentes.
+  const BIBLEGET_APPID = 'caminodefe';
+
+  // book id (3 letras, mismas que bookMap de abajo) -> abreviatura BLPD,
+  // verificada contra metadata.php?query=versionindex&versions=BLPD; el
+  // orden canónico de BLPD coincide 1:1 con el de bookMap/BIBLE_BOOKS.
+  const BIBLEGET_ABBR = {
+    GEN:'Gen', EXO:'Ex', LEV:'Lv', NUM:'Nm', DEU:'Dt', JOS:'Jos', JDG:'Jc', RUT:'Rt',
+    '1SA':'1Sa', '2SA':'2Sa', '1KI':'1Re', '2KI':'2Re', '1CH':'1Cro', '2CH':'2Cro',
+    EZR:'Esd', NEH:'Ne', TOB:'Tb', JDT:'Jdt', EST:'Est', '1MA':'1Mac', '2MA':'2Mac',
+    JOB:'Jb', PSA:'Sal', PRO:'Pr', ECC:'Qo', SNG:'Cant', WIS:'Sb', SIR:'Si',
+    ISA:'Is', JER:'Jr', LAM:'Lam', BAR:'Ba', EZK:'Ez', DAN:'Dn', HOS:'Os', JOL:'Jl',
+    AMO:'Am', OBA:'Abd', JON:'Jon', MIC:'Mi', NAM:'Na', HAB:'Ha', ZEP:'Sof', HAG:'Ag',
+    ZEC:'Za', MAL:'Ml', MAT:'Mt', MRK:'Mc', LUK:'Lc', JHN:'Jn', ACT:'He', ROM:'Rm',
+    '1CO':'1Co', '2CO':'2Co', GAL:'Ga', EPH:'Ef', PHP:'Flp', COL:'Col', '1TH':'1Ts',
+    '2TH':'2Ts', '1TI':'1Tm', '2TI':'2Tm', TIT:'Tt', PHM:'Flm', HEB:'Hb', JAS:'St',
+    '1PE':'1P', '2PE':'2P', '1JN':'1Jn', '2JN':'2Jn', '3JN':'3Jn', JUD:'Jd', REV:'Ap',
+  };
 
   const bookMap = {
     'Genesis': 'GEN', 'Exodus': 'EXO', 'Leviticus': 'LEV', 'Numbers': 'NUM',
@@ -42,12 +61,15 @@ export default async function handler(req, res) {
     .replace(/&nbsp;/gi, ' ')
     .trim();
 
+  // Convierte una referencia de Universalis (inglés) en la query de
+  // BibleGet para BLPD, en notación "Abr<capítulo>,<verso>[-<verso>]" o
+  // "Abr<cap1>,<v1>-<cap2>,<v2>" para rangos que cruzan de capítulo.
   const parseRef = (rawRef) => {
     if (!rawRef) return null;
     let ref = normalizeRef(rawRef);
     // Psalm 33(34):2-9  |  Psalm 113B(115):3-10  →  usa el número entre paréntesis
     // (la letra opcional marca la mitad Vulgata de un salmo dividido; el número
-    // entre paréntesis es la numeración hebrea/moderna, la misma que usa API.Bible)
+    // entre paréntesis es la numeración hebrea/moderna, la misma que usa BibleGet)
     ref = ref.replace(/^(Psalms?)\s+\d+[A-Za-z]?\((\d+)\)/i, '$1 $2');
     // Tolera una letra pegada al capítulo que no haya sido normalizada arriba
     // (defensivo, por si aparece en evangelio/lecturas además de salmos)
@@ -56,31 +78,36 @@ export default async function handler(req, res) {
     const bookName = bookMatch[1].trim();
     const bookCode = bookMap[bookName];
     if (!bookCode) return null;
+    const abbr = BIBLEGET_ABBR[bookCode];
+    if (!abbr) return null;
     const ch1 = bookMatch[2];
     const v1  = bookMatch[3];
     const allNums = ref.match(/\d+/g) || [];
     const lastNum = allNums[allNums.length - 1];
     const chapterChange = ref.match(/(\d+)[A-Za-z]?:(\d+)-(\d+)[A-Za-z]?:(\d+)/);
     if (chapterChange) {
-      return `${bookCode}.${chapterChange[1]}.${chapterChange[2]}-${bookCode}.${chapterChange[3]}.${chapterChange[4]}`;
+      return `${abbr}${chapterChange[1]},${chapterChange[2]}-${chapterChange[3]},${chapterChange[4]}`;
     }
-    return `${bookCode}.${ch1}.${v1}-${bookCode}.${ch1}.${lastNum}`;
+    return `${abbr}${ch1},${v1}-${lastNum}`;
   };
 
   const getSpanishText = async (rawRef) => {
-    const passageId = parseRef(rawRef);
-    if (!passageId) return null;
+    const bibleGetQuery = parseRef(rawRef);
+    if (!bibleGetQuery) return null;
     try {
-      const url = `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/passages/${passageId}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`;
-      const response = await fetch(url, {
-        headers: { 'api-key': API_KEY, 'Accept': 'application/json' },
-      });
+      const url = `https://query.bibleget.io/v3/index.php?query=${encodeURIComponent(bibleGetQuery)}&version=BLPD&return=json&appid=${BIBLEGET_APPID}`;
+      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if (!response.ok) return null;
       const data = await response.json();
-      return {
-        text: data?.data?.content?.replace(/\s+/g, ' ').trim(),
-        reference: data?.data?.reference,
-      };
+      const verses = data?.results;
+      if (data?.errors?.length || !verses?.length) return null;
+      const text = verses.map(v => (v.text || '').trim()).join(' ').replace(/\s+/g, ' ').trim();
+      const first = verses[0];
+      const last = verses[verses.length - 1];
+      const reference = first.chapter === last.chapter
+        ? `${first.book} ${first.chapter}:${first.verse}${verses.length > 1 ? '-' + last.verse : ''}`
+        : `${first.book} ${first.chapter}:${first.verse}-${last.chapter}:${last.verse}`;
+      return { text, reference };
     } catch (e) {
       return null;
     }

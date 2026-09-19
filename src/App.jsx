@@ -197,6 +197,68 @@ function flattenBibleBooks(lang) {
   return books;
 }
 
+// BibleGet I/O — Libro del Pueblo de Dios (BLPD): fuente católica con
+// imprimatur y los 7 deuterocanónicos, para "La Biblia" completa. Ver
+// PROYECTO.md para el detalle de la investigación de fuentes.
+const BIBLEGET_APPID = "caminodefe";
+
+// book id (mismos ids que BIBLE_BOOKS de arriba) -> abreviatura BLPD,
+// verificada contra metadata.php?query=versionindex&versions=BLPD; el orden
+// canónico de BLPD coincide 1:1, libro por libro, con el de BIBLE_BOOKS.
+const BIBLEGET_ABBR = {
+  GEN:"Gen", EXO:"Ex", LEV:"Lv", NUM:"Nm", DEU:"Dt", JOS:"Jos", JDG:"Jc", RUT:"Rt",
+  "1SA":"1Sa", "2SA":"2Sa", "1KI":"1Re", "2KI":"2Re", "1CH":"1Cro", "2CH":"2Cro",
+  EZR:"Esd", NEH:"Ne", TOB:"Tb", JDT:"Jdt", EST:"Est", "1MA":"1Mac", "2MA":"2Mac",
+  JOB:"Jb", PSA:"Sal", PRO:"Pr", ECC:"Qo", SNG:"Cant", WIS:"Sb", SIR:"Si",
+  ISA:"Is", JER:"Jr", LAM:"Lam", BAR:"Ba", EZK:"Ez", DAN:"Dn", HOS:"Os", JOL:"Jl",
+  AMO:"Am", OBA:"Abd", JON:"Jon", MIC:"Mi", NAM:"Na", HAB:"Ha", ZEP:"Sof", HAG:"Ag",
+  ZEC:"Za", MAL:"Ml", MAT:"Mt", MRK:"Mc", LUK:"Lc", JHN:"Jn", ACT:"He", ROM:"Rm",
+  "1CO":"1Co", "2CO":"2Co", GAL:"Ga", EPH:"Ef", PHP:"Flp", COL:"Col", "1TH":"1Ts",
+  "2TH":"2Ts", "1TI":"1Tm", "2TI":"2Tm", TIT:"Tt", PHM:"Flm", HEB:"Hb", JAS:"St",
+  "1PE":"1P", "2PE":"2P", "1JN":"1Jn", "2JN":"2Jn", "3JN":"3Jn", JUD:"Jd", REV:"Ap",
+};
+
+// Cantidad de capítulos por libro en BLPD (misma fuente que arriba) — evita
+// una llamada de red solo para saber cuántos capítulos tiene un libro.
+const BIBLEGET_CHAPTERS = {
+  GEN:50, EXO:40, LEV:27, NUM:36, DEU:34, JOS:24, JDG:21, RUT:4,
+  "1SA":31, "2SA":24, "1KI":22, "2KI":25, "1CH":29, "2CH":36,
+  EZR:10, NEH:13, TOB:14, JDT:16, EST:10, "1MA":16, "2MA":15,
+  JOB:41, PSA:150, PRO:31, ECC:12, SNG:8, WIS:19, SIR:51,
+  ISA:64, JER:50, LAM:5, BAR:6, EZK:48, DAN:14, HOS:14, JOL:4,
+  AMO:9, OBA:1, JON:4, MIC:7, NAM:3, HAB:3, ZEP:3, HAG:2,
+  ZEC:14, MAL:3, MAT:28, MRK:16, LUK:24, JHN:21, ACT:28, ROM:16,
+  "1CO":16, "2CO":13, GAL:6, EPH:6, PHP:4, COL:4, "1TH":5,
+  "2TH":3, "1TI":6, "2TI":4, TIT:3, PHM:1, HEB:13, JAS:5,
+  "1PE":5, "2PE":3, "1JN":5, "2JN":1, "3JN":1, JUD:1, REV:22,
+};
+
+// Convierte los versículos JSON de BibleGet al mismo HTML minimal (span
+// vacío data-number + texto como nodo hermano) que parseVerses() ya sabe
+// leer de las respuestas HTML de API.Bible — así el resto del pipeline
+// (resaltar, comentar, ir-a-versículo) no necesita cambios.
+function bibleGetVersesToHtml(verses) {
+  return verses.map(v =>
+    `<span class="v" data-number="${v.verse}"></span>${String(v.text || "").replace(/</g, "&lt;")} `
+  ).join("");
+}
+
+async function bibleGetFetch(query) {
+  const url = `https://query.bibleget.io/v3/index.php?query=${encodeURIComponent(query)}&version=BLPD&return=json&appid=${BIBLEGET_APPID}`;
+  const r = await fetch(url);
+  const json = await r.json();
+  if (json.errors?.length || !json.results) throw new Error("bibleget error");
+  return json.results;
+}
+
+async function bibleGetSearch(keyword) {
+  const url = `https://query.bibleget.io/v3/search.php?query=keywordsearch&keyword=${encodeURIComponent(keyword)}&version=BLPD&return=json&appid=${BIBLEGET_APPID}`;
+  const r = await fetch(url);
+  const json = await r.json();
+  if (json.errors?.length || !json.results) throw new Error("bibleget error");
+  return json.results;
+}
+
 const ONBOARDING_ICONS = {
   logo: (
     <svg viewBox="0 0 160 160" width="88" height="88" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -4409,8 +4471,6 @@ export default function App() {
   };
 
   const renderBible = () => {
-    const BIBLE_ID = "e3f420b9665abaeb-01";
-    const API_KEY = "8z-olVvbUPzjg2OtXjSks";
     const allBooks = flattenBibleBooks(lang);
 
     const formatHighlightDate = (fecha) => {
@@ -4463,14 +4523,8 @@ export default function App() {
       setBibleHighlights({});
       setBibleCommentEditingVerse(null);
       setBibleNoSessionBanner(false);
-      try {
-        const r = await fetch(
-          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/books/${book.id}/chapters`,
-          { headers: { "api-key": API_KEY } }
-        );
-        const json = await r.json();
-        setBibleChapters((json.data || []).filter(c => c.number !== "intro"));
-      } catch (_) {}
+      const total = BIBLEGET_CHAPTERS[book.id] || 0;
+      setBibleChapters(Array.from({ length: total }, (_, i) => ({ number: String(i + 1) })));
       setBibleLoading(false);
     };
 
@@ -4484,12 +4538,9 @@ export default function App() {
       setBibleCommentEditingVerse(null);
       setBibleNoSessionBanner(false);
       try {
-        const r = await fetch(
-          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/chapters/${chapter.id}?content-type=html&include-verse-numbers=true&include-titles=false&include-notes=false&include-chapter-numbers=false`,
-          { headers: { "api-key": API_KEY } }
-        );
-        const json = await r.json();
-        setBibleChapterText(json.data?.content || "");
+        const abbr = BIBLEGET_ABBR[bibleSelectedBook.id];
+        const verses = await bibleGetFetch(`${abbr}${chapter.number}`);
+        setBibleChapterText(bibleGetVersesToHtml(verses));
       } catch (_) {}
       await loadHighlightsForChapter(bibleSelectedBook, chapter);
       setBibleLoading(false);
@@ -4503,12 +4554,15 @@ export default function App() {
       setBibleSearchResults(null);
       setBibleCommentEditingVerse(null);
       try {
-        const r = await fetch(
-          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/search?query=${encodeURIComponent(q)}&limit=20`,
-          { headers: { "api-key": API_KEY } }
-        );
-        const json = await r.json();
-        const results = json.data?.verses || [];
+        const raw = await bibleGetSearch(q);
+        const results = raw.slice(0, 20).map(v => {
+          const bookId = allBooks[parseInt(v.univbooknum, 10) - 1]?.id || null;
+          return {
+            id: bookId ? `${bookId}.${v.chapter}.${v.verse}` : null,
+            reference: `${v.book} ${v.chapter}:${v.verse}`,
+            text: v.text,
+          };
+        });
         setBibleSearchResults(results);
         await loadHighlightsForSearchResults(results);
       } catch (_) {
@@ -4557,12 +4611,8 @@ export default function App() {
       setBibleGotoMsg(null);
       setBibleGotoLoading(true);
       try {
-        const r = await fetch(
-          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/books/${book.id}/chapters`,
-          { headers: { "api-key": API_KEY } }
-        );
-        const json = await r.json();
-        const chapters = (json.data || []).filter(c => c.number !== "intro");
+        const totalChapters = BIBLEGET_CHAPTERS[book.id] || 0;
+        const chapters = Array.from({ length: totalChapters }, (_, i) => ({ number: String(i + 1) }));
         const match = chapters.find(c => c.number === String(chapterNum));
         if (!match) {
           setBibleGotoMsg({
@@ -4575,12 +4625,9 @@ export default function App() {
           return;
         }
 
-        const r2 = await fetch(
-          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/chapters/${match.id}?content-type=html&include-verse-numbers=true&include-titles=false&include-notes=false&include-chapter-numbers=false`,
-          { headers: { "api-key": API_KEY } }
-        );
-        const json2 = await r2.json();
-        const content = json2.data?.content || "";
+        const abbr = BIBLEGET_ABBR[book.id];
+        const rawVerses = await bibleGetFetch(`${abbr}${match.number}`);
+        const content = bibleGetVersesToHtml(rawVerses);
         const verses = parseVerses(content);
 
         setBibleSelectedBook(book);
@@ -4748,19 +4795,12 @@ export default function App() {
       const book = allBooks.find(b => b.id === entry.bookId) || { id: entry.bookId, name: entry.bookName };
       setBibleGotoLoading(true);
       try {
-        const r = await fetch(
-          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/books/${book.id}/chapters`,
-          { headers: { "api-key": API_KEY } }
-        );
-        const json = await r.json();
-        const chapters = (json.data || []).filter(c => c.number !== "intro");
-        const match = chapters.find(c => c.number === String(entry.chapterNumber)) || { id: `${book.id}.${entry.chapterNumber}`, number: String(entry.chapterNumber) };
-        const r2 = await fetch(
-          `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/chapters/${match.id}?content-type=html&include-verse-numbers=true&include-titles=false&include-notes=false&include-chapter-numbers=false`,
-          { headers: { "api-key": API_KEY } }
-        );
-        const json2 = await r2.json();
-        const content = json2.data?.content || "";
+        const totalChapters = BIBLEGET_CHAPTERS[book.id] || 0;
+        const chapters = Array.from({ length: totalChapters }, (_, i) => ({ number: String(i + 1) }));
+        const match = chapters.find(c => c.number === String(entry.chapterNumber)) || { number: String(entry.chapterNumber) };
+        const abbr = BIBLEGET_ABBR[book.id];
+        const rawVerses = await bibleGetFetch(`${abbr}${match.number}`);
+        const content = bibleGetVersesToHtml(rawVerses);
         setBibleSelectedBook(book);
         setBibleChapters(chapters);
         setBibleSelectedChapter(match);
