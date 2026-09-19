@@ -84,7 +84,7 @@
 8. Devocional — Oraciones (50, 6 secciones), Novenas (en construcción), Santo del Día
 9. Tienda — en construcción
 10. Configuración — "Tu parroquia" + "Horario de esta semana". Notificaciones retirada
-11. Joven Fe
+11. Joven Fe — **en rediseño, ver sección dedicada**
 
 ## Mi Oración — 4 pestañas
 - **Crear Oración:** 8 estados de ánimo → versículo + santo patrono → intención → "Orar"
@@ -105,6 +105,26 @@ Tarjeta en Oración Personal, debajo de "Mi Oración". Medita el Evangelio del D
 - **Bug corregido:** el paso de Lectura mostraba la cita corta del Versículo del Día en vez del Evangelio completo — ahora usa el `body` real, con scroll interno (280px) para no empujar los botones
 - **Bug relacionado, corregido en toda la app:** `cleanGospelText` no reconocía el punto en citas combinadas ("Lc 15, 1-3. 11-32") — afectaba también Home y Evangelio, no solo Lectio Divina
 - Indicador de "función nueva" aplicado (`featureId: 'lectio-divina'`) — ver sección dedicada abajo
+
+## Joven Fe — repensada, en diseño (19 sep 2026)
+
+### Decisión de fondo
+La estructura original (Retos/Testimonios/Quiz, sin contenido real en ninguna) se descartó. Nueva visión: **Itinerarios espirituales** como el ancla principal — recorridos narrativos de varios días con un santo/tema, no un banco de preguntas suelto. Decisión de Carlos: "quiero que haga parte de Joven Fe y ver cómo llevamos a los jóvenes a través de itinerarios al mundo de la fe, así nos toque repensar esa sección".
+
+### Itinerarios espirituales — primer contenido: 40 días con Santa Clara
+Documento fuente: `40_Dias_con_Santa_Clara.docx`, de **Lida Esperanza López M., Líder EMC 2026** (contenido propio de la comunidad de Carlos, Emaús Mujeres Calahorra — no hay problema de derechos). Estructura original por día: Conoce a Clara (hecho histórico) → Su palabra o su ejemplo → Reflexión → Oración → Propósito para hoy → Para tu servicio.
+
+**Decisiones de arquitectura confirmadas:**
+- Vive dentro de Joven Fe (no como devoción aparte en Oración Personal)
+- "Para tu servicio" (escrito para servidoras de retiro) se generaliza a **"Para tu día a día"** — aplicado a vida cotidiana, no solo contexto de retiro
+- Ritmo: **un día a la vez, bloqueado hasta mañana** (mismo patrón que el Diario)
+- Tono ajustado hacia lenguaje más joven y directo — confirmado con el Día 1 reescrito y aprobado por Carlos ("así me gusta")
+- Solo existe este itinerario por ahora; otros (distintos santos/temas) se piensan con calma después
+
+**Progreso de la reescritura (en curso, no aplicado a código todavía):** Días 1-9 de 40 ya reescritos con el tono aprobado, trabajando en tandas de 8-10 para revisión antes de escalar. Pendiente: Días 10-40, luego construir la devoción en código (persistencia por día, estructura similar a Lectio Divina/Diario).
+
+### Banco de preguntas "Fe y Vida" — en pausa, pendiente de repensar
+Se había diseñado un banco de preguntas jóvenes reales (rama Fe / rama Vida, tono "hermano mayor", 8 preguntas de muestra ya escritas y aprobadas en tono). Carlos pidió algo "más impactante que solo preguntas y respuestas" — esto llevó al hallazgo del documento de Santa Clara y al pivote hacia Itinerarios como ancla principal. **No descartado del todo** — podría retomarse como sección secundaria una vez Itinerarios esté construido, pero no es la prioridad inmediata.
 
 ## Conec✝2 — círculos de oración
 
@@ -146,15 +166,20 @@ Tarjeta en Oración Personal, debajo de "Mi Oración". Medita el Evangelio del D
 - Buscador temático + "Ir a una cita". Memoria de lectura conservada deliberadamente
 - Resaltar/comentar versículos, "Mis Versículos"
 
-## ⚠️ Traducción bíblica — problema de fondo, gestión activa en curso (2 ago 2026)
+### Bug de Universalis — deofuscación + manejo de errores (19 sep 2026)
+Universalis (fuente del Evangelio/Lecturas) cambió su formato de respuesta — el texto llegó envuelto en cadenas `.split().join()` (probable anti-scraping), que `api/gospel.js` intentaba parsear directo como JSON y fallaba 100% de las veces con un 500. En paralelo, `App.jsx` tenía un `.catch(() => {})` silencioso en el fetch de `/api/gospel` — el error nunca se mostraba, la pantalla se quedaba en "Cargando..." indefinidamente. Dos fixes: (1) `api/gospel.js` deofuscar la respuesta antes de parsear; (2) `App.jsx` reemplaza el catch silencioso por estado de error real (`gospelError`) con UI de "No se pudo cargar / Reintentar" en Evangelio y Lecturas — cualquier fallo futuro (de esta causa o de otra) ya no se queda pegado en silencio.
 
-### El problema
-Carlos notó "Jehová" en el Versículo del Día — señal de traducción protestante. Confirmado: **LBLA (La Biblia de las Américas)**, usada en TODA la app (Versículo del Día, La Biblia, Evangelio del Día, Lecturas del Día), es traducción evangélica de la Lockman Foundation, sin aprobación católica.
+## Traducción bíblica — RESUELTA temporalmente con BLPD, gestión institucional sigue en curso (19 sep 2026)
 
-**Corrección (28 ago 2026):** el "Jehová" que vio Carlos NO venía de LBLA ni de `versiculos.js` — ver hallazgo completo más abajo, "Cron de reflexión diaria — generación libre de versículos, corregido". El problema de fondo de LBLA (sin aprobación católica, sin deuterocanónicos) sigue vigente y es lo que describe el resto de esta sección.
+### El problema original y su resolución
+Carlos notó "Jehová" en el Versículo del Día. La causa real no era LBLA ni `versiculos.js` — fue el cron generando versículos de memoria sin fuente (ver hallazgo completo abajo, "Cron de reflexión diaria"). Pero investigando esto se confirmó un problema de fondo real y más amplio: **LBLA (La Biblia de las Américas)**, usada en toda la app, es traducción evangélica sin aprobación católica ni deuterocanónicos — un problema que llevaba tiempo sin resolverse, independientemente del bug puntual del cron.
 
-**Alcance del código, confirmado por búsqueda exacta en el repo:**
-- `versiculos.js` — banco propio de 366 versículos, texto estático escrito a mano. **Origen exacto desconocido** — no se generó en esta sesión ni hay registro de sesiones anteriores que lo confirmen; probablemente basado en LBLA. Requiere su propia auditoría completa cuando se resuelva la fuente. Búsqueda exhaustiva (28 ago 2026) confirma que ninguna de las 366 entradas contiene "Jehová"/"Jehova" — esa palabra específica queda descartada para este archivo, pero la auditoría de fondo (fidelidad de traducción, estilo) sigue pendiente. **Sigue sin tocar** — tarea aparte, deliberadamente fuera de la activación del 19 sep 2026.
+**Estado actual:** Evangelio, Lecturas y La Biblia completa migraron a **BibleGet/BLPD** (Libro del Pueblo de Dios, católica, con los 73 libros del canon) el 19 sep 2026, como solución temporal mientras las gestiones institucionales con las Conferencias Episcopales siguen sin respuesta. Ver "Activación" más abajo para el detalle completo.
+
+**Lo que sigue pendiente:** `versiculos.js` (Versículo del Día, banco estático de 366) no se tocó — su propia auditoría queda aparte. Y las dos gestiones institucionales (CEC Colombia, CEE España) siguen abiertas: si alguna responde con una traducción con licencia más sólida que BLPD, esa sigue siendo la meta final a migrar.
+
+**Alcance del código:**
+- `versiculos.js` — banco propio de 366 versículos, texto estático escrito a mano. **Origen exacto desconocido** — probablemente basado en LBLA. Búsqueda exhaustiva (28 ago 2026) confirma que ninguna de las 366 entradas contiene "Jehová"/"Jehova" — esa palabra específica queda descartada para este archivo, pero la auditoría de fondo (fidelidad de traducción, estilo) sigue pendiente. **Sigue sin tocar** — tarea aparte, deliberadamente fuera de la activación del 19 sep 2026.
 - `api/gospel.js` — **migrado (19 sep 2026)** de API.Bible/LBLA a BibleGet/BLPD. Alimenta Evangelio + 1ª/2ª lectura + Salmo del día.
 - `src/App.jsx` — **migrado (19 sep 2026)**, mismo cambio de fuente, alimenta "La Biblia" completa (navegación, lectura de capítulo, búsqueda, ir-a-cita).
 
@@ -168,53 +193,58 @@ Carlos notó "Jehová" en el Versículo del Día — señal de traducción prote
 
 **Nota aparte, sin tocar:** `api/spiritual-guide.js` también usa Claude, pero para el chat de orientación ("Ponlo en Práctica"), no para citar versículos como texto bíblico literal — no es el mismo riesgo, no se tocó.
 
-### Investigación de fuentes — TODAS descartadas hoy, con motivo verificado
+### Investigación de fuentes — TODAS descartadas, con motivo verificado
 
-**API.Bible (nuestra cuenta):** 8 Biblias en español disponibles (LBLA, NBLA, RVR09, Palabra de Dios para ti ×2, Español Sencillo, VBL ×2) — verificado contando libros reales vía API (66 o menos en todas; católico = 73). Cero deuterocanónicos en ninguna. La documentación general de API.Bible menciona "hundreds of Bibles" y que el plan Starter gratis permite elegir 3 "licensed Bibles" adicionales — **pendiente verificar si ese catálogo ampliado (Additional Bibles / Express Licensing) tiene alguna católica**, no confirmado aún.
+**API.Bible (nuestra cuenta):** 8 Biblias en español disponibles (LBLA, NBLA, RVR09, Palabra de Dios para ti ×2, Español Sencillo, VBL ×2) — verificado contando libros reales vía API (66 o menos en todas; católico = 73). Cero deuterocanónicos en ninguna. **Verificado también el plan Pro/Express Licensing (19 sep 2026):** API.Bible es operado por American Bible Society (ABS), no por United Bible Societies (UBS) — son entidades hermanas pero jurídicamente distintas. "Dios Habla Hoy" (que sí tiene deuterocanónicos, publicada por UBS) NO existe en el catálogo de API.Bible, ni gratis ni de pago — ABS no redistribuye el catálogo de UBS. Costo real del plan Pro: $29+/mes (150K llamadas). Traducciones individuales fuera del pool gratuito: desde $10/mes por Biblia, escalando por usuarios activos hasta $300/mes (25K-100K usuarios). Cualquier ingreso (ads, compras in-app, suscripciones) activa un "Commercial Agreement" obligatorio y las Biblias gratuitas del acuerdo no-comercial dejan de ser válidas — mismo patrón de "lock-in" que YouVersion. **Descartado en su totalidad** — ni gratis ni pagando tiene una traducción católica.
 
-**YouVersion Platform:** cuenta creada, App Key obtenida y guardada en Vercel (`YOUVERSION_APP_KEY` — **recomendado rotarla**, se compartió en el chat). 9 Biblias en español disponibles por defecto, cero católicas (mismas familias: Reina-Valera Antigua, Palabra de Dios para ti, NVI, VBL, etc.). Traducciones católicas (Nácar-Colunga, Biblia Latinoamericana) existen en su catálogo general según búsqueda web, pero requieren solicitar licencia específica, no vienen por defecto. **Riesgo adicional real:** uso "non-commercial lock-in" — si Horeb monetiza en el futuro, se pierde el acceso a la API.
+**YouVersion Platform:** cuenta creada, App Key obtenida y guardada en Vercel (`YOUVERSION_APP_KEY` — **recomendado rotarla**, se compartió en el chat). 9 Biblias en español disponibles por defecto, cero católicas. Traducciones católicas (Nácar-Colunga, Biblia Latinoamericana) existen en su catálogo general según búsqueda web, pero requieren solicitar licencia específica, no vienen por defecto. **Riesgo adicional real:** uso "non-commercial lock-in" — si Horeb monetiza en el futuro, se pierde el acceso a la API.
 
-**Magisterium AI:** no es fuente de texto bíblico — es IA conversacional para preguntas doctrinales. Sigue como candidato para capa de precisión doctrinal de "Ponlo en Práctica" (ya documentado antes), no para esto.
+**Magisterium AI:** no es fuente de texto bíblico — es IA conversacional para preguntas doctrinales. Sigue como candidato para capa de precisión doctrinal de "Ponlo en Práctica", no para esto.
 
-**vatican.va:** aloja la Biblia de Jerusalén completa en español (confirmado — usa "Yahveh", coincide con Génesis 1:1 de esa traducción), pero sus términos de uso son explícitos: "uso personal y sin fines de lucro" — no autoriza extracción/redistribución en una app de terceros. Sujeto además a la ley de copyright vaticana (2011, Ley CXXXII).
+**vatican.va:** aloja la Biblia de Jerusalén completa en español, pero sus términos de uso son explícitos: "uso personal y sin fines de lucro" — no autoriza extracción/redistribución en una app de terceros. Sujeto además a la ley de copyright vaticana (2011, Ley CXXXII).
 
-**Repositorios de código abierto (descartados, mismo patrón en los tres):**
+**Repositorios de código abierto (todos descartados, mismo patrón):**
 - NPM `biblia-de-jerusalen` — licencia MIT cubre el CÓDIGO, no el texto (copyright confirmado de Desclée De Brouwer)
-- GitHub `eneleich1/La-Biblia` y `eneleich1/La-Biblia-de-Jerusalen-Project` (mismo autor, dos nombres) — el propio autor reconoce en el README no haber verificado derechos de redistribución; proyecto de portafolio técnico, no fuente para producción
-- GitHub `catholicbibletools/cbt` — incluye Libro del Pueblo de Dios y Biblia Latinoamericana en su lista, pero mismo problema de licencia de texto no aclarada + proyecto abandonado desde 2020 (9 estrellas, sin commits recientes)
+- GitHub `eneleich1/La-Biblia` y `eneleich1/La-Biblia-de-Jerusalen-Project` (mismo autor, dos nombres) — el propio autor reconoce en el README no haber verificado derechos de redistribución
+- GitHub `catholicbibletools/cbt` — incluye Libro del Pueblo de Dios y Biblia Latinoamericana, pero licencia de texto no aclarada + abandonado desde 2020
+- GitHub `mrk214/bible-data-es-spa` (19 sep 2026) — confirma de forma independiente que "Dios Habla Hoy" con 75 libros/deuterocanónicos existe (coincide con lo visto en DBL), pero agrega LBLA/NVI/RVR1960 sin ninguna licencia visible — mismo patrón de código MIT sin cubrir el texto, con copyright conocido y activo de por medio (LBLA es literalmente la misma traducción del problema original)
+- **PDF de la Biblia CEE (epublibre.org):** confirmado que es copia pirata (trae el aviso característico del sitio) — no se usó. Sirvió como pista legítima: confirma que BAC hizo el trabajo editorial bajo encargo de la CEE.
+- **Scraping directo de vatican.va o de la web de la CEE:** evaluado y descartado explícitamente (19 sep 2026) — mismo problema legal que cualquier otra extracción sin permiso, con el agravante de que sería Horeb ejecutando la infracción directamente, no encontrando una ya hecha por otro. No se construyó nada de esto.
 
-**BibleGet I/O** (`query.bibleget.io`) — única fuente con licencia de texto genuinamente confirmada (gestionada por su creador, sacerdote de la diócesis de Roma) para "Libro del Pueblo de Dios" (BLPD): católica, imprimatur, deuterocanónicos confirmados en vivo (Tobías 3:11 probado), gratis, sin restricción comercial. Documentación desactualizada (rutas dan 410, hay que descubrir las reales en vivo). Proyecto de un solo desarrollador, presupuesto anual ~€70. **Descartada en un principio por decisión explícita de Carlos** — "necesitamos resolver esto de fondo, si no es confiable mejor no". Quedó anotada como posible solución temporal si los caminos institucionales tardaban demasiado — y así fue: activada el 19 sep 2026 (ver "Activación" más abajo, tras el inventario en vivo).
+**BibleGet I/O** (`query.bibleget.io`) — única fuente con licencia de texto genuinamente confirmada, para "Libro del Pueblo de Dios" (BLPD). **Verificación de confiabilidad del mantenedor (19 sep 2026):** su creador, John R. D'Orazio, es sacerdote con perfil de GitHub activo y real — 76 repositorios, 119 estrellas, actividad reciente, mantiene al menos otra API católica en producción (Calendario Litúrgico, consumida por otros proyectos). El código específico de BibleGet no está público en GitHub (no auditable directamente), pero el perfil general sube la confianza respecto a la evaluación inicial ("un desarrollador con €70/año"). Sigue siendo una sola persona sin respaldo institucional — riesgo real pero menor de lo que parecía al principio.
 
-**Inventario completo de BLPD, verificado en vivo (16 sep 2026), antes de una eventual reactivación:**
+**Inventario completo de BLPD, verificado en vivo (16 sep 2026):**
+- **Rutas reales:** todo va bajo `/v3/` (la documentación de GitHub da 410 en rutas viejas). Consulta: `https://query.bibleget.io/v3/index.php?query=...&version=BLPD&return=json`. Metadata: `https://query.bibleget.io/v3/metadata.php?query=...`.
+- **Endpoint de metadata existe:** `?query=bibleversions` (ficha completa de cada versión) y `?query=versionindex&versions=BLPD` (índice canónico: 73 libros, abreviaturas, `chapter_limit`/`verse_limit`, `book_num` 1–73).
+- **Canon confirmado: 73 libros completos** — 46 del AT (7 deuterocanónicos en su sitio: Tobías #17, Judit #18, 1Mac #20, 2Mac #21, Sabiduría #27, Sirácides/Eclesiástico #28, Baruc #32) + 27 del NT.
+- **Los 7 deuterocanónicos probados en vivo, todos con texto real:** Tobías 3:11, Judit 13:18, Sabiduría 3:1, Sirácides 3:17 (la API lo indexa como "Sirácides", no "Eclesiástico"), Baruc 3:38, 1 Macabeos 1:1, 2 Macabeos 7:1.
+- **Salterio completo confirmado:** `chapter_limit` de Salmos = 150. Salmo 1:1, Salmo 150:6, y Salmo 119 completo (176 versos, el capítulo más largo de toda la Biblia) — sin truncar.
+- **Edición: 2015**, autoreportada por la propia API: "Libro del Pueblo de Dios|2015|es|1|CATHOLIC|Fundación Palabra de Vida y Editorial Verbo Divino". Historia: 1964 (Evangelios) → 1968 (NT completo) → ~1990 (Biblia completa, oficial para la Conferencia Episcopal Argentina, usada en leccionarios de Chile/Paraguay/Uruguay/Bolivia) → 2015 (revisión del P. Levoratti, Editorial San Pablo — es esta la que expone la API). Solo hay una edición en el catálogo.
+- **Hallazgo sobre licencia:** BLPD aparece en el campo `"copyrightversions"` de la propia metadata. Los Términos de Servicio de BibleGet dicen que estos textos "are the sole property of their respective copyright holders" y se ofrecen "solely with usage granted by their copyright holders" — el titular real es **Fundación Palabra de Vida y Editorial Verbo Divino**, no BibleGet. Requisitos operativos del ToS: parámetro `appid` obligatorio en cada consulta, y obligación de divulgar a usuarios finales que se usa BibleGet.
 
-- **Rutas reales (la documentación en GitHub da 410 en la raíz sin versión):** todo va bajo `/v3/`. Consulta de versículos: `https://query.bibleget.io/v3/index.php?query=...&version=BLPD&return=json`. Metadata: `https://query.bibleget.io/v3/metadata.php?query=...`.
-- **Sí existe endpoint de metadata/info** — no hace falta probar libro por libro a mano:
-  - `?query=bibleversions` lista todas las versiones con ficha completa (nombre, año, idioma, católica/protestante, titular de derechos, notas).
-  - `?query=versionindex&versions=BLPD` devuelve el índice canónico completo: 73 libros (`biblebooks`), abreviaturas, `chapter_limit` y `verse_limit` por libro/capítulo, y `book_num` 1–73 (numeración estándar del canon católico).
-- **Canon confirmado: 73 libros completos.** El índice trae los 46 del AT (con los 7 deuterocanónicos en su sitio: Tobías #17, Judit #18, 1Mac #20, 2Mac #21, Sabiduría #27, Sirácides/Eclesiástico #28, Baruc #32) + los 27 del NT hasta Apocalipsis (#73).
-- **Los 7 deuterocanónicos probados en vivo, uno por uno, todos con texto real (no error):** Tobías 3:11, Judit 13:18, Sabiduría 3:1, Sirácides 3:17 (ojo: la API lo indexa como "Sirácides", no "Eclesiástico" — hay que usar la abreviatura `Si` o ese nombre), Baruc 3:38, 1 Macabeos 1:1, 2 Macabeos 7:1. Los 27 libros del NT ya se veían cubiertos en integraciones previas (Evangelio/Lecturas).
-- **Salterio completo confirmado.** `chapter_limit` de Salmos = 150. Probado en vivo: Salmo 1:1 (primer verso), Salmo 150:6 (último verso), y Salmo 119 completo (el capítulo más largo de toda la Biblia, 176 versos) — los 176 volvieron sin truncar en una sola consulta.
-- **Edición: 2015**, autoreportada por la propia API (`metadata.php`): "Libro del Pueblo de Dios|2015|es|1|CATHOLIC|Fundación Palabra de Vida y Editorial Verbo Divino". Contexto histórico (Wikipedia + ficha de la propia API): la traducción arrancó en 1964 (Evangelios, Trusso), se amplió en 1968 (NT completo, se suma Levoratti), llegó a Biblia completa hacia 1990 (edición reconocida como texto oficial por la Conferencia Episcopal Argentina y usada en leccionarios de Chile, Paraguay, Uruguay y Bolivia — la misma que aparece en el sitio del Vaticano), y la de **2015 es una revisión con notas e introducciones ampliadas/actualizadas por el P. Levoratti, publicada por Editorial San Pablo** — es esta última la que expone la API, según su propia ficha. Solo hay una edición de BLPD en el catálogo (`validversions` trae un único `"BLPD"`, no hay variantes por año).
-- **Hallazgo nuevo, no visto antes — matiza "sin restricción comercial":** BLPD aparece en el campo `"copyrightversions":["CEI2008","NABRE","BLPD"]` de la propia metadata. Los Términos de Servicio de BibleGet (`BibleGetIOTermsofService.html`) dicen explícitamente que los textos marcados así "are the sole property of their respective copyright holders" y se ofrecen "solely with usage granted by their copyright holders", y que el titular puede limitar el acceso ("for example, a maximum number of verses that can be retrieved in a single query"). En la práctica, hoy no se observó ningún límite (Salmo 119 completo, 176 versos, salió sin cortar), pero jurídicamente el uso de BLPD depende del permiso de **Fundación Palabra de Vida y Editorial Verbo Divino**, no es un texto de dominio público como sí lo son DRB, NVBSE o VGCL en el mismo catálogo. Requisitos operativos del ToS: parámetro `appid` obligatorio identificando la app en cada consulta, y obligación de divulgar a los usuarios finales que se usa BibleGet.
-- **Conclusión del inventario:** el canon, la edición y el Salterio quedan verificados y completos. Lo que sigue pendiente antes de activar no es de contenido sino de licencia: BibleGet expone el texto, pero el titular real de los derechos de BLPD es Fundación Palabra de Vida/Editorial Verbo Divino — vale la pena confirmar si el permiso que BibleGet dice tener de ese titular cubre uso en una app de terceros como Horeb, o si conviene escribirles directamente a ellos (mismo patrón que las gestiones ya en curso con las conferencias episcopales).
+**Activación (19 sep 2026):** Carlos decidió activar BLPD como solución temporal mientras las gestiones institucionales siguen sin ETA. Migrados y verificados en vivo:
+- `api/gospel.js` — Evangelio, 1ª/2ª lectura y Salmo del día. Probado con el Evangelio real del día (Lucas 8, 4-15) y un domingo completo (4 lecturas). Cero "Jehová" en ninguna respuesta.
+- `src/App.jsx` — "La Biblia" completa (navegación, lectura de capítulo, búsqueda, "Ir a una cita"). Antes de migrar se verificaron en vivo los 3 casos de uso que este módulo necesita:
+  - **Listar libros:** no hacía falta endpoint nuevo — `App.jsx` ya tenía su propio índice estático de 73 libros en orden canónico; verificado posición-por-posición contra `metadata.php?query=versionindex&versions=BLPD`, coincide exacto.
+  - **Capítulo completo:** `index.php?query=Libro<capítulo>` devuelve todos los versículos en una sola consulta (probado con Salmo 119, 176 versos, sin truncar).
+  - **Buscador de texto:** endpoint no documentado en el inventario anterior — `search.php?query=keywordsearch` (distinto de `index.php`, que solo acepta referencias exactas). Confirmado funcionando.
+  - Verificado con capturas: Evangelio del día, Lecturas con formato R./V., búsqueda "misericordia" (20 resultados), Tobías 3 completo (imposible antes con LBLA), "Ir a una cita" con Juan 3:16.
+- **Caveat operativo:** `search.php` no tiene límite de resultados ni paginación — una palabra común (ej. "señor") devuelve miles de versículos y ~3MB en una sola respuesta. La app sigue mostrando solo 20, pero la descarga completa igual le pega al servidor gratuito de BibleGet en cada búsqueda amplia — vigilar si el buscador se usa mucho.
+- El Versículo del Día (`versiculos.js`) sigue sin tocar, como estaba decidido.
 
-**Activación (19 sep 2026):** Carlos decidió activar BLPD como solución temporal mientras las gestiones institucionales siguen sin ETA — exactamente el escenario que este mismo inventario dejó anotado como aceptable ("Queda como posible solución temporal si los caminos institucionales tardan demasiado"). Migrados y verificados en vivo: `api/gospel.js` (Evangelio, 1ª/2ª lectura y Salmo del día) y `src/App.jsx` — "La Biblia" completa (navegación por libro/capítulo, lectura de capítulo, buscador de texto, "Ir a una cita"). Antes de migrar "La Biblia" se verificó en vivo que BibleGet cubre los 3 casos de uso que ese módulo necesita, ninguno tuvo que quedar a medias: `metadata.php?query=versionindex` para el índice de libros/capítulos (no hacía falta — App.jsx ya tenía su propio listado estático de 73 libros en el orden correcto, verificado ahora posición-por-posición contra el índice real de BLPD), `index.php?query=Libro<capítulo>` para capítulo completo, y un tercer endpoint no documentado en el inventario anterior — `search.php?query=keywordsearch` — para el buscador de texto completo (`index.php` por sí solo NO sirve para esto, rechaza cualquier query sin capítulo). El Versículo del Día (`versiculos.js`) sigue sin tocar, como estaba decidido. **Caveat operativo nuevo:** `search.php` no tiene parámetro de límite de resultados ni paginación — una palabra común en español (ej. "señor") devuelve miles de versículos y ~3MB en una sola respuesta; la app sigue mostrando solo los primeros 20 como antes, pero la descarga completa igual le pega al servidor gratuito de BibleGet (€70/año, un solo desarrollador) en cada búsqueda amplia — vale la pena vigilar esto si el buscador se usa mucho.
+### Gestiones institucionales activas — dos frentes en paralelo, sin ETA
 
-**PDF de la Biblia CEE (epublibre.org):** Carlos tenía un PDF de la Sagrada Biblia (versión oficial CEE, 2011). **Confirmado que es una copia pirata** — el propio archivo trae el aviso característico de epublibre.org sobre distribución no autorizada. No se usó ni se usará su texto. Sí sirvió como pista legítima: confirma que **BAC (Biblioteca de Autores Cristianos)** hizo el trabajo editorial de esa versión bajo encargo de la CEE — dato real para las gestiones en curso.
+**1. Digital Bible Library (DBL) — RECHAZADA por falta de registro legal**
+Operada por United Bible Societies. Se encontró en su catálogo *"Dios Habla Hoy Orden Alejandrino DC Estándar"*, con etiqueta **"Bible with Deuterocanon"**. Cuenta y organización "Horeb" registradas. **Respuesta final de DBL:** *"Only legally registered organizations can request license agreements for Controlled Access content."* — requisito estructural, no negociable. Cerrado hasta que Horeb tenga entidad legal registrada en Colombia — anotado como posible beneficio futuro de formalización del proyecto.
 
-### Gestiones institucionales activas — dos frentes en paralelo
+**2. Conferencias Episcopales — en espera, sin ETA**
+- **CEC Colombia** (doctrinaybiblia@cec.org.co, Departamento de Doctrina y Animación Bíblica, padre Jorge Bustamante Mora) — enviado, presenta a Horeb, menciona a Carlos como feligrés de Calahorra (Cajicá, Diócesis de Zipaquirá)
+- **CEE España** — correo preparado, aclara que la parroquia de Carlos queda en Colombia, transparente sobre monetización futura, pregunta por licencia de la Sagrada Biblia CEE y si BAC es el interlocutor correcto
 
-**1. Digital Bible Library (DBL) — RECHAZADA por falta de registro legal, sin retomar por ahora**
-Operada por United Bible Societies. Se encontró en su catálogo *"Dios Habla Hoy Orden Alejandrino DC Estándar"*, con etiqueta explícita **"Bible with Deuterocanon"** — confirmaba ser la edición católica de DHH (a diferencia de la de API.Bible). Cuenta personal creada, organización "Horeb" registrada como "Distributor". **Respuesta oficial de DBL:** solicitaron verificación organizacional (no encontraron info institucional en somoshoreb.com) y señalaron que la organización quedó marcada como "hidden" sin querer. Carlos respondió con transparencia (proyecto independiente, sin entidad legal formal, ofreciendo referencia parroquial). **Respuesta final de DBL, con P.D. decisiva:** *"Only legally registered organizations can request license agreements for Controlled Access content."* — **requisito estructural, no negociable con más contexto.** Este camino queda cerrado hasta que Horeb tenga una entidad legal registrada en Colombia (fundación, SAS, o similar) — anotado como posible paso futuro de formalización del proyecto, con beneficios más allá de esto (licencias, patrocinios, monetización sin las restricciones de YouVersion).
+**Estado: BLPD activo en producción; las 2 gestiones institucionales siguen abiertas como meta de mejora a futuro, no como bloqueo.**
 
-**2. Conferencias Episcopales — en espera de respuesta, sin ETA**
-- **Correo enviado a la Conferencia Episcopal de Colombia** (doctrinaybiblia@cec.org.co, Departamento de Doctrina y Animación Bíblica, contacto: padre Jorge Bustamante Mora). Presenta a Horeb, menciona a Carlos como feligrés de la Parroquia Virgen del Rosario de Calahorra (Cajicá, Diócesis de Zipaquirá), pregunta por traducción recomendada/licenciada, cómo gestionar permiso, y a quién más dirigirse (CELAM, Sociedades Bíblicas Unidas) si no es el canal correcto.
-- **Correo preparado para la Conferencia Episcopal Española** (destinatario exacto pendiente de confirmar) — presenta el proyecto con la misma honestidad, aclarando explícitamente que la parroquia de Carlos queda en Colombia (no España), y siendo transparente sobre monetización futura: hoy sin ánimo de lucro, pero sin descartar algún esquema a futuro para sostener mantenimiento — pregunta por licencia de la Sagrada Biblia CEE, si las condiciones cambian según fin de lucro, costos, y si BAC es el interlocutor correcto en su lugar.
-
-**Estado: 2 gestiones institucionales siguen en curso, sin ETA.** El código sí se retomó el 19 sep 2026 (ver "Activación" arriba) — BLPD quedó activo como solución temporal, no como reemplazo de estas gestiones: si una conferencia episcopal o SBU responde con una traducción con permiso institucional más sólido, esa sigue siendo la meta a migrar.
-
-### Decisión pendiente, aparte, para cuando se resuelva la fuente
-Los 366 versículos de `versiculos.js` no se actualizan solos al cambiar de API — es contenido estático que requiere su propia revisión/reescritura completa, con el mismo cuidado (verificación carácter por carácter) que el resto del contenido litúrgico del proyecto.
+### Decisión pendiente, aparte
+Los 366 versículos de `versiculos.js` no se actualizan solos — requieren su propia revisión/reescritura completa, con el mismo cuidado (verificación carácter por carácter) que el resto del contenido litúrgico del proyecto.
 
 ## Menú hamburguesa
 - Cierra al tocar/scrollear fuera. Accesos rápidos cierran al navegar. Cierre fantasma corregido
@@ -262,7 +292,7 @@ Los 366 versículos de `versiculos.js` no se actualizan solos al cambiar de API 
 - `src/Rosario.jsx`, `src/Coronilla.jsx`, `src/Devocional.jsx`, `src/diarioPreguntas.js`
 - `src/santos.js`, `src/versiculos.js` (⚠️ pendiente auditoría de fuente), `src/JovenFe.jsx`, `src/shareImage.js`
 - `seed-parroquias.mjs`, `list-public-circles.mjs` (pendiente de correr)
-- `api/gospel.js` (⚠️ Bible ID de LBLA, línea 12), `api/spiritual-guide.js`, `api/cron-reflexion.js`, `api/order.js`, `api/confirm-payment.js`
+- `api/gospel.js` (migrado a BibleGet/BLPD, 19 sep 2026), `api/spiritual-guide.js`, `api/cron-reflexion.js` (ya no genera versículos de memoria, lee `versiculos.js`), `api/order.js`, `api/confirm-payment.js`
 - `public/sw.js` (**v20**), `public/favicon.svg`, `public/manifest.json`
 
 ## Variables de entorno en Vercel
@@ -270,11 +300,15 @@ Los 366 versículos de `versiculos.js` no se actualizan solos al cambiar de API 
 
 ## Pendiente
 
-### Traducción bíblica — máxima prioridad, gestión en curso
-- Esperar respuesta de CEC Colombia (correo enviado) y CEE España (correo preparado)
-- Verificar catálogo "Additional Bibles"/Express Licensing de API.Bible por si hay alguna católica no vista aún
-- Considerar formalización legal de Horeb como entidad — reabriría DBL y otras puertas
-- Cuando se resuelva: cambiar 2 líneas (`api/gospel.js:12`, `src/App.jsx:4291`) + auditoría completa de los 366 versículos de `versiculos.js`
+### Traducción bíblica — gestión institucional sigue en curso
+- Esperar respuesta de CEC Colombia y CEE España
+- BLPD activo como solución temporal — reemplazar si llega algo con licencia más sólida
+- Auditoría completa pendiente de `versiculos.js` (366 entradas), tarea aparte
+
+### Joven Fe — Itinerarios (en progreso)
+- Completar reescritura de Días 10-40 de "40 días con Santa Clara" (tono joven, "Para tu día a día" generalizado)
+- Construir la devoción en código una vez el contenido esté completo (persistencia por día, similar a Lectio Divina/Diario)
+- Banco de preguntas "Fe y Vida" — en pausa, retomar como sección secundaria si tiene sentido después de Itinerarios
 
 ### Verificación inmediata (tuya)
 - Confirmar que el resumen del menú de perfil coincide con la realidad
@@ -304,7 +338,6 @@ Los 366 versículos de `versiculos.js` no se actualizan solos al cambiar de API 
 ### Contenido
 - Novenas — contenido nuevo, fuente confiable
 - `CLASSIC_PRAYERS.en` al inglés
-- Joven Fe — Testimonios y Quiz Bíblico
 - Rosario: citas en inglés
 - 🕊️ (paloma) de Home
 - `CalmGlyph` de "Ansiedad" — mejorar
@@ -312,7 +345,7 @@ Los 366 versículos de `versiculos.js` no se actualizan solos al cambiar de API 
 
 ### Funcionalidad futura
 - Push notifications reales
-- Monetización — Fase 0 (Cordada, Brisa, Semilla, Cumbre) — **ahora conectada a la decisión de formalización legal**, ver arriba
+- Monetización — Fase 0 (Cordada, Brisa, Semilla, Cumbre) — conectada a la decisión de formalización legal
 
 ### Seguridad — revisar en otra sesión
 - `circulos: allow read: if true` expone datos de privados
@@ -344,7 +377,10 @@ Los 366 versículos de `versiculos.js` no se actualizan solos al cambiar de API 
 - Bug de ícono de perfil cerrando sesión — corregido
 - Conec✝2 completo (palabra, testimonios, públicos administrados, tarjeta en Inicio)
 - Rediseño de Home completo (hero, saludo dinámico, jerarquía)
-- **Lectio Divina — nueva devoción completa**
-- **Botón/gesto atrás del sistema — navegación entre secciones**
-- **Indicador genérico de función nueva**
-- **Investigación exhaustiva de fuentes bíblicas católicas — 2 gestiones institucionales en curso (CEC Colombia, CEE España)**
+- Lectio Divina — nueva devoción completa
+- Botón/gesto atrás del sistema — navegación entre secciones
+- Indicador genérico de función nueva
+- **Bug de Universalis corregido (deofuscación + manejo de errores visible)**
+- **Traducción bíblica: LBLA reemplazada por BLPD (católica, 73 libros) en Evangelio, Lecturas y La Biblia completa**
+- **Cron de reflexión diaria: generación libre de versículos eliminada, causa real del "Jehová" resuelta**
+- **Joven Fe repensada: Itinerarios espirituales como ancla, contenido de Santa Clara en reescritura**
