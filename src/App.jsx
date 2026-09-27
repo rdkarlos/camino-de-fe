@@ -2451,13 +2451,10 @@ export default function App() {
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
                 <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: rgba(GOLD, 0.1), border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
-                  ✦ {lang === 'es' ? 'Retos' : 'Challenges'}
+                  ✦ {lang === 'es' ? 'Itinerarios' : 'Itineraries'}
                 </span>
                 <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: rgba(GOLD, 0.1), border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
-                  ✦ {lang === 'es' ? 'Testimonios' : 'Testimonies'}
-                </span>
-                <span style={{ fontSize: 10, fontWeight: "bold", color: GOLD, background: rgba(GOLD, 0.1), border: `1px solid ${GOLD}`, padding: "6px 14px", borderRadius: 14 }}>
-                  ✦ Quiz
+                  ✦ {lang === 'es' ? '40 días con Santa Clara' : '40 days with St. Clare'}
                 </span>
               </div>
             </div>
@@ -5372,7 +5369,7 @@ export default function App() {
     return null;
   };
 
-  const renderJovenFe = () => <JovenFe lang={lang} onBack={() => goToTab(0)} />;
+  const renderJovenFe = () => <JovenFe lang={lang} onBack={() => goToTab(0)} user={user} onRequireAuth={(mode) => setAuthMode(mode)} />;
 
   const navIcons = [
     /* 0 Inicio */ (c) => (

@@ -106,22 +106,29 @@ Tarjeta en Oración Personal, debajo de "Mi Oración". Medita el Evangelio del D
 - **Bug relacionado, corregido en toda la app:** `cleanGospelText` no reconocía el punto en citas combinadas ("Lc 15, 1-3. 11-32") — afectaba también Home y Evangelio, no solo Lectio Divina
 - Indicador de "función nueva" aplicado (`featureId: 'lectio-divina'`) — ver sección dedicada abajo
 
-## Joven Fe — repensada, en diseño (19 sep 2026)
+## Joven Fe — repensada, Itinerarios construido y en producción (23 sep 2026)
 
 ### Decisión de fondo
-La estructura original (Retos/Testimonios/Quiz, sin contenido real en ninguna) se descartó. Nueva visión: **Itinerarios espirituales** como el ancla principal — recorridos narrativos de varios días con un santo/tema, no un banco de preguntas suelto. Decisión de Carlos: "quiero que haga parte de Joven Fe y ver cómo llevamos a los jóvenes a través de itinerarios al mundo de la fe, así nos toque repensar esa sección".
+La estructura original (Retos/Testimonios/Quiz, sin contenido real en ninguna) se descartó. Nueva visión: **Itinerarios espirituales** como el ancla principal — recorridos narrativos de varios días con un santo/tema, no un banco de preguntas suelto. Decisión de Carlos: "quiero que haga parte de Joven Fe y ver cómo llevamos a los jóvenes a través de itinerarios al mundo de la fe, así nos toque repensar esa sección". Retos/Testimonios/Quiz quedan como tarjetas secundarias, inertes, debajo de Itinerarios — no se construyó contenido nuevo para ellas en este trabajo.
 
-### Itinerarios espirituales — primer contenido: 40 días con Santa Clara
-Documento fuente: `40_Dias_con_Santa_Clara.docx`, de **Lida Esperanza López M., Líder EMC 2026** (contenido propio de la comunidad de Carlos, Emaús Mujeres Calahorra — no hay problema de derechos). Estructura original por día: Conoce a Clara (hecho histórico) → Su palabra o su ejemplo → Reflexión → Oración → Propósito para hoy → Para tu servicio.
+### Itinerarios espirituales — primer contenido: 40 días con Santa Clara (construido y verificado)
+Documento fuente final: `40_Dias_con_Santa_Clara_Joven_Fe.docx` (en Descargas de Carlos — versión ya adaptada en tono, distinta de los dos `.docx` más grandes/viejos con el mismo nombre base que sí traían imágenes), de **Lida Esperanza López M., Líder EMC 2026** (contenido propio de la comunidad de Carlos, Emaús Mujeres Calahorra — sin problema de derechos). Estructura por día: Conoce a Clara → Su palabra o su ejemplo → Reflexión → Oración → Propósito para hoy → Para tu día a día. El Día 40 es especial: sin "Conoce a Clara" (arranca en Reflexión), usa "Oración Final" en vez de "Oración", sin "Propósito para hoy", y cierra con "Para tu día a día" en tono de despedida del itinerario completo (termina con "Paz y Bien."). Días 22 y 35-39 no tienen "Su palabra o su ejemplo" — confirmado campo por campo contra el documento real, no contra la descripción previa de esta sección (que solo mencionaba los días 22 y 35).
 
-**Decisiones de arquitectura confirmadas:**
-- Vive dentro de Joven Fe (no como devoción aparte en Oración Personal)
-- "Para tu servicio" (escrito para servidoras de retiro) se generaliza a **"Para tu día a día"** — aplicado a vida cotidiana, no solo contexto de retiro
-- Ritmo: **un día a la vez, bloqueado hasta mañana** (mismo patrón que el Diario)
-- Tono ajustado hacia lenguaje más joven y directo — confirmado con el Día 1 reescrito y aprobado por Carlos ("así me gusta")
-- Solo existe este itinerario por ahora; otros (distintos santos/temas) se piensan con calma después
+**Transcripción a `src/itinerarios.js`:** extraída programáticamente del `.docx` (unzip + parseo de `word/document.xml`, sin retipear a mano) para eliminar riesgo de error de transcripción, con verificación carácter por carácter contra el documento fuente antes de escribir el archivo final. 40 días + Decálogo de cierre (10 puntos + frase de cierre) + créditos (fuentes, autoría, origen) — mismo criterio de fidelidad que el resto del contenido litúrgico del proyecto.
 
-**Progreso de la reescritura (en curso, no aplicado a código todavía):** Días 1-9 de 40 ya reescritos con el tono aprobado, trabajando en tandas de 8-10 para revisión antes de escalar. Pendiente: Días 10-40, luego construir la devoción en código (persistencia por día, estructura similar a Lectio Divina/Diario).
+**Arquitectura implementada:**
+- `src/JovenFe.jsx` reescrito por completo: pasa de 3 tarjetas inertes a una tarjeta protagonista "Itinerarios" (con progreso "Día X de 40" o invitación a comenzar) + las 3 tarjetas anteriores de vuelta, secundarias/atenuadas
+- Vive dentro de Joven Fe, con su propia sub-navegación interna (menú → landing → día → decálogo → acerca), sin agregar tabs nuevos al `sections` de `App.jsx`
+- **Cambio de patrón deliberado:** a diferencia de Lectio Divina/Diario (lógica y Firestore centralizados en `App.jsx`), Itinerarios maneja su propio estado y su propio acceso a Firestore dentro de `JovenFe.jsx` — `App.jsx` ya es muy grande (5700+ líneas) y este feature es autocontenido; recibe `user` y `onRequireAuth` como props nuevas desde `renderJovenFe()`
+- Persistencia: `usuarios/{uid}/itinerarios/clara-asis-40-dias` — `diaActual`, `diasCompletados` (mapa, para historial), `ultimaFechaCompletado` ("YYYY-MM-DD", America/Bogota), `notas` (mapa opcional por día)
+- Bloqueo diario: mismo patrón que el Diario (fecha ancla America/Bogota) — completar el día de hoy no desbloquea el siguiente hasta que cambie la fecha calendario. Un día = una pantalla; "Anterior/Siguiente" navega entre días ya vistos/completados, capado en el día vivo sin completar
+- Escribir es opcional (una nota por día, sugerida para "Propósito para hoy"), igual que Lectio Divina
+- Requiere sesión (como Diario/Lectio Divina, sin modo anónimo tipo Mis Oraciones) — banner de "inicia sesión" si no hay `user`
+- **Regla de Firestore confirmada sin cambios**, y no solo por inspección: se escribió y se borró un documento real de prueba en `usuarios/{uid}/itinerarios/...` desde la sesión ya autenticada de la cuenta QA (vía import dinámico del propio módulo Firebase que ya corre la app, para no crear una instancia nueva sin sesión) — la escritura pasó, confirmando en vivo que `usuarios/{uid}/{document=**}` cubre la subcolección nueva
+- Identidad visual propia: `CAMINO_TERRACOTA = '#B87551'` en `theme.js`, y `CamineGlyph` (camino sinuoso ascendente con punto de luz, trazo 1.6px, sin `<defs>`/gradientes) en `JovenFe.jsx`
+- Tarjeta de Joven Fe en Inicio actualizada: los pills ya no dicen "Retos / Testimonios / Quiz", dicen "Itinerarios / 40 días con Santa Clara"
+
+**Verificado en vivo (23 sep 2026):** flujo completo tarjeta→Día 1→completar→bloqueo diario confirmado (no dejó pasar al Día 2 el mismo día); salto a Día 40 simulando fecha vía escritura directa a Firestore (no hay forma de simular reloj del sistema 40 veces) → Decálogo de cierre correcto; "Acerca de este itinerario" con las 8 fuentes y la autoría correctas; datos de prueba borrados de la cuenta QA al terminar.
 
 ### Banco de preguntas "Fe y Vida" — en pausa, pendiente de repensar
 Se había diseñado un banco de preguntas jóvenes reales (rama Fe / rama Vida, tono "hermano mayor", 8 preguntas de muestra ya escritas y aprobadas en tono). Carlos pidió algo "más impactante que solo preguntas y respuestas" — esto llevó al hallazgo del documento de Santa Clara y al pivote hacia Itinerarios como ancla principal. **No descartado del todo** — podría retomarse como sección secundaria una vez Itinerarios esté construido, pero no es la prioridad inmediata.
