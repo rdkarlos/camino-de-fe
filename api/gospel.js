@@ -44,6 +44,9 @@ export default async function handler(req, res) {
     'Joel': 'JOL', 'Amos': 'AMO', 'Obadiah': 'OBA', 'Jonah': 'JON',
     'Micah': 'MIC', 'Nahum': 'NAM', 'Habakkuk': 'HAB', 'Zephaniah': 'ZEP',
     'Haggai': 'HAG', 'Zechariah': 'ZEC', 'Malachi': 'MAL',
+    'Ps': 'PSA',
+    // Abreviaturas que Universalis usa en los cánticos que sustituyen al salmo
+    'Is': 'ISA', 'Ex': 'EXO', 'Dn': 'DAN', 'Jer': 'JER', 'Hab': 'HAB', 'Lk': 'LUK',
     'Matthew': 'MAT', 'Mark': 'MRK', 'Luke': 'LUK', 'John': 'JHN',
     'Acts': 'ACT', 'Romans': 'ROM', '1 Corinthians': '1CO', '2 Corinthians': '2CO',
     'Galatians': 'GAL', 'Ephesians': 'EPH', 'Philippians': 'PHP', 'Colossians': 'COL',
@@ -58,7 +61,8 @@ export default async function handler(req, res) {
     .replace(/&#x2010;/gi, '-')
     .replace(/&#8208;/g, '-')
     .replace(/[‐‑‒–—]/g, '-')
-    .replace(/&nbsp;/gi, ' ')
+    .replace(/&nbsp;|&#xa0;|&#160;/gi, ' ')
+    .replace(/&#x211f;|&#8479;/gi, '℟')
     .trim();
 
   // Convierte una referencia de Universalis (inglés) en la query de
@@ -67,10 +71,16 @@ export default async function handler(req, res) {
   const parseRef = (rawRef) => {
     if (!rawRef) return null;
     let ref = normalizeRef(rawRef);
-    // Psalm 33(34):2-9  |  Psalm 113B(115):3-10  →  usa el número entre paréntesis
-    // (la letra opcional marca la mitad Vulgata de un salmo dividido; el número
-    // entre paréntesis es la numeración hebrea/moderna, la misma que usa BibleGet)
-    ref = ref.replace(/^(Psalms?)\s+\d+[A-Za-z]?\((\d+)\)/i, '$1 $2');
+    // Quita el responso (℟) del final: sus dígitos ("℟2b") no son versos del salmo
+    ref = ref.replace(/(?:&#x211f;|&#8479;|℟).*$/i, '').trim();
+    // Ps 100(99):1-2  |  Psalm 33(34):2-9  |  Psalm 113B(115):3-10
+    // Universalis trae dos numeraciones (hebrea y Vulgata) y su orden ha
+    // cambiado con el tiempo: antes "Psalm 33(34)" (Vulgata primero), ahora
+    // "Ps 100(99)" (hebrea primero). BibleGet usa la hebrea, que casi siempre es
+    // la mayor de las dos. Si el primero lleva letra (mitad de un salmo
+    // dividido, 113B) es Vulgata y la hebrea es la del paréntesis.
+    ref = ref.replace(/^(Psalms?|Ps)\s+(\d+)([A-Za-z]?)\((\d+)\)/i, (_, book, first, letter, paren) =>
+      `${book} ${letter ? paren : Math.max(Number(first), Number(paren))}`);
     // Tolera una letra pegada al capítulo que no haya sido normalizada arriba
     // (defensivo, por si aparece en evangelio/lecturas además de salmos)
     const bookMatch = ref.match(/^(\d?\s?[A-Za-z]+(?:\s[A-Za-z]+)?)\s+(\d+)[A-Za-z]?:(\d+)/);
@@ -96,7 +106,7 @@ export default async function handler(req, res) {
     if (!bibleGetQuery) return null;
     try {
       const url = `https://query.bibleget.io/v3/index.php?query=${encodeURIComponent(bibleGetQuery)}&version=BLPD&return=json&appid=${BIBLEGET_APPID}`;
-      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(8000) });
       if (!response.ok) return null;
       const data = await response.json();
       const verses = data?.results;
@@ -124,11 +134,7 @@ export default async function handler(req, res) {
       const inner = m[1];
       const isItalic = /^<i>/.test(inner);
       const isBold = /^<b>/.test(inner);
-      const text = inner
-        .replace(/<\/?[ib]>/g, '')
-        .replace(/&#160;|&#xa0;|&nbsp;/gi, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      const text = cleanText(inner).replace(/\s+/g, ' ');
       blocks.push({ isItalic, isBold, text });
     }
     if (!blocks.length) return null;
@@ -218,6 +224,9 @@ export default async function handler(req, res) {
       .replace(/&#x2010;|&#8208;/gi, '-')
       .replace(/&#xa0;|&#160;/gi, ' ')
       .replace(/&nbsp;/gi, ' ')
+      // cualquier otra entidad numérica (ej. &#x2014; raya) que no esté arriba
+      .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+      .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
       .replace(/&amp;/gi, '&')
       .replace(/&quot;/gi, '"')
       .replace(/&lt;/gi, '<')
@@ -246,15 +255,53 @@ export default async function handler(req, res) {
     });
   };
 
+  // Extrae el argumento del PRIMER universalisCallback(...) contando
+  // paréntesis fuera de strings. El feed a veces llega con el payload duplicado
+  // y cabeceras HTTP filtradas en medio (visto el 17-24 oct 2026), así que no
+  // se puede asumir que el cuerpo termina en el último ")".
+  const extractFirstCallback = (raw) => {
+    const open = raw.indexOf('(', raw.indexOf('universalisCallback'));
+    if (open === -1) throw new Error('Universalis: no se encontró universalisCallback(');
+    let depth = 0;
+    let inStr = false;
+    for (let i = open; i < raw.length; i++) {
+      const c = raw[i];
+      if (inStr) {
+        if (c === '\\') i++;
+        else if (c === '"') inStr = false;
+      } else if (c === '"') {
+        inStr = true;
+      } else if (c === '(') {
+        depth++;
+      } else if (c === ')') {
+        if (--depth === 0) return raw.slice(open + 1, i);
+      }
+    }
+    throw new Error('Universalis: respuesta truncada (callback sin cerrar)');
+  };
+
+  // Un solo reintento: Universalis a veces corta la conexión.
+  const fetchUniversalis = async (url) => {
+    let lastErr;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) throw new Error(`Universalis respondió HTTP ${r.status}`);
+        return await r.text();
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr;
+  };
+
   try {
     const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
-    const universalisUrl = `https://universalis.com/latinamerica/${dateStr}/jsonpmass.js`;
+    // Ruta canónica (la antigua /latinamerica/... responde 301 a esta)
+    const universalisUrl = `https://universalis.com/${dateStr}/jsonpmass.js`;
 
-    const raw = await fetch(universalisUrl).then(r => r.text());
-
-    // Quitar wrapper JSONP: universalisCallback({...})
-    const jsonStr = raw.replace(/^universalisCallback\s*\(/, '').replace(/\)\s*;?\s*$/, '');
-    const data = JSON.parse(deobfuscateUniversalis(jsonStr));
+    const raw = await fetchUniversalis(universalisUrl);
+    const data = JSON.parse(deobfuscateUniversalis(extractFirstCallback(raw)));
 
     const gospelData  = data.Mass_G;
     const reading1Data = data.Mass_R1 || null;
