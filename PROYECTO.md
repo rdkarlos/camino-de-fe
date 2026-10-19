@@ -176,6 +176,16 @@ Se había diseñado un banco de preguntas jóvenes reales (rama Fe / rama Vida, 
 ### Bug de Universalis — deofuscación + manejo de errores (19 sep 2026)
 Universalis (fuente del Evangelio/Lecturas) cambió su formato de respuesta — el texto llegó envuelto en cadenas `.split().join()` (probable anti-scraping), que `api/gospel.js` intentaba parsear directo como JSON y fallaba 100% de las veces con un 500. En paralelo, `App.jsx` tenía un `.catch(() => {})` silencioso en el fetch de `/api/gospel` — el error nunca se mostraba, la pantalla se quedaba en "Cargando..." indefinidamente. Dos fixes: (1) `api/gospel.js` deofuscar la respuesta antes de parsear; (2) `App.jsx` reemplaza el catch silencioso por estado de error real (`gospelError`) con UI de "No se pudo cargar / Reintentar" en Evangelio y Lecturas — cualquier fallo futuro (de esta causa o de otra) ya no se queda pegado en silencio.
 
+### Segundo cambio de Universalis — feed duplicado con cabeceras pegadas (19 oct 2026)
+`/api/gospel` volvió a dar 500 (17-24 oct, todos los días). Causa: el feed de Universalis llegó **duplicado y con cabeceras HTTP pegadas en el cuerpo** — el `universalisCallback({...})` aparece dos veces, con `Last-Modified:`/`Expires:`/`Cache-Control:`/`Content-Type:` como texto entre ambas copias. El handler quitaba el último `)` y el `JSON.parse` fallaba con "Unexpected non-whitespace character after JSON". BibleGet/BLPD no tuvo nada que ver (respondía bien).
+- **Extracción:** `extractFirstCallback` toma solo el primer `universalisCallback(...)` contando paréntesis fuera de strings (no se corta en el primer `})` porque puede aparecer dentro de un texto).
+- **Ruta nueva:** `https://universalis.com/YYYYMMDD/jsonpmass.js` (sin `/latinamerica/`; la antigua responde 301 a esta).
+- **Salmos:** Universalis también cambió la referencia — ahora `Ps 100(99):1-2. 3. 5. ℟2b` (abreviatura `Ps`, `&#xa0;`, numeración hebrea primero y responso `℟` al final). `parseRef` acepta `Ps`, limpia `&#xa0;` y el `℟`, y elige la numeración hebrea (la mayor de las dos, salvo letra en el primero). También cánticos con abreviatura (`Is`, `Ex`, `Dn`, `Jer`, `Hab`, `Lk`).
+- **Robustez:** timeout de 8 s y un reintento a Universalis, timeout a BibleGet; cualquier fallo del feed devuelve 500 con `success:false` y llega a "No se pudo cargar / Reintentar".
+- **Pendiente conocido:** si BLPD abre el salmo con su título, `formatPsalmEs` lo usa como responso (ej. "R. Salmo de David."); y se pide el rango completo, no solo los versos proclamados.
+
+> **Universalis es una dependencia frágil.** Es la segunda vez que cambia su formato sin aviso (19 sep: ofuscación `.split().join()`; 19 oct: payload duplicado + cabeceras, ruta y referencias de salmo). No es una API pública con contrato. Cualquier "Evangelio no carga" se diagnostica primero llamando al feed directo y comparando su forma con lo que espera `api/gospel.js`, antes de tocar BibleGet o el frontend. A mediano plazo conviene evaluar una fuente alterna o un respaldo de las lecturas del día.
+
 ## Traducción bíblica — RESUELTA temporalmente con BLPD, gestión institucional sigue en curso (19 sep 2026)
 
 ### El problema original y su resolución
@@ -388,6 +398,7 @@ Los 366 versículos de `versiculos.js` no se actualizan solos — requieren su p
 - Botón/gesto atrás del sistema — navegación entre secciones
 - Indicador genérico de función nueva
 - **Bug de Universalis corregido (deofuscación + manejo de errores visible)**
+- **Segundo bug de Universalis corregido (feed duplicado con cabeceras, ruta nueva, salmos `Ps`) — dependencia frágil**
 - **Traducción bíblica: LBLA reemplazada por BLPD (católica, 73 libros) en Evangelio, Lecturas y La Biblia completa**
 - **Cron de reflexión diaria: generación libre de versículos eliminada, causa real del "Jehová" resuelta**
 - **Joven Fe repensada: Itinerarios espirituales como ancla, contenido de Santa Clara en reescritura**
