@@ -1,6 +1,8 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import VERSICULOS from '../src/versiculos.js';
+import { dateKey, fetchUniversalisDay, buildEn, buildEs } from './_lib/gospel-core.js';
+import { writeCache, hasCache, cleanOldCache } from './_lib/gospel-store.js';
 
 // Cuenta de servicio de Firebase Admin — nunca se sube al repo, viaja
 // codificada en base64 en la variable de entorno de Vercel. El SDK admin
@@ -70,13 +72,42 @@ async function cleanOldVersiculos(today) {
   await Promise.all(deletions);
 }
 
-export default async function handler(req, res) {
-  if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+const PRELOAD_DAYS_AHEAD = 7;
+// BibleGet limita las ráfagas ("very large amount of requests… slow down"):
+// pausa entre los días que sí tocan BibleGet.
+const PRELOAD_PAUSE_MS = 1500;
 
+// Precarga la caché de /api/gospel: hoy y los próximos 7 días (es + en), para
+// que un corte de Universalis no deje al usuario sin Evangelio. Cada día es
+// independiente: uno que falle (Universalis caído, día aún no publicado) no
+// afecta a los demás. Los días ya guardados no se vuelven a pedir.
+async function preloadGospels(year, month, day) {
+  const results = {};
+  // En serie: 8 días en paralelo son ~32 consultas simultáneas a BibleGet y
+  // fallaban por límite de ráfaga. Con Universalis caído tarda ~3 s por día (24 s).
+  for (let offset = 0; offset <= PRELOAD_DAYS_AHEAD; offset++) {
+    const d = new Date(Date.UTC(year, month - 1, day + offset));
+    const [y, m, dd] = [d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()];
+    const key = dateKey(y, m, dd);
+    try {
+      if (await hasCache(key)) { results[key] = 'ya estaba'; continue; }
+      const data = await fetchUniversalisDay(y, m, dd);
+      const { response, complete } = await buildEs(data, { day: dd, month: m, year: y, deadline: Date.now() + 20000 });
+      await writeCache(key, 'en', buildEn(data));
+      if (complete) await writeCache(key, 'es', response);
+      results[key] = complete ? 'guardado' : 'en guardado, es incompleto (se reintenta mañana)';
+      await new Promise((r) => setTimeout(r, PRELOAD_PAUSE_MS));
+    } catch (e) {
+      results[key] = `falló: ${e.message}`;
+    }
+  }
+  return results;
+}
+
+// Reflexión y versículo del día (lo crítico del cron). Devuelve { status, body }.
+async function generateDaily() {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({ success: false, error: 'API key not configured' });
+    return { status: 500, body: { success: false, error: 'API key not configured' } };
   }
 
   try {
@@ -97,7 +128,7 @@ export default async function handler(req, res) {
     // (a diferencia del SDK de cliente que reemplaza) — ojo si se vuelve a tocar esto.
     if (existingEs.exists && existingEn.exists && existingVerse.exists) {
       await Promise.all([cleanOldReflections(today), cleanOldVersiculos(today)]);
-      return res.status(200).json({ success: true, message: 'La reflexión de hoy ya existía, no se generó de nuevo' });
+      return { status: 200, body: { success: true, message: 'La reflexión de hoy ya existía, no se generó de nuevo' } };
     }
 
     const baseUrl = process.env.SITE_URL || 'https://camino-de-fe-seven.vercel.app';
@@ -128,9 +159,32 @@ export default async function handler(req, res) {
 
     await Promise.all([cleanOldReflections(today), cleanOldVersiculos(today)]);
 
-    return res.status(200).json({ success: true, message: 'Reflexión y versículo generados' });
+    return { status: 200, body: { success: true, message: 'Reflexión y versículo generados' } };
   } catch (error) {
     console.error('[cron-reflexion] error:', error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return { status: 500, body: { success: false, error: error.message } };
   }
+}
+
+export default async function handler(req, res) {
+  if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const daily = await generateDaily();
+
+  // Precarga de lecturas: va DESPUÉS de lo crítico y de mejor esfuerzo. Si
+  // falla o se demora, la reflexión y el versículo de hoy ya están guardados.
+  let preload = {};
+  try {
+    const [py, pm, pd] = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' })
+      .format(new Date()).split('-').map(Number);
+    preload = await preloadGospels(py, pm, pd);
+    await cleanOldCache(dateKey(py, pm, pd));
+    console.log('[cron-reflexion] precarga de lecturas:', JSON.stringify(preload));
+  } catch (e) {
+    console.error('[cron-reflexion] precarga de lecturas falló:', e.message);
+  }
+
+  return res.status(daily.status).json({ ...daily.body, preload });
 }
