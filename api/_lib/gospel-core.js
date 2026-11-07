@@ -99,8 +99,9 @@ const parseRef = (rawRef) => {
 
 // Referencia manual en notación BLPD ("Lc 12,35-38", "Jn 3,16", "Mt 5,1-7,29",
 // "1 Co 13,1-13") -> query de BibleGet ("Lc12,35-38"). null si no es válida.
+// Tolera espacios alrededor de la coma, el guion y el punto ("Lc 16, 9 - 15").
 const parseManualRef = (ref) => {
-  const m = String(ref || '').trim().match(/^(\d?\s?[A-Za-zÁÉÍÓÚáéíóúñ]+)\s*(\d+),(\d+)(?:-(?:(\d+),)?(\d+))?$/);
+  const m = String(ref || '').trim().replace(/\s*([,.-])\s*/g, '$1').match(/^(\d?\s?[A-Za-zÁÉÍÓÚáéíóúñ]+)\s*(\d+),(\d+)(?:-(?:(\d+),)?(\d+))?$/);
   if (!m) return null;
   const [, book, ch, v1, ch2, v2] = m;
   const abbr = book.replace(/\s+/g, '');
@@ -399,7 +400,7 @@ const buildEsManual = async (manual, { day, month, year, deadline }) => {
     const raw = manual[name];
     if (!raw) { refs[key] = null; continue; }
     const q = parseManualRef(raw);
-    if (!q) throw new Error(`Referencia manual inválida en "${name}": "${raw}" (formato esperado: "Lc 12,35-38")`);
+    if (!q) throw new Error(`Referencia manual inválida en "${name}": recibí "${raw}", formato esperado "Lc 12,35-38" (libro, capítulo,verso[-verso]; se toleran espacios alrededor de , - .)`);
     refs[key] = String(raw).trim();
     queries[key] = q;
   }
@@ -415,4 +416,4 @@ const buildEsManual = async (manual, { day, month, year, deadline }) => {
   return assembleEs({ day, month, year, refs, en: {}, es, psalmStructure: null }).response;
 };
 
-export { dateKey, fetchUniversalisDay, buildEn, buildEs, buildEsManual };
+export { dateKey, fetchUniversalisDay, buildEn, buildEs, buildEsManual, parseManualRef };
