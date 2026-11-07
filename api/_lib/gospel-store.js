@@ -8,6 +8,10 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 const FIRESTORE_TIMEOUT_MS = 1500;
 
+// Error completo (código gRPC, stack, causa) en los logs de Vercel. Solo
+// e.message escondía la causa real: un respaldo que falla sin avisar no sirve.
+const logError = (label, e) => console.error(`[gospel-store] ${label}:`, e?.code ?? '', e?.stack || e, e?.cause ?? '');
+
 let db;
 const getDb = () => {
   if (db !== undefined) return db;
@@ -18,7 +22,7 @@ const getDb = () => {
     const app = getApps().length ? getApps()[0] : initializeApp({ credential: cert(serviceAccount) });
     db = getFirestore(app);
   } catch (e) {
-    console.error('[gospel-store] Firestore no disponible:', e.message);
+    logError('Firestore no disponible (FIREBASE_SERVICE_ACCOUNT_BASE64 ausente o inválida)', e);
     db = null;
   }
   return db;
@@ -40,7 +44,7 @@ const readCache = async (key, lang) => {
     if (!d || d.fecha !== key || d.lang !== lang) return null;
     return JSON.parse(d.json);
   } catch (e) {
-    console.error('[gospel-store] readCache:', e.message);
+    logError('readCache', e);
     return null;
   }
 };
@@ -52,9 +56,10 @@ const writeCache = async (key, lang, payload) => {
     await withTimeout(firestore.collection('evangelio_cache').doc(cacheId(key, lang)).set({
       fecha: key, lang, json: JSON.stringify(payload), guardado: new Date().toISOString(),
     }), 'writeCache');
+    console.log(`[gospel-store] writeCache ${cacheId(key, lang)}: guardado`);
     return true;
   } catch (e) {
-    console.error('[gospel-store] writeCache:', e.message);
+    logError(`writeCache ${cacheId(key, lang)}`, e);
     return false;
   }
 };
@@ -69,6 +74,7 @@ const hasCache = async (key) => {
     ), 'hasCache');
     return snaps.every((s) => s.exists && s.data().fecha === key);
   } catch (e) {
+    logError('hasCache', e);
     return false;
   }
 };
@@ -80,7 +86,7 @@ const readManual = async (key) => {
     const snap = await withTimeout(firestore.collection('evangelio_manual').doc(key).get(), 'readManual');
     return snap.exists ? snap.data() : null;
   } catch (e) {
-    console.error('[gospel-store] readManual:', e.message);
+    logError('readManual', e);
     return null;
   }
 };
@@ -94,7 +100,7 @@ const cleanOldCache = async (todayKey) => {
     const snap = await firestore.collection('evangelio_cache').get();
     await Promise.all(snap.docs.filter((d) => d.id.slice(0, 10) < todayKey).map((d) => d.ref.delete()));
   } catch (e) {
-    console.error('[gospel-store] cleanOldCache:', e.message);
+    logError('cleanOldCache', e);
   }
 };
 

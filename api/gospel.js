@@ -70,6 +70,7 @@ export default async function handler(req, res) {
     await Promise.all(writes);
     return respond('live', payload);
   } catch (error) {
+    console.error(`[gospel] ${key} sin lectura:`, error?.stack || error);
     res.setHeader('Cache-Control', 'no-store');
     const sinCache = `sin lectura guardada para ${key}`;
     const detail = manualError ? ` | entrada manual: ${manualError}` : '';

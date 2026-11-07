@@ -98,6 +98,7 @@ async function preloadGospels(year, month, day) {
       results[key] = complete ? 'guardado' : 'en guardado, es incompleto (se reintenta mañana)';
       await new Promise((r) => setTimeout(r, PRELOAD_PAUSE_MS));
     } catch (e) {
+      console.error(`[cron-reflexion] precarga ${key} falló:`, e?.stack || e);
       results[key] = `falló: ${e.message}`;
     }
   }
