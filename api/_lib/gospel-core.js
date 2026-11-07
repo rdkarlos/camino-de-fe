@@ -472,9 +472,13 @@ const buildEs = async (data, { day, month, year, deadline }) => {
 
 // Español desde una referencia escrita a mano (documento de emergencia).
 // manual: { evangelio, lectura1?, lectura2?, salmo? } en notación "Lc 12,35-38".
+// El Evangelio es imprescindible: si falla, error. Una referencia mal escrita
+// en cualquier campo también es error. Si BibleGet falla en lectura1, lectura2
+// o salmo (errors, HTTP, timeout, versos que faltan), se omite solo esa lectura:
+// queda en `omitted` ({ field, reason }) y el error completo en los logs.
 const buildEsManual = async (manual, { day, month, year, deadline }) => {
   const field = { gospel: 'evangelio', reading1: 'lectura1', reading2: 'lectura2', psalm: 'salmo' };
-  const refs = {}, queries = {};
+  const refs = {}, queries = {}, omitted = [];
   for (const [key, name] of Object.entries(field)) {
     const raw = manual[name];
     if (!raw) { refs[key] = null; continue; }
@@ -490,11 +494,16 @@ const buildEsManual = async (manual, { day, month, year, deadline }) => {
     try {
       es[key] = await getSpanishText(queries[key].q, t, { query: true, strict: true, expect: queries[key].expect });
     } catch (e) {
-      throw new Error(`Lectura manual "${field[key]}" (${refs[key]}): ${e.message}`);
+      const err = new Error(`Lectura manual "${field[key]}" (${refs[key]}): ${e.message}`, { cause: e });
+      if (key === 'gospel') throw err;
+      console.error(`[gospel] lectura manual "${field[key]}" omitida:`, err.stack || err, err.cause ?? '');
+      omitted.push({ field: field[key], reason: e.message });
+      refs[key] = null;
     }
   }));
   if (!es.gospel?.text) throw new Error(`BibleGet no devolvió texto para la referencia manual "${refs.gospel}"`);
-  return assembleEs({ day, month, year, refs, en: {}, es, psalmStructure: null, manual: true }).response;
+  const { response } = assembleEs({ day, month, year, refs, en: {}, es, psalmStructure: null, manual: true });
+  return omitted.length ? { ...response, omitted } : response;
 };
 
 export { dateKey, fetchUniversalisDay, buildEn, buildEs, buildEsManual, parseManualRef };

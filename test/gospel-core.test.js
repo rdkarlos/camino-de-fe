@@ -67,8 +67,8 @@ test('buildEsManual: el error dice qué tramo falla', async () => {
   const msg = await manualError({ evangelio: 'Lc 15,1-3.11-' });
   assert.match(msg, /recibí "Lc 15,1-3\.11-"/);
   assert.match(msg, /tramo 2 \("11-"\)/);
-  const msg2 = await manualError({ evangelio: 'Lc 15,1-3', salmo: 'Sal 111,1-2.x.8-9' });
-  assert.match(msg2, /en "salmo"/);
+  const msg2 = await manualError({ evangelio: 'Lc 15,1-2.x.8-9' });
+  assert.match(msg2, /en "evangelio"/);
   assert.match(msg2, /tramo 2 \("x"\)/);
   assert.match(msg2, /Lc 15,1-3\.11-32/);
 });
@@ -166,14 +166,6 @@ test('buildEsManual: sin versos o con HTTP de error también falla', () => conFe
   await assert.rejects(manual({ evangelio: 'Lc 15,1-3' }), /HTTP 503/);
 }));
 
-test('buildEsManual: una lectura que falla ya no se omite en silencio', () => conFetch(async () => {
-  globalThis.fetch = async (url) => {
-    const q = new URL(url).searchParams.get('query');
-    return new Response(JSON.stringify(q === 'Lc15,1-3' ? { results: [verso(15, 1), verso(15, 2), verso(15, 3)], errors: [] } : { results: [], errors: [{ error: 'x' }] }));
-  };
-  await assert.rejects(manual({ evangelio: 'Lc 15,1-3', lectura1: 'Is 55,1-3' }), /Lectura manual "lectura1" \(Is 55,1-3\)/);
-}));
-
 test('buildEsManual: con todos los versos pedidos devuelve el texto', () => conFetch(async () => {
   mockRespuesta({ results: [verso(15, 1), verso(15, 2), verso(15, 3)], errors: [] });
   const r = await manual({ evangelio: 'Lc 15,1-3' });
@@ -190,4 +182,113 @@ test('buildEsManual: el salmo no lleva responso inventado ni toma la primera lí
   // Texto íntegro de los versos pedidos, empezando por el verso 1 (antes era el "responso")
   assert.equal(r.psalm.text, salmo.results.map((v) => v.text.trim()).join(' ').replace(/\s+/g, ' ').trim());
   assert.ok(r.psalm.text.startsWith('¡Aleluya![Alef]'));
+}));
+
+// Lectura secundaria que falla: se omite solo ella, el error completo va a los logs.
+const conLogs = async (fn) => {
+  const realError = console.error;
+  const logs = [];
+  console.error = (...args) => logs.push(args);
+  try { return { r: await fn(), logs }; } finally { console.error = realError; }
+};
+const gospel15 = { results: [verso(15, 1), verso(15, 2), verso(15, 3)], errors: [] };
+const mockPorQuery = (porQuery) => {
+  globalThis.fetch = async (url) => {
+    const q = new URL(url).searchParams.get('query');
+    const { body = {}, status = 200 } = porQuery[q] ?? {};
+    return new Response(JSON.stringify(body), { status });
+  };
+};
+
+test('buildEsManual: si falla el salmo o una lectura en BibleGet, el Evangelio sale y se registra el error', () => conFetch(async () => {
+  mockPorQuery({
+    'Lc15,1-3': { body: gospel15 },
+    'Is55,1-3': { body: { results: [], errors: [{ error: 'x' }] } },
+    'Sal111,1-2': { body: {}, status: 503 },
+    '1Co12,4-6': { body: { results: [{ book: 'Corintios', chapter: 12, verse: 4, text: 'a' }], errors: [] } },
+  });
+  const { r, logs } = await conLogs(() => manual({ evangelio: 'Lc 15,1-3', lectura1: 'Is 55,1-3', salmo: 'Sal 111,1-2', lectura2: '1 Co 12,4-6' }));
+  assert.equal(r.reference, 'Lucas 15:1-3');
+  assert.ok(r.text.endsWith('texto 1 texto 2 texto 3'));
+  assert.equal(r.reading1, null);
+  assert.equal(r.psalm, null);
+  assert.equal(r.reading2, null);
+  assert.equal(logs.length, 3);
+  const texto = logs.map((l) => l.map((x) => String(x)).join(' ')).join('\n');
+  assert.match(texto, /lectura manual "lectura1" omitida/);
+  assert.match(texto, /lectura manual "salmo" omitida/);
+  assert.match(texto, /lectura manual "lectura2" omitida/);
+  assert.match(texto, /Lectura manual "lectura1" \(Is 55,1-3\).*devolvió errores/);
+  assert.match(texto, /HTTP 503/);
+  assert.match(texto, /faltan 12:5, 12:6/);
+  assert.match(texto, /at /); // incluye el stack
+}));
+
+test('buildEsManual: una lectura secundaria que falla no quita las demás', () => conFetch(async () => {
+  mockPorQuery({
+    'Lc15,1-3': { body: gospel15 },
+    'Is55,1-3': { body: { results: [verso(55, 1), verso(55, 2), verso(55, 3)], errors: [] } },
+    'Sal111,1-2': { body: {}, status: 503 },
+  });
+  const { r, logs } = await conLogs(() => manual({ evangelio: 'Lc 15,1-3', lectura1: 'Is 55,1-3', salmo: 'Sal 111,1-2' }));
+  assert.equal(r.psalm, null);
+  assert.equal(r.reading1.text, 'texto 1 texto 2 texto 3');
+  assert.deepEqual(r.omitted.map((o) => o.field), ['salmo']);
+  assert.equal(logs.length, 1);
+}));
+
+test('buildEsManual: referencia mal escrita en lectura1, lectura2 o salmo es error y nombra el campo', () => conFetch(async () => {
+  mockPorQuery({ 'Lc15,1-3': { body: gospel15 }, 'Is55,1-3': { body: { results: [verso(55, 1), verso(55, 2), verso(55, 3)], errors: [] } } });
+  const { logs } = await conLogs(async () => {
+    await assert.rejects(manual({ evangelio: 'Lc 15,1-3', lectura1: 'Is 55,3-1' }), /inválida en "lectura1": recibí "Is 55,3-1"/);
+    await assert.rejects(manual({ evangelio: 'Lc 15,1-3', lectura2: 'xx' }), /inválida en "lectura2": recibí "xx"/);
+    await assert.rejects(manual({ evangelio: 'Lc 15,1-3', lectura1: 'Is 55,1-3', salmo: 'Sal 111,1-2.1' }), /inválida en "salmo".*tramo 2 \("1"\) no va en orden ascendente/);
+  });
+  assert.equal(logs.length, 0); // se lanza, no se registra como omitida
+}));
+
+test('buildEsManual: lecturas omitidas por BibleGet aparecen en omitted con campo y motivo', () => conFetch(async () => {
+  mockPorQuery({
+    'Lc15,1-3': { body: gospel15 },
+    'Is55,1-3': { body: { results: [], errors: [{ error: 'x' }] } },
+    'Sal111,1-2': { body: {}, status: 503 },
+    '1Co12,4-6': { body: { results: [{ book: 'Corintios', chapter: 12, verse: 4, text: 'a' }], errors: [] } },
+  });
+  const { r } = await conLogs(() => manual({ evangelio: 'Lc 15,1-3', lectura1: 'Is 55,1-3', salmo: 'Sal 111,1-2', lectura2: '1 Co 12,4-6' }));
+  const porCampo = Object.fromEntries(r.omitted.map((o) => [o.field, o.reason]));
+  assert.deepEqual(Object.keys(porCampo).sort(), ['lectura1', 'lectura2', 'salmo']);
+  assert.match(porCampo.lectura1, /devolvió errores/);
+  assert.match(porCampo.salmo, /HTTP 503/);
+  assert.match(porCampo.lectura2, /faltan 12:5, 12:6/);
+}));
+
+test('buildEsManual: sin lecturas omitidas la respuesta no trae omitted', () => conFetch(async () => {
+  mockPorQuery({ 'Lc15,1-3': { body: gospel15 } });
+  const r = await manual({ evangelio: 'Lc 15,1-3' });
+  assert.equal('omitted' in r, false);
+}));
+
+test('buildEsManual: timeout de BibleGet omite la lectura con su motivo', () => conFetch(async () => {
+  globalThis.fetch = async (url, { signal }) => {
+    const q = new URL(url).searchParams.get('query');
+    if (q === 'Lc15,1-3') return new Response(JSON.stringify(gospel15));
+    return new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)));
+  };
+  const { r } = await conLogs(() => buildEsManual({ evangelio: 'Lc 15,1-3', salmo: 'Sal 111,1-2' }, { day: 7, month: 11, year: 2026, deadline: Date.now() }));
+  assert.equal(r.psalm, null);
+  assert.deepEqual(r.omitted.map((o) => o.field), ['salmo']);
+  assert.match(r.omitted[0].reason, /no respondió a tiempo/);
+}));
+
+test('buildEsManual: si falla el Evangelio sigue siendo error, aunque lo demás funcione', () => conFetch(async () => {
+  mockPorQuery({
+    'Lc15,1-3': { body: { results: [verso(15, 1)], errors: [] } },
+    'Is55,1-3': { body: { results: [verso(55, 1), verso(55, 2), verso(55, 3)], errors: [] } },
+  });
+  const { logs } = await conLogs(async () => {
+    await assert.rejects(manual({ evangelio: 'Lc 15,1-3', lectura1: 'Is 55,1-3' }), /Lectura manual "evangelio" \(Lc 15,1-3\).*faltan 15:2, 15:3/);
+    await assert.rejects(manual({ lectura1: 'Is 55,1-3' }), /no tiene el campo "evangelio"/);
+    await assert.rejects(manual({ evangelio: 'Lc 15,3-1' }), /Referencia manual inválida en "evangelio"/);
+  });
+  assert.equal(logs.length, 0); // los errores del Evangelio se lanzan, no se silencian
 }));

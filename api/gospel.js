@@ -31,6 +31,7 @@ export default async function handler(req, res) {
 
   const respond = (source, payload) => {
     res.setHeader('X-Gospel-Source', source);
+    if (payload.omitted?.length) res.setHeader('X-Gospel-Omitted', payload.omitted.map((o) => o.field).join(','));
     return res.status(200).json(payload);
   };
 
