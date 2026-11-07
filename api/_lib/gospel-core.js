@@ -98,38 +98,115 @@ const parseRef = (rawRef) => {
 };
 
 // Referencia manual en notación BLPD ("Lc 12,35-38", "Jn 3,16", "Mt 5,1-7,29",
-// "1 Co 13,1-13") -> query de BibleGet ("Lc12,35-38"). null si no es válida.
-// Tolera espacios alrededor de la coma, el guion y el punto ("Lc 16, 9 - 15").
-const parseManualRef = (ref) => {
-  const m = String(ref || '').trim().replace(/\s*([,.-])\s*/g, '$1').match(/^(\d?\s?[A-Za-zÁÉÍÓÚáéíóúñ]+)\s*(\d+),(\d+)(?:-(?:(\d+),)?(\d+))?$/);
-  if (!m) return null;
-  const [, book, ch, v1, ch2, v2] = m;
+// "1 Co 13,1-13") -> query de BibleGet ("Lc12,35-38"). Tolera espacios
+// alrededor de la coma, el guion y el punto ("Lc 16, 9 - 15").
+// Varios tramos del mismo capítulo se separan con punto ("Lc 15,1-3.11-32"):
+// cada tramo es "verso" o "verso-verso" y se valida por separado. El punto
+// nunca se convierte en coma: "Lc 15,1-3.16,2" es inválido.
+// Los versos finales deben ser >= al inicial y los tramos ir en orden ascendente.
+// Devuelve { query, expect } o { error } (el error dice cuál tramo falla);
+// `expect` son los versos "cap:verso" que BibleGet debe devolver (en un tramo
+// que cruza de capítulo, solo el primero y el último: no se sabe cuántos hay).
+const checkManualRef = (ref) => {
+  const norm = String(ref || '').trim().replace(/\s*([,.-])\s*/g, '$1');
+  const m = norm.match(/^(\d?\s?[A-Za-zÁÉÍÓÚáéíóúñ]+)\s*(\d+),(.+)$/);
+  if (!m) return { error: 'no tiene la forma libro capítulo,verso' };
+  const [, book, ch, rest] = m;
   const abbr = book.replace(/\s+/g, '');
-  const tail = v2 ? `-${ch2 ? `${ch2},` : ''}${v2}` : '';
-  return `${abbr}${ch},${v1}${tail}`;
+  const parts = rest.split('.');
+  if (parts.length === 1) {
+    // Un solo tramo: puede cruzar de capítulo ("Mt 5,1-7,29")
+    const t = parts[0].match(/^(\d+)(?:-(?:(\d+),)?(\d+))?$/);
+    if (!t) return { error: `el tramo "${parts[0]}" no es válido` };
+    const [, v1, ch2, v2] = t;
+    const tail = v2 ? `-${ch2 ? `${ch2},` : ''}${v2}` : '';
+    const query = `${abbr}${ch},${v1}${tail}`;
+    if (ch2) {
+      if (Number(ch2) < Number(ch) || (Number(ch2) === Number(ch) && Number(v2) < Number(v1))) {
+        return { error: `el tramo "${parts[0]}" es inválido: termina antes de empezar` };
+      }
+      return { query, expect: [`${ch}:${v1}`, `${ch2}:${v2}`] };
+    }
+    if (v2 && Number(v2) < Number(v1)) {
+      return { error: `el tramo "${parts[0]}" es inválido: el verso final (${v2}) es menor que el inicial (${v1})` };
+    }
+    const expect = [];
+    for (let v = Number(v1); v <= Number(v2 || v1); v++) expect.push(`${ch}:${v}`);
+    return { query, expect };
+  }
+  const expect = [];
+  let prevEnd = 0;
+  for (let i = 0; i < parts.length; i++) {
+    const t = parts[i].match(/^(\d+)(?:-(\d+))?$/);
+    if (!t) {
+      return { error: `el tramo ${i + 1} ("${parts[i]}") no es válido: cada tramo debe ser "verso" o "verso-verso" del mismo capítulo` };
+    }
+    const v1 = Number(t[1]), v2 = Number(t[2] ?? t[1]);
+    if (v2 < v1) {
+      return { error: `el tramo ${i + 1} ("${parts[i]}") es inválido: el verso final (${v2}) es menor que el inicial (${v1})` };
+    }
+    if (v1 <= prevEnd) {
+      return { error: `el tramo ${i + 1} ("${parts[i]}") no va en orden ascendente: empieza en ${v1} y el tramo anterior termina en ${prevEnd}` };
+    }
+    prevEnd = v2;
+    for (let v = v1; v <= v2; v++) expect.push(`${ch}:${v}`);
+  }
+  return { query: `${abbr}${ch},${parts.join('.')}`, expect };
+};
+
+const parseManualRef = (ref) => checkManualRef(ref).query ?? null;
+
+// Referencia legible de los versos devueltos por BibleGet cuando la query
+// lleva varios tramos: "Lucas 15:1-3.11-32" (no "15:1-32", que sería falso).
+const formatVerseRuns = (verses) => {
+  const runs = [];
+  for (const { verse } of verses) {
+    const n = Number(verse);
+    const last = runs[runs.length - 1];
+    if (last && n === last[1] + 1) last[1] = n; else runs.push([n, n]);
+  }
+  return `${verses[0].book} ${verses[0].chapter}:${runs.map(([a, b]) => (a === b ? a : `${a}-${b}`)).join('.')}`;
 };
 
 // timeoutMs: tope de esta llamada (quien llama lo calcula según lo que quede
 // del presupuesto total). Acepta una referencia de Universalis o, con
 // { query: true }, una query de BibleGet ya lista.
-const getSpanishText = async (rawRef, timeoutMs = 8000, { query = false } = {}) => {
+// Con { strict: true, expect } (lecturas manuales) cualquier fallo lanza un
+// error que dice qué pasó: errors de BibleGet, sin resultados o versos
+// pedidos que faltan. Sin strict, devuelve null como siempre.
+const getSpanishText = async (rawRef, timeoutMs = 8000, { query = false, strict = false, expect = null } = {}) => {
   const bibleGetQuery = query ? rawRef : parseRef(rawRef);
   if (!bibleGetQuery) return null;
   try {
     const url = `https://query.bibleget.io/v3/index.php?query=${encodeURIComponent(bibleGetQuery)}&version=BLPD&return=json&appid=${BIBLEGET_APPID}`;
     const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(timeoutMs) });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (strict) throw new Error(`BibleGet respondió HTTP ${response.status} para "${bibleGetQuery}"`);
+      return null;
+    }
     const data = await response.json();
     const verses = data?.results;
+    if (strict) {
+      if (data?.errors?.length) throw new Error(`BibleGet devolvió errores para "${bibleGetQuery}": ${JSON.stringify(data.errors)}`);
+      if (!verses?.length) throw new Error(`BibleGet no devolvió versos para "${bibleGetQuery}"`);
+      const got = new Set(verses.map((v) => `${Number(v.chapter)}:${Number(v.verse)}`));
+      const missing = (expect || []).filter((k) => !got.has(k));
+      if (missing.length) throw new Error(`BibleGet devolvió menos versos de los pedidos para "${bibleGetQuery}": faltan ${missing.join(', ')}`);
+    }
     if (data?.errors?.length || !verses?.length) return null;
     const text = verses.map(v => (v.text || '').trim()).join(' ').replace(/\s+/g, ' ').trim();
     const first = verses[0];
     const last = verses[verses.length - 1];
-    const reference = first.chapter === last.chapter
+    const reference = query && first.chapter === last.chapter
+      ? formatVerseRuns(verses)
+      : first.chapter === last.chapter
       ? `${first.book} ${first.chapter}:${first.verse}${verses.length > 1 ? '-' + last.verse : ''}`
       : `${first.book} ${first.chapter}:${first.verse}-${last.chapter}:${last.verse}`;
     return { text, reference };
   } catch (e) {
+    if (strict) throw e.name === 'TimeoutError' || e.name === 'AbortError'
+      ? new Error(`BibleGet no respondió a tiempo para "${bibleGetQuery}"`)
+      : e;
     return null;
   }
 };
@@ -342,7 +419,9 @@ const buildEn = (data) => {
 // de Universalis; es: textos resueltos o null; psalmStructure: guía litúrgica
 // de Universalis (null en modo manual). `complete` = ninguna lectura cayó al
 // respaldo en inglés: solo entonces vale la pena guardarla en caché.
-const assembleEs = ({ day, month, year, refs, en, es, psalmStructure }) => {
+// manual: el documento de emergencia no trae responso, así que el salmo se
+// muestra solo con sus versos (formatPsalmEs inventaría el responso).
+const assembleEs = ({ day, month, year, refs, en, es, psalmStructure, manual = false }) => {
   const title = `Evangelio del ${day} de ${MONTHS[month - 1].charAt(0).toUpperCase() + MONTHS[month - 1].slice(1)} del ${year}`;
   const gospelRef = es.gospel.reference || refs.gospel;
   const reading = (key) => es[key]
@@ -356,7 +435,7 @@ const assembleEs = ({ day, month, year, refs, en, es, psalmStructure }) => {
     reading1: reading('reading1'),
     reading2: reading('reading2'),
     psalm: es.psalm
-      ? { reference: es.psalm.reference || refs.psalm, text: formatPsalmEs(psalmStructure, es.psalm.text) || es.psalm.text }
+      ? { reference: es.psalm.reference || refs.psalm, text: (manual ? null : formatPsalmEs(psalmStructure, es.psalm.text)) || es.psalm.text }
       : (refs.psalm ? { reference: null, text: null, referenceEn: refs.psalm, textEn: en.psalm } : null),
     reflection: '',
   };
@@ -399,21 +478,23 @@ const buildEsManual = async (manual, { day, month, year, deadline }) => {
   for (const [key, name] of Object.entries(field)) {
     const raw = manual[name];
     if (!raw) { refs[key] = null; continue; }
-    const q = parseManualRef(raw);
-    if (!q) throw new Error(`Referencia manual inválida en "${name}": recibí "${raw}", formato esperado "Lc 12,35-38" (libro, capítulo,verso[-verso]; se toleran espacios alrededor de , - .)`);
+    const { query: q, expect, error } = checkManualRef(raw);
+    if (!q) throw new Error(`Referencia manual inválida en "${name}": recibí "${raw}" (${error}); formatos aceptados: "Lc 12,35-38", "Jn 3,16", "Mt 5,1-7,29" o varios tramos del mismo capítulo separados por punto, "Lc 15,1-3.11-32"; se toleran espacios alrededor de la coma, el guion y el punto`);
     refs[key] = String(raw).trim();
-    queries[key] = q;
+    queries[key] = { q, expect };
   }
   if (!refs.gospel) throw new Error('El documento manual no tiene el campo "evangelio"');
   const t = Math.max(1000, deadline - Date.now());
   const es = {};
   await Promise.all(Object.keys(queries).map(async (key) => {
-    es[key] = await getSpanishText(queries[key], t, { query: true });
+    try {
+      es[key] = await getSpanishText(queries[key].q, t, { query: true, strict: true, expect: queries[key].expect });
+    } catch (e) {
+      throw new Error(`Lectura manual "${field[key]}" (${refs[key]}): ${e.message}`);
+    }
   }));
   if (!es.gospel?.text) throw new Error(`BibleGet no devolvió texto para la referencia manual "${refs.gospel}"`);
-  // Sin feed no hay respaldo en inglés: una lectura sin texto se omite.
-  for (const key of ['reading1', 'reading2', 'psalm']) if (refs[key] && !es[key]) refs[key] = null;
-  return assembleEs({ day, month, year, refs, en: {}, es, psalmStructure: null }).response;
+  return assembleEs({ day, month, year, refs, en: {}, es, psalmStructure: null, manual: true }).response;
 };
 
 export { dateKey, fetchUniversalisDay, buildEn, buildEs, buildEsManual, parseManualRef };

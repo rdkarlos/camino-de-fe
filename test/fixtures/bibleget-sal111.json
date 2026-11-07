@@ -1,0 +1,41 @@
+{
+ "results": [
+  {
+   "book": "Salmos",
+   "chapter": 111,
+   "verse": "1",
+   "text": "¡Aleluya![Alef]Doy gracias al Señor de todo corazón, [Bet]en la reunión y en la asamblea de los justos."
+  },
+  {
+   "book": "Salmos",
+   "chapter": 111,
+   "verse": "2",
+   "text": "[Guímel] Grandes son las obras del Señor: [Dálet] los que las aman desean comprenderlas."
+  },
+  {
+   "book": "Salmos",
+   "chapter": 111,
+   "verse": "5",
+   "text": "[Tet] Proveyó de alimento a sus fieles [Iod] y se acuerda eternamente de su alianza."
+  },
+  {
+   "book": "Salmos",
+   "chapter": 111,
+   "verse": "6",
+   "text": "[Caf] Manifestó a su pueblo el poder de sus obras, [Lámed] dándole la herencia de las naciones."
+  },
+  {
+   "book": "Salmos",
+   "chapter": 111,
+   "verse": "8",
+   "text": "[Sámec] están afianzados para siempre [Ain] y establecidos con lealtad y rectitud."
+  },
+  {
+   "book": "Salmos",
+   "chapter": 111,
+   "verse": "9",
+   "text": "[Pe] El envió la redención a su pueblo, [Sade] promulgó su alianza para siempre: [Qof] Su Nombre es santo y temible. "
+  }
+ ],
+ "errors": []
+}
